@@ -56,8 +56,8 @@ class StockCardReport extends Page implements HasForms
                     ->components([
                         Select::make('location_id')
                             ->label('Location')
+                            ->placeholder('All Locations')
                             ->options(\App\Models\Location::all()->pluck('name', 'id'))
-                            ->required()
                             ->searchable(),
                         Select::make('product_id')
                             ->label('Product')
@@ -76,8 +76,9 @@ class StockCardReport extends Page implements HasForms
                 Actions::make([
                     Action::make('filter')
                         ->label('Filter')
-                        ->action(function (array $data) {
-                            $this->location_id = $data['location_id'];
+                        ->action(function () {
+                            $data = $this->form->getState();
+                            $this->location_id = $data['location_id'] ?? null;
                             $this->product_id = $data['product_id'];
                             $this->start_date = $data['start_date'];
                             $this->end_date = $data['end_date'];
@@ -88,7 +89,7 @@ class StockCardReport extends Page implements HasForms
 
     public function getViewData(): array
     {
-        if (!$this->location_id || !$this->product_id) {
+        if (!$this->product_id) {
             return [
                 'movements' => [],
                 'initial_balance' => 0,
@@ -98,26 +99,39 @@ class StockCardReport extends Page implements HasForms
         $startDate = \Carbon\Carbon::parse($this->start_date)->startOfDay();
         $endDate = \Carbon\Carbon::parse($this->end_date)->endOfDay();
 
-        // Calculate Initial Balance (movements before start date)
-        $initialBalance = \App\Models\InventoryMovement::where('product_id', $this->product_id)
-            ->where('to_location_id', $this->location_id) // Incoming to this location
-            ->where('created_at', '<', $startDate)
-            ->sum('qty');
+        // Calculate Initial Balance
+        $initialInQuery = \App\Models\InventoryMovement::where('product_id', $this->product_id)
+            ->where('created_at', '<', $startDate);
 
-        $outgoing = \App\Models\InventoryMovement::where('product_id', $this->product_id)
-            ->where('from_location_id', $this->location_id) // Outgoing from this location
-            ->where('created_at', '<', $startDate)
-            ->sum('qty');
+        $initialOutQuery = \App\Models\InventoryMovement::where('product_id', $this->product_id)
+            ->where('created_at', '<', $startDate);
 
-        $initialBalance -= $outgoing;
+        if ($this->location_id) {
+            $initialInQuery->where('to_location_id', $this->location_id);
+            $initialOutQuery->where('from_location_id', $this->location_id);
+        } else {
+            // Global Balance: In is any valid 'to' (that isn't a transfer? No, all 'to' adds to physical stock at that location)
+            // But for Global Stock: Transfer A->B. A loses, B gains. Net 0.
+            // Formula: Sum(to) - Sum(from) works perfectly for Global too.
+            $initialInQuery->whereNotNull('to_location_id');
+            $initialOutQuery->whereNotNull('from_location_id');
+        }
 
-        // Fetch Movements within range
-        $movements = \App\Models\InventoryMovement::where('product_id', $this->product_id)
-            ->where(function ($query) {
+        $initialBalance = $initialInQuery->sum('qty') - $initialOutQuery->sum('qty');
+
+        // Fetch Movements
+        $movementsQuery = \App\Models\InventoryMovement::where('product_id', $this->product_id)
+            ->whereBetween('created_at', [$startDate, $endDate]);
+
+        if ($this->location_id) {
+            $movementsQuery->where(function ($query) {
                 $query->where('from_location_id', $this->location_id)
                     ->orWhere('to_location_id', $this->location_id);
-            })
-            ->whereBetween('created_at', [$startDate, $endDate])
+            });
+        }
+        // If location_id is null (All), we fetch EVERYTHING for this product.
+
+        $movements = $movementsQuery
             ->with(['user', 'reference'])
             ->orderBy('created_at', 'asc')
             ->get();
