@@ -21,6 +21,9 @@ use App\Models\InventoryMovement;
 use App\Models\Product;
 use Carbon\Carbon;
 use Filament\Actions\Action as HeaderAction;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\StockCardExport;
 
 class StockCardReport extends Page implements HasForms, HasTable
 {
@@ -63,8 +66,8 @@ class StockCardReport extends Page implements HasForms, HasTable
                     ->components([
                         Select::make('product_id')
                             ->label('Product')
-                            ->options(Product::all()->pluck('name', 'id'))
-                            ->required()
+                            ->options(Product::all()->pluck('name', 'id')->prepend('All Products', ''))
+                            ->default('')
                             ->searchable()
                             ->preload()
                             ->reactive(),
@@ -148,38 +151,45 @@ class StockCardReport extends Page implements HasForms, HasTable
             ->paginated(false);
     }
 
-    protected function calculateStock(Location $location, string $type): float
+    protected function calculateStock(object $location, string $type): float
     {
-        if (!$this->product_id)
-            return 0;
-
         $startDate = Carbon::parse($this->start_date)->startOfDay();
         $endDate = Carbon::parse($this->end_date)->endOfDay();
 
         if ($type === 'initial') {
-            $in = InventoryMovement::where('product_id', $this->product_id)
-                ->where('to_location_id', $location->id)
-                ->where('created_at', '<', $startDate)
-                ->sum('qty');
-            $out = InventoryMovement::where('product_id', $this->product_id)
-                ->where('from_location_id', $location->id)
-                ->where('created_at', '<', $startDate)
-                ->sum('qty');
-            return (float) ($in - $out);
+            $queryIn = InventoryMovement::where('to_location_id', $location->id)
+                ->where('created_at', '<', $startDate);
+            $queryOut = InventoryMovement::where('from_location_id', $location->id)
+                ->where('created_at', '<', $startDate);
+
+            if ($this->product_id) {
+                $queryIn->where('product_id', $this->product_id);
+                $queryOut->where('product_id', $this->product_id);
+            }
+
+            return (float) ($queryIn->sum('qty') - $queryOut->sum('qty'));
         }
 
         if ($type === 'in') {
-            return (float) InventoryMovement::where('product_id', $this->product_id)
-                ->where('to_location_id', $location->id)
-                ->whereBetween('created_at', [$startDate, $endDate])
-                ->sum('qty');
+            $query = InventoryMovement::where('to_location_id', $location->id)
+                ->whereBetween('created_at', [$startDate, $endDate]);
+
+            if ($this->product_id) {
+                $query->where('product_id', $this->product_id);
+            }
+
+            return (float) $query->sum('qty');
         }
 
         if ($type === 'out') {
-            return (float) InventoryMovement::where('product_id', $this->product_id)
-                ->where('from_location_id', $location->id)
-                ->whereBetween('created_at', [$startDate, $endDate])
-                ->sum('qty');
+            $query = InventoryMovement::where('from_location_id', $location->id)
+                ->whereBetween('created_at', [$startDate, $endDate]);
+
+            if ($this->product_id) {
+                $query->where('product_id', $this->product_id);
+            }
+
+            return (float) $query->sum('qty');
         }
 
         if ($type === 'stock') {
@@ -192,4 +202,59 @@ class StockCardReport extends Page implements HasForms, HasTable
         return 0;
     }
 
+    public function exportExcel()
+    {
+        $data = $this->getReportData();
+        $title = 'Stock Card - ' . ($this->product_id ? Product::find($this->product_id)->name : 'All Products');
+
+        return Excel::download(new StockCardExport($data, $title), $title . '.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $data = $this->getReportData();
+        $product_name = $this->product_id ? Product::find($this->product_id)->name : 'All Products';
+
+        $pdf = Pdf::loadView('exports.stock-card-pdf', [
+            'title' => 'Stock Card Report',
+            'product_name' => $product_name,
+            'start_date' => $this->start_date,
+            'end_date' => $this->end_date,
+            'data' => $data,
+        ]);
+
+        return response()->streamDownload(fn() => print ($pdf->output()), 'stock-card-report.pdf');
+    }
+
+    protected function getReportData(): array
+    {
+        $locations = Location::all();
+        if ($this->location_id) {
+            $locations = $locations->where('id', $this->location_id);
+        }
+
+        return $locations->map(fn($location) => [
+            'name' => $location->name,
+            'initial' => $this->calculateStock($location, 'initial'),
+            'in' => $this->calculateStock($location, 'in'),
+            'out' => $this->calculateStock($location, 'out'),
+            'stock' => $this->calculateStock($location, 'stock'),
+        ])->toArray();
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            HeaderAction::make('exportExcel')
+                ->label('Export Excel')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('success')
+                ->action('exportExcel'),
+            HeaderAction::make('exportPdf')
+                ->label('Export PDF')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('danger')
+                ->action('exportPdf'),
+        ];
+    }
 }
