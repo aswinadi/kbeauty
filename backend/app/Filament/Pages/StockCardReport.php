@@ -101,12 +101,20 @@ class StockCardReport extends Page implements HasForms, HasTable
         return $table
             ->query(function () {
                 $subquery = \App\Models\InventoryMovement::query()
-                    ->select('product_id', 'to_location_id as location_id')
+                    ->select([
+                        \Illuminate\Support\Facades\DB::raw("CONCAT(product_id, '-', to_location_id) as id"),
+                        'product_id',
+                        'to_location_id as location_id'
+                    ])
                     ->whereNotNull('product_id')
                     ->whereNotNull('to_location_id')
                     ->union(
                         \App\Models\InventoryMovement::query()
-                            ->select('product_id', 'from_location_id as location_id')
+                            ->select([
+                                \Illuminate\Support\Facades\DB::raw("CONCAT(product_id, '-', from_location_id) as id"),
+                                'product_id',
+                                'from_location_id as location_id'
+                            ])
                             ->whereNotNull('product_id')
                             ->whereNotNull('from_location_id')
                     );
@@ -120,7 +128,7 @@ class StockCardReport extends Page implements HasForms, HasTable
                     ->join('products', 'combinations.product_id', '=', 'products.id')
                     ->join('locations', 'combinations.location_id', '=', 'locations.id')
                     ->select([
-                        \Illuminate\Support\Facades\DB::raw("CONCAT(combinations.product_id, '-', combinations.location_id) as id"),
+                        'combinations.id',
                         'combinations.product_id',
                         'combinations.location_id',
                         'products.name as product_name',
@@ -249,12 +257,20 @@ class StockCardReport extends Page implements HasForms, HasTable
     protected function getReportData(): array
     {
         $subquery = \App\Models\InventoryMovement::query()
-            ->select('product_id', 'to_location_id as location_id')
+            ->select([
+                \Illuminate\Support\Facades\DB::raw("CONCAT(product_id, '-', to_location_id) as id"),
+                'product_id',
+                'to_location_id as location_id'
+            ])
             ->whereNotNull('product_id')
             ->whereNotNull('to_location_id')
             ->union(
                 \App\Models\InventoryMovement::query()
-                    ->select('product_id', 'from_location_id as location_id')
+                    ->select([
+                        \Illuminate\Support\Facades\DB::raw("CONCAT(product_id, '-', from_location_id) as id"),
+                        'product_id',
+                        'from_location_id as location_id'
+                    ])
                     ->whereNotNull('product_id')
                     ->whereNotNull('from_location_id')
             );
@@ -267,6 +283,7 @@ class StockCardReport extends Page implements HasForms, HasTable
             ->join('products', 'combinations.product_id', '=', 'products.id')
             ->join('locations', 'combinations.location_id', '=', 'locations.id')
             ->select([
+                'combinations.id',
                 'combinations.product_id',
                 'combinations.location_id',
                 'products.name as product_name',
