@@ -100,20 +100,53 @@ class StockCardReport extends Page implements HasForms, HasTable
     {
         return $table
             ->query(function () {
-                $query = Location::query();
-                if ($this->location_id) {
-                    $query->where('id', $this->location_id);
+                $subquery = \App\Models\InventoryMovement::query()
+                    ->select('product_id', 'to_location_id as location_id')
+                    ->whereNotNull('product_id')
+                    ->whereNotNull('to_location_id')
+                    ->union(
+                        \App\Models\InventoryMovement::query()
+                            ->select('product_id', 'from_location_id as location_id')
+                            ->whereNotNull('product_id')
+                            ->whereNotNull('from_location_id')
+                    );
+
+                $query = \App\Models\InventoryMovement::query() // Use any model for the builder, we'll overwrite it
+                    ->fromSub($subquery, 'combinations')
+                    ->join('products', 'combinations.product_id', '=', 'products.id')
+                    ->join('locations', 'combinations.location_id', '=', 'locations.id')
+                    ->select(
+                        \Illuminate\Support\Facades\DB::raw("CONCAT(combinations.product_id, '-', combinations.location_id) as id"),
+                        'combinations.product_id',
+                        'combinations.location_id',
+                        'products.name as product_name',
+                        'locations.name as location_name'
+                    )
+                    ->distinct();
+
+                if ($this->product_id) {
+                    $query->where('combinations.product_id', $this->product_id);
                 }
+
+                if ($this->location_id) {
+                    $query->where('combinations.location_id', $this->location_id);
+                }
+
                 return $query;
             })
             ->columns([
-                TextColumn::make('name')
-                    ->label('Location')
+                TextColumn::make('product_name')
+                    ->label('Product')
+                    ->searchable()
+                    ->sortable()
                     ->weight('bold'),
+                TextColumn::make('location_name')
+                    ->label('Location')
+                    ->sortable(),
                 TextColumn::make('initial')
                     ->label('Initial')
                     ->alignRight()
-                    ->state(fn(Location $record) => $this->calculateStock($record, 'initial'))
+                    ->state(fn(object $record) => $this->calculateStock($record, 'initial'))
                     ->summarize(\Filament\Tables\Columns\Summarizers\Summarizer::make()
                         ->label('Total')
                         ->using(fn($query) => $query->get()->sum(fn($record) => $this->calculateStock($record, 'initial')))),
@@ -121,7 +154,7 @@ class StockCardReport extends Page implements HasForms, HasTable
                     ->label('In')
                     ->alignRight()
                     ->color('success')
-                    ->state(fn(Location $record) => $this->calculateStock($record, 'in'))
+                    ->state(fn(object $record) => $this->calculateStock($record, 'in'))
                     ->summarize(\Filament\Tables\Columns\Summarizers\Summarizer::make()
                         ->label('')
                         ->using(fn($query) => $query->get()->sum(fn($record) => $this->calculateStock($record, 'in')))),
@@ -129,7 +162,7 @@ class StockCardReport extends Page implements HasForms, HasTable
                     ->label('Out')
                     ->alignRight()
                     ->color('danger')
-                    ->state(fn(Location $record) => $this->calculateStock($record, 'out'))
+                    ->state(fn(object $record) => $this->calculateStock($record, 'out'))
                     ->summarize(\Filament\Tables\Columns\Summarizers\Summarizer::make()
                         ->label('')
                         ->using(fn($query) => $query->get()->sum(fn($record) => $this->calculateStock($record, 'out')))),
@@ -137,11 +170,16 @@ class StockCardReport extends Page implements HasForms, HasTable
                     ->label('Stock')
                     ->alignRight()
                     ->weight('bold')
-                    ->state(fn(Location $record) => $this->calculateStock($record, 'stock'))
+                    ->state(fn(object $record) => $this->calculateStock($record, 'stock'))
                     ->summarize(\Filament\Tables\Columns\Summarizers\Summarizer::make()
                         ->label('')
                         ->using(fn($query) => $query->get()->sum(fn($record) => $this->calculateStock($record, 'stock')))),
             ])
+            ->groups([
+                'product_name',
+                'location_name',
+            ])
+            ->defaultGroup('product_name')
             ->emptyStateHeading('No stock data to display')
             ->emptyStateDescription($this->product_id ? 'Try adjusting your filters.' : 'Please select a product first.')
             ->paginated(false);
@@ -153,39 +191,28 @@ class StockCardReport extends Page implements HasForms, HasTable
         $endDate = Carbon::parse($this->end_date)->endOfDay();
 
         if ($type === 'initial') {
-            $queryIn = InventoryMovement::where('to_location_id', $location->id)
+            $queryIn = InventoryMovement::where('product_id', $location->product_id)
+                ->where('to_location_id', $location->location_id)
                 ->where('created_at', '<', $startDate);
-            $queryOut = InventoryMovement::where('from_location_id', $location->id)
+            $queryOut = InventoryMovement::where('product_id', $location->product_id)
+                ->where('from_location_id', $location->location_id)
                 ->where('created_at', '<', $startDate);
-
-            if ($this->product_id) {
-                $queryIn->where('product_id', $this->product_id);
-                $queryOut->where('product_id', $this->product_id);
-            }
 
             return (float) ($queryIn->sum('qty') - $queryOut->sum('qty'));
         }
 
         if ($type === 'in') {
-            $query = InventoryMovement::where('to_location_id', $location->id)
-                ->whereBetween('created_at', [$startDate, $endDate]);
-
-            if ($this->product_id) {
-                $query->where('product_id', $this->product_id);
-            }
-
-            return (float) $query->sum('qty');
+            return (float) InventoryMovement::where('product_id', $location->product_id)
+                ->where('to_location_id', $location->location_id)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->sum('qty');
         }
 
         if ($type === 'out') {
-            $query = InventoryMovement::where('from_location_id', $location->id)
-                ->whereBetween('created_at', [$startDate, $endDate]);
-
-            if ($this->product_id) {
-                $query->where('product_id', $this->product_id);
-            }
-
-            return (float) $query->sum('qty');
+            return (float) InventoryMovement::where('product_id', $location->product_id)
+                ->where('from_location_id', $location->location_id)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->sum('qty');
         }
 
         if ($type === 'stock') {
@@ -224,17 +251,42 @@ class StockCardReport extends Page implements HasForms, HasTable
 
     protected function getReportData(): array
     {
-        $locations = Location::all();
-        if ($this->location_id) {
-            $locations = $locations->where('id', $this->location_id);
+        $subquery = \App\Models\InventoryMovement::query()
+            ->select('product_id', 'to_location_id as location_id')
+            ->whereNotNull('product_id')
+            ->whereNotNull('to_location_id')
+            ->union(
+                \App\Models\InventoryMovement::query()
+                    ->select('product_id', 'from_location_id as location_id')
+                    ->whereNotNull('product_id')
+                    ->whereNotNull('from_location_id')
+            );
+        $query = \App\Models\InventoryMovement::query()
+            ->fromSub($subquery, 'combinations')
+            ->join('products', 'combinations.product_id', '=', 'products.id')
+            ->join('locations', 'combinations.location_id', '=', 'locations.id')
+            ->select(
+                'combinations.product_id',
+                'combinations.location_id',
+                'products.name as product_name',
+                'locations.name as location_name'
+            )
+            ->distinct();
+
+        if ($this->product_id) {
+            $query->where('combinations.product_id', $this->product_id);
         }
 
-        return $locations->map(fn($location) => [
-            'name' => $location->name,
-            'initial' => $this->calculateStock($location, 'initial'),
-            'in' => $this->calculateStock($location, 'in'),
-            'out' => $this->calculateStock($location, 'out'),
-            'stock' => $this->calculateStock($location, 'stock'),
+        if ($this->location_id) {
+            $query->where('combinations.location_id', $this->location_id);
+        }
+
+        return $query->get()->map(fn($record) => [
+            'name' => "{$record->location_name} - {$record->product_name}",
+            'initial' => $this->calculateStock($record, 'initial'),
+            'in' => $this->calculateStock($record, 'in'),
+            'out' => $this->calculateStock($record, 'out'),
+            'stock' => $this->calculateStock($record, 'stock'),
         ])->toArray();
     }
 
