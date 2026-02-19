@@ -115,14 +115,13 @@ class StockCardReport extends Page implements HasForms, HasTable
                     ->fromSub($subquery, 'combinations')
                     ->join('products', 'combinations.product_id', '=', 'products.id')
                     ->join('locations', 'combinations.location_id', '=', 'locations.id')
-                    ->select(
+                    ->select([
                         \Illuminate\Support\Facades\DB::raw("CONCAT(combinations.product_id, '-', combinations.location_id) as id"),
                         'combinations.product_id',
                         'combinations.location_id',
                         'products.name as product_name',
-                        'locations.name as location_name'
-                    )
-                    ->distinct();
+                        'locations.name as location_name',
+                    ]);
 
                 if ($this->product_id) {
                     $query->where('combinations.product_id', $this->product_id);
@@ -132,8 +131,9 @@ class StockCardReport extends Page implements HasForms, HasTable
                     $query->where('combinations.location_id', $this->location_id);
                 }
 
-                return $query;
+                return $query->distinct()->reorder();
             })
+            ->defaultSort('product_name')
             ->columns([
                 TextColumn::make('product_name')
                     ->label('Product')
@@ -281,7 +281,7 @@ class StockCardReport extends Page implements HasForms, HasTable
             $query->where('combinations.location_id', $this->location_id);
         }
 
-        return $query->get()->map(fn($record) => [
+        return $query->distinct()->reorder()->orderBy('product_name')->get()->map(fn($record) => [
             'name' => "{$record->location_name} - {$record->product_name}",
             'initial' => $this->calculateStock($record, 'initial'),
             'in' => $this->calculateStock($record, 'in'),
