@@ -3,48 +3,46 @@
 
     @php
         $data = $this->getViewData();
-        $movements = $data['movements'];
-        $balance = $data['initial_balance'];
     @endphp
 
     @if($this->product_id)
         <div class="fi-section rounded-xl bg-white shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
             <div class="overflow-x-auto">
-                @if($this->report_type === 'detail')
+                @if(($this->report_type ?? 'summary') === 'detail')
                     {{-- DETAIL VIEW (Per Location) --}}
                     <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
-                                <th scope="col" class="px-4 py-3 min-w-[150px]">Location</th>
-                                <th scope="col" class="px-4 py-3 text-right w-32">Initial</th>
-                                <th scope="col" class="px-4 py-3 text-right w-24">In</th>
-                                <th scope="col" class="px-4 py-3 text-right w-24">Out</th>
-                                <th scope="col" class="px-4 py-3 text-right w-32">Current Stock</th>
+                                <th scope="col" class="px-6 py-3 min-w-[200px]">Location</th>
+                                <th scope="col" class="px-6 py-3 text-right whitespace-nowrap w-32">Initial</th>
+                                <th scope="col" class="px-6 py-3 text-right whitespace-nowrap w-24">In</th>
+                                <th scope="col" class="px-6 py-3 text-right whitespace-nowrap w-24">Out</th>
+                                <th scope="col" class="px-6 py-3 text-right whitespace-nowrap w-32">Stock</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($data['data'] as $row)
+                            @forelse ($data['data'] ?? [] as $row)
                                 <tr
                                     class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                    <td class="px-4 py-4 font-medium text-gray-900 dark:text-white">
+                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
                                         {{ $row['location_name'] }}
                                     </td>
-                                    <td class="px-4 py-4 text-right">
+                                    <td class="px-6 py-4 text-right">
                                         {{ $row['initial_balance'] }}
                                     </td>
-                                    <td class="px-4 py-4 text-right text-green-600">
+                                    <td class="px-6 py-4 text-right text-green-600">
                                         {{ $row['in'] }}
                                     </td>
-                                    <td class="px-4 py-4 text-right text-red-600">
+                                    <td class="px-6 py-4 text-right text-red-600">
                                         {{ $row['out'] }}
                                     </td>
-                                    <td class="px-4 py-4 text-right font-bold">
+                                    <td class="px-6 py-4 text-right font-bold">
                                         {{ $row['final_balance'] }}
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-4 py-4 text-center">
+                                    <td colspan="5" class="px-6 py-4 text-center">
                                         No locations found.
                                     </td>
                                 </tr>
@@ -54,19 +52,19 @@
                 @else
                     {{-- SUMMARY VIEW (Global Movements) --}}
                     @php
-                        $movements = $data['movements'];
-                        $balance = $data['initial_balance'];
+                        $movements = $data['movements'] ?? [];
+                        $balance = $data['initial_balance'] ?? 0;
                     @endphp
                     <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
-                                <th scope="col" class="px-4 py-3 whitespace-nowrap w-32">Date</th>
-                                <th scope="col" class="px-4 py-3 min-w-[150px]">Reference</th>
-                                <th scope="col" class="px-4 py-3 min-w-[150px]">Location</th>
-                                <th scope="col" class="px-4 py-3 whitespace-nowrap">User</th>
-                                <th scope="col" class="px-4 py-3 text-right w-24">In</th>
-                                <th scope="col" class="px-4 py-3 text-right w-24">Out</th>
-                                <th scope="col" class="px-4 py-3 text-right w-32">Balance</th>
+                                <th scope="col" class="px-4 py-3 whitespace-nowrap w-40">Date</th>
+                                <th scope="col" class="px-4 py-3 min-w-[250px]">Reference</th>
+                                <th scope="col" class="px-4 py-3 min-w-[200px]">Location</th>
+                                <th scope="col" class="px-4 py-3 whitespace-nowrap min-w-[150px]">User</th>
+                                <th scope="col" class="px-4 py-3 text-right whitespace-nowrap w-24">In</th>
+                                <th scope="col" class="px-4 py-3 text-right whitespace-nowrap w-24">Out</th>
+                                <th scope="col" class="px-4 py-3 text-right whitespace-nowrap w-32">Balance</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -102,35 +100,35 @@
                                 @endphp
                                 <tr
                                     class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                    <td class="px-4 py-4 whitespace-nowrap align-top">
                                         {{ $movement->created_at->timezone('Asia/Jakarta')->format('d M Y H:i') }}
                                     </td>
-                                    <td class="px-4 py-4">
-                                        <div class="font-medium text-gray-900 dark:text-white">
+                                    <td class="px-4 py-4 align-top">
+                                        <div class="font-medium text-gray-900 dark:text-white break-words">
                                             {{ $movement->type }}
                                         </div>
-                                        <div class="text-xs text-gray-500">
+                                        <div class="text-xs text-gray-500 break-words">
                                             {{ class_basename($movement->reference_type) }} #{{ $movement->reference_id }}
                                         </div>
                                         @if($movement->notes)
-                                            <div class="text-xs text-gray-400 italic">
+                                            <div class="text-xs text-gray-400 italic mt-1 break-words">
                                                 {{ $movement->notes }}
                                             </div>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-4 text-xs">
+                                    <td class="px-4 py-4 text-xs align-top break-words">
                                         {{ $locationLabel }}
                                     </td>
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                    <td class="px-4 py-4 whitespace-nowrap align-top">
                                         {{ $movement->user->name ?? '-' }}
                                     </td>
-                                    <td class="px-4 py-4 text-right text-green-600 font-medium whitespace-nowrap">
+                                    <td class="px-4 py-4 text-right text-green-600 font-medium whitespace-nowrap align-top">
                                         {{ $in > 0 ? $in : '-' }}
                                     </td>
-                                    <td class="px-4 py-4 text-right text-red-600 font-medium whitespace-nowrap">
+                                    <td class="px-4 py-4 text-right text-red-600 font-medium whitespace-nowrap align-top">
                                         {{ $out > 0 ? $out : '-' }}
                                     </td>
-                                    <td class="px-4 py-4 text-right font-bold whitespace-nowrap">
+                                    <td class="px-4 py-4 text-right font-bold whitespace-nowrap align-top">
                                         {{ $balance }}
                                     </td>
                                 </tr>
