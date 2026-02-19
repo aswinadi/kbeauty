@@ -176,4 +176,8 @@ class StockCardReport extends Page implements HasForms
             ];
         }
     }
+    public function getMaxContentWidth(): ?string
+    {
+        return 'full';
+    }
 }

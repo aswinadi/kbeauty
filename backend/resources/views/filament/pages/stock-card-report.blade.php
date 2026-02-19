@@ -10,10 +10,10 @@
             <div class="overflow-x-auto">
                 @if(($this->report_type ?? 'summary') === 'detail')
                     {{-- DETAIL VIEW (Per Location) --}}
-                    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 table-fixed">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
-                                <th scope="col" class="px-6 py-3 min-w-[200px]">Location</th>
+                                <th scope="col" class="px-6 py-3">Location</th>
                                 <th scope="col" class="px-6 py-3 text-right whitespace-nowrap w-32">Initial</th>
                                 <th scope="col" class="px-6 py-3 text-right whitespace-nowrap w-24">In</th>
                                 <th scope="col" class="px-6 py-3 text-right whitespace-nowrap w-24">Out</th>
@@ -24,16 +24,17 @@
                             @forelse ($data['data'] ?? [] as $row)
                                 <tr
                                     class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white truncate"
+                                        title="{{ $row['location_name'] }}">
                                         {{ $row['location_name'] }}
                                     </td>
-                                    <td class="px-6 py-4 text-right">
+                                    <td class="px-6 py-4 text-right font-medium">
                                         {{ $row['initial_balance'] }}
                                     </td>
-                                    <td class="px-6 py-4 text-right text-green-600">
+                                    <td class="px-6 py-4 text-right text-green-600 font-medium">
                                         {{ $row['in'] }}
                                     </td>
-                                    <td class="px-6 py-4 text-right text-red-600">
+                                    <td class="px-6 py-4 text-right text-red-600 font-medium">
                                         {{ $row['out'] }}
                                     </td>
                                     <td class="px-6 py-4 text-right font-bold">

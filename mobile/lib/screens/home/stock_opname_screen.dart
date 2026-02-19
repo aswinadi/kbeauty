@@ -150,13 +150,22 @@ class _StockOpnameScreenState extends State<StockOpnameScreen> {
       return;
     }
 
-    // Submit all items
-    final items = _allProducts.map((p) => StockOpnameItem(
-      productId: p.id,
-      productName: p.name,
-      systemQty: 0, 
-      actualQty: _actualQuantities[p.id] ?? 0,
-    )).toList();
+    // Submit only checked items
+    final items = _allProducts
+        .where((p) => _checkedItems.contains(p.id))
+        .map((p) => StockOpnameItem(
+          productId: p.id,
+          productName: p.name,
+          systemQty: 0, 
+          actualQty: _actualQuantities[p.id] ?? 0,
+        )).toList();
+
+    if (items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please check at least one item to submit')),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
     final success = await _inventoryService.submitStockOpname(_selectedLocationId!, items);
@@ -251,45 +260,59 @@ class _StockOpnameScreenState extends State<StockOpnameScreen> {
                 ),
                 const Divider(height: 1),
                 Expanded(
-                  child: ListView.separated(
-                    itemCount: _filteredProducts.length,
-                    separatorBuilder: (context, index) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final product = _filteredProducts[index];
-                      final isChecked = _checkedItems.contains(product.id);
-                      final qty = _actualQuantities[product.id];
-                      
-                      return StockOpnameTile(
-                        key: ValueKey(product.id),
-                        product: product,
-                        isChecked: isChecked,
-                        initialQty: qty,
-                        onCheckChanged: (val) {
-                          setState(() {
-                            if (val == true) {
-                              _checkedItems.add(product.id);
-                            } else {
-                              _checkedItems.remove(product.id);
-                            }
-                          });
-                          _triggerSave();
-                        },
-                        onQtyChanged: (val) {
-                          setState(() {
-                            if (val == null) {
-                              _actualQuantities.remove(product.id);
-                            } else {
-                              _actualQuantities[product.id] = val;
-                              if (val > 0) {
-                                _checkedItems.add(product.id);
-                              }
-                            }
-                          });
-                          _triggerSave();
-                        },
-                      );
-                    },
-                  ),
+                  child: _selectedLocationId == null
+                      ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.location_on_outlined, size: 64, color: Colors.grey),
+                              SizedBox(height: 16),
+                              Text(
+                                'Please select a location to start',
+                                style: TextStyle(fontSize: 16, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.separated(
+                          itemCount: _filteredProducts.length,
+                          separatorBuilder: (context, index) => const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final product = _filteredProducts[index];
+                            final isChecked = _checkedItems.contains(product.id);
+                            final qty = _actualQuantities[product.id];
+                            
+                            return StockOpnameTile(
+                              key: ValueKey(product.id),
+                              product: product,
+                              isChecked: isChecked,
+                              initialQty: qty,
+                              onCheckChanged: (val) {
+                                setState(() {
+                                  if (val == true) {
+                                    _checkedItems.add(product.id);
+                                  } else {
+                                    _checkedItems.remove(product.id);
+                                  }
+                                });
+                                _triggerSave();
+                              },
+                              onQtyChanged: (val) {
+                                setState(() {
+                                  if (val == null) {
+                                    _actualQuantities.remove(product.id);
+                                  } else {
+                                    _actualQuantities[product.id] = val;
+                                    if (val > 0) {
+                                      _checkedItems.add(product.id);
+                                    }
+                                  }
+                                });
+                                _triggerSave();
+                              },
+                            );
+                          },
+                        ),
                 ),
               ],
             ),
