@@ -28,7 +28,7 @@ class StockCardReport extends Page implements HasForms, HasTable
     use InteractsWithTable;
     use \App\Traits\HasStandardPageActions;
 
-    protected static string|\BackedEnum|null $navigationGroup = 'Reports';
+    protected static string|\UnitEnum|null $navigationGroup = 'Reports';
     protected static ?int $navigationSort = 1;
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
