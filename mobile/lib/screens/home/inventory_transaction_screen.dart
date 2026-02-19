@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../models/product.dart';
 import '../../services/inventory_service.dart';
 import '../../services/product_service.dart';
-import '../../theme/app_theme.dart';
 import '../../widgets/product_thumbnail.dart';
 
 class InventoryTransactionScreen extends StatefulWidget {
@@ -139,7 +138,7 @@ class _InventoryTransactionScreenState extends State<InventoryTransactionScreen>
                       children: [
                         DropdownButtonFormField<int>(
                           decoration: const InputDecoration(labelText: 'Store / Location'),
-                          value: _selectedLocationId,
+                          initialValue: _selectedLocationId,
                           items: _locations.map((l) => DropdownMenuItem(value: l.id, child: Text(l.name))).toList(),
                           onChanged: _transactionItems.isEmpty ? (id) => setState(() => _selectedLocationId = id) : null,
                           hint: const Text('Select Location'),
@@ -155,7 +154,7 @@ class _InventoryTransactionScreenState extends State<InventoryTransactionScreen>
                         const SizedBox(height: 16),
                         DropdownButtonFormField<Product>(
                           decoration: const InputDecoration(labelText: 'Product'),
-                          value: _selectedProduct,
+                          initialValue: _selectedProduct,
                           items: _products.map((p) => DropdownMenuItem(
                             value: p, 
                             child: Row(

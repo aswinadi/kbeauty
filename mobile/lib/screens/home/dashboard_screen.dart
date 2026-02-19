@@ -5,6 +5,9 @@ import 'product_browser_screen.dart';
 import 'stock_opname_screen.dart';
 import 'inventory_transaction_screen.dart';
 import 'stock_movement_screen.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import '../../config/app_config.dart';
+import '../../utils/responsive.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -16,12 +19,27 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final _inventoryService = InventoryService();
   Map<String, dynamic> _stats = {};
+  String _appVersion = '';
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadStats();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    await Future.wait([
+      _loadStats(),
+      _loadVersion(),
+    ]);
+  }
+
+  Future<void> _loadVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      _appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
+    });
   }
 
   Future<void> _loadStats() async {
@@ -34,6 +52,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('K-Beauty House', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -74,9 +97,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
+                crossAxisCount: Responsive.isTablet(context) 
+                  ? (Responsive.isLandscape(context) ? 5 : 4) 
+                  : 2,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
+                childAspectRatio: Responsive.isTablet(context) ? 1.2 : 1.1,
                 children: [
                   _buildActionCard('Catalog', Icons.grid_view, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductBrowserScreen()));
@@ -95,6 +121,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   }),
                 ],
               ),
+              const SizedBox(height: 48),
+              Center(
+                child: Column(
+                  children: [
+                    Text(
+                      'v$_appVersion (${AppConfig.env.toUpperCase()})',
+                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Server: ${AppConfig.apiBaseUrl}',
+                      style: TextStyle(color: Colors.grey[400], fontSize: 10),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -107,7 +150,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppTheme.primaryColor.withOpacity(0.1),
+          color: AppTheme.primaryColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -131,9 +174,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.solid(color: Colors.grey[100]!, width: 1),
+          border: Border.all(color: Colors.grey[100]!, width: 1),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
           ],
         ),
         child: Column(

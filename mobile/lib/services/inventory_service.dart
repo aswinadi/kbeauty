@@ -3,9 +3,10 @@ import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 import '../models/product.dart';
 import '../models/stock_opname.dart';
+import '../config/app_config.dart';
 
 class InventoryService {
-  static const String baseUrl = 'http://10.0.2.2:8000/api';
+  static const String baseUrl = AppConfig.apiBaseUrl;
   final _authService = AuthService();
 
   Future<List<Category>> getLocations() async {

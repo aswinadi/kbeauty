@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../models/product.dart';
 import '../../services/inventory_service.dart';
 import '../../services/product_service.dart';
-import '../../theme/app_theme.dart';
 import '../../widgets/product_thumbnail.dart';
 
 class StockMovementScreen extends StatefulWidget {
@@ -100,14 +99,14 @@ class _StockMovementScreenState extends State<StockMovementScreen> {
                 children: [
                   DropdownButtonFormField<int>(
                     decoration: const InputDecoration(labelText: 'From Location'),
-                    value: _fromLocationId,
+                    initialValue: _fromLocationId,
                     items: _locations.map((l) => DropdownMenuItem(value: l.id, child: Text(l.name))).toList(),
                     onChanged: (id) => setState(() => _fromLocationId = id),
                   ),
                   const SizedBox(height: 24),
                   DropdownButtonFormField<int>(
                     decoration: const InputDecoration(labelText: 'To Location'),
-                    value: _toLocationId,
+                    initialValue: _toLocationId,
                     items: _locations.map((l) => DropdownMenuItem(value: l.id, child: Text(l.name))).toList(),
                     onChanged: (id) => setState(() => _toLocationId = id),
                   ),
@@ -116,7 +115,7 @@ class _StockMovementScreenState extends State<StockMovementScreen> {
                   const SizedBox(height: 32),
                   DropdownButtonFormField<Product>(
                     decoration: const InputDecoration(labelText: 'Product'),
-                    value: _selectedProduct,
+                    initialValue: _selectedProduct,
                     items: _products.map((p) => DropdownMenuItem(
                       value: p, 
                       child: Row(

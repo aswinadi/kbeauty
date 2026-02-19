@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../config/app_config.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/user.dart';
 
 class AuthService {
-  // Use 10.0.2.2 for Android Emulator to access localhost
-  static const String baseUrl = 'http://10.0.2.2:8000/api';
+  static const String baseUrl = AppConfig.apiBaseUrl;
   final _storage = const FlutterSecureStorage();
 
   Future<User?> login(String username, String password) async {

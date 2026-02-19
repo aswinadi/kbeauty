@@ -95,7 +95,7 @@ class _StockOpnameScreenState extends State<StockOpnameScreen> {
                   padding: const EdgeInsets.all(16.0),
                   child: DropdownButtonFormField<int>(
                     decoration: const InputDecoration(labelText: 'Location'),
-                    value: _selectedLocationId,
+                    initialValue: _selectedLocationId,
                     items: _locations.map((l) {
                       return DropdownMenuItem(value: l.id, child: Text(l.name));
                     }).toList(),

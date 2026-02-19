@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 import '../models/product.dart';
+import '../config/app_config.dart';
 
 class ProductService {
-  static const String baseUrl = 'http://10.0.2.2:8000/api';
+  static const String baseUrl = AppConfig.apiBaseUrl;
   final _authService = AuthService();
 
   Future<List<Product>> getProducts({int? categoryId, String? search}) async {

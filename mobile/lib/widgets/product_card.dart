@@ -31,7 +31,7 @@ class ProductCard extends StatelessWidget {
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.05),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.05),
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                 ),
                 child: product.imageUrl != null && product.imageUrl!.isNotEmpty
@@ -55,7 +55,7 @@ class ProductCard extends StatelessWidget {
                   Text(
                     product.categoryName ?? 'Uncategorized',
                     style: TextStyle(
-                      color: AppTheme.accentColor.withOpacity(0.6),
+                      color: AppTheme.accentColor.withValues(alpha: 0.6),
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                     ),
@@ -84,7 +84,7 @@ class ProductCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppTheme.secondaryColor.withOpacity(0.3),
+                          color: AppTheme.secondaryColor.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
