@@ -101,30 +101,14 @@ class StockCardReport extends Page implements HasForms, HasTable
         return $table
             ->query(function () {
                 $subquery = \Illuminate\Support\Facades\DB::table('inventory_movements')
-                    ->join('products', 'inventory_movements.product_id', '=', 'products.id')
-                    ->join('locations', 'inventory_movements.to_location_id', '=', 'locations.id')
-                    ->select([
-                        \Illuminate\Support\Facades\DB::raw("CONCAT(inventory_movements.product_id, '-', inventory_movements.to_location_id) as id"),
-                        'inventory_movements.product_id',
-                        'inventory_movements.to_location_id as location_id',
-                        'products.name as product_name',
-                        'locations.name as location_name'
-                    ])
-                    ->whereNotNull('inventory_movements.product_id')
-                    ->whereNotNull('inventory_movements.to_location_id')
+                    ->select('product_id', 'to_location_id as location_id')
+                    ->whereNotNull('product_id')
+                    ->whereNotNull('to_location_id')
                     ->union(
                         \Illuminate\Support\Facades\DB::table('inventory_movements')
-                            ->join('products', 'inventory_movements.product_id', '=', 'products.id')
-                            ->join('locations', 'inventory_movements.from_location_id', '=', 'locations.id')
-                            ->select([
-                                \Illuminate\Support\Facades\DB::raw("CONCAT(inventory_movements.product_id, '-', inventory_movements.from_location_id) as id"),
-                                'inventory_movements.product_id',
-                                'inventory_movements.from_location_id as location_id',
-                                'products.name as product_name',
-                                'locations.name as location_name'
-                            ])
-                            ->whereNotNull('inventory_movements.product_id')
-                            ->whereNotNull('inventory_movements.from_location_id')
+                            ->select('product_id', 'from_location_id as location_id')
+                            ->whereNotNull('product_id')
+                            ->whereNotNull('from_location_id')
                     );
 
                 $model = new \App\Models\InventoryMovement();
@@ -133,12 +117,14 @@ class StockCardReport extends Page implements HasForms, HasTable
 
                 return $model->newQuery()
                     ->fromSub($subquery, 'combinations')
+                    ->join('products', 'combinations.product_id', '=', 'products.id')
+                    ->join('locations', 'combinations.location_id', '=', 'locations.id')
                     ->select([
-                        'combinations.id',
+                        \Illuminate\Support\Facades\DB::raw("CONCAT(combinations.product_id, '-', combinations.location_id) as id"),
                         'combinations.product_id',
                         'combinations.location_id',
-                        'combinations.product_name',
-                        'combinations.location_name',
+                        'products.name as product_name',
+                        'locations.name as location_name',
                     ])
                     ->when($this->product_id, fn($q) => $q->where('combinations.product_id', $this->product_id))
                     ->when($this->location_id, fn($q) => $q->where('combinations.location_id', $this->location_id))
@@ -264,30 +250,14 @@ class StockCardReport extends Page implements HasForms, HasTable
     protected function getReportData(): array
     {
         $subquery = \Illuminate\Support\Facades\DB::table('inventory_movements')
-            ->join('products', 'inventory_movements.product_id', '=', 'products.id')
-            ->join('locations', 'inventory_movements.to_location_id', '=', 'locations.id')
-            ->select([
-                \Illuminate\Support\Facades\DB::raw("CONCAT(inventory_movements.product_id, '-', inventory_movements.to_location_id) as id"),
-                'inventory_movements.product_id',
-                'inventory_movements.to_location_id as location_id',
-                'products.name as product_name',
-                'locations.name as location_name'
-            ])
-            ->whereNotNull('inventory_movements.product_id')
-            ->whereNotNull('inventory_movements.to_location_id')
+            ->select('product_id', 'to_location_id as location_id')
+            ->whereNotNull('product_id')
+            ->whereNotNull('to_location_id')
             ->union(
                 \Illuminate\Support\Facades\DB::table('inventory_movements')
-                    ->join('products', 'inventory_movements.product_id', '=', 'products.id')
-                    ->join('locations', 'inventory_movements.from_location_id', '=', 'locations.id')
-                    ->select([
-                        \Illuminate\Support\Facades\DB::raw("CONCAT(inventory_movements.product_id, '-', inventory_movements.from_location_id) as id"),
-                        'inventory_movements.product_id',
-                        'inventory_movements.from_location_id as location_id',
-                        'products.name as product_name',
-                        'locations.name as location_name'
-                    ])
-                    ->whereNotNull('inventory_movements.product_id')
-                    ->whereNotNull('inventory_movements.from_location_id')
+                    ->select('product_id', 'from_location_id as location_id')
+                    ->whereNotNull('product_id')
+                    ->whereNotNull('from_location_id')
             );
 
         $model = new \App\Models\InventoryMovement();
@@ -296,12 +266,14 @@ class StockCardReport extends Page implements HasForms, HasTable
 
         $query = $model->newQuery()
             ->fromSub($subquery, 'combinations')
+            ->join('products', 'combinations.product_id', '=', 'products.id')
+            ->join('locations', 'combinations.location_id', '=', 'locations.id')
             ->select([
-                'combinations.id',
+                \Illuminate\Support\Facades\DB::raw("CONCAT(combinations.product_id, '-', combinations.location_id) as id"),
                 'combinations.product_id',
                 'combinations.location_id',
-                'combinations.product_name',
-                'combinations.location_name'
+                'products.name as product_name',
+                'locations.name as location_name'
             ]);
 
         if ($this->product_id) {
