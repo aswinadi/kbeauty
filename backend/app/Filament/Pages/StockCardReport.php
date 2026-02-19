@@ -69,21 +69,17 @@ class StockCardReport extends Page implements HasForms, HasTable
                             ->options(Product::all()->pluck('name', 'id')->prepend('All Products', ''))
                             ->default('')
                             ->searchable()
-                            ->preload()
-                            ->reactive(),
+                            ->preload(),
                         Select::make('location_id')
                             ->label('Location')
                             ->options(Location::all()->pluck('name', 'id')->prepend('All Locations', ''))
-                            ->default('')
-                            ->reactive(),
+                            ->default(''),
                         DatePicker::make('start_date')
                             ->label('Start Date')
-                            ->required()
-                            ->reactive(),
+                            ->required(),
                         DatePicker::make('end_date')
                             ->label('End Date')
-                            ->required()
-                            ->reactive(),
+                            ->required(),
                     ])
                     ->columns(4),
                 Actions::make([
@@ -92,7 +88,7 @@ class StockCardReport extends Page implements HasForms, HasTable
                         ->action(function () {
                             $data = $this->form->getState();
                             $this->location_id = $data['location_id'] ?: null;
-                            $this->product_id = $data['product_id'];
+                            $this->product_id = $data['product_id'] ?: null;
                             $this->start_date = $data['start_date'];
                             $this->end_date = $data['end_date'];
                         }),
