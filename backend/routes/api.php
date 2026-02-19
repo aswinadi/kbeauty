@@ -20,4 +20,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/inventory/move', [\App\Http\Controllers\Api\StockOpnameController::class, 'move']);
     Route::post('/inventory/transfer', [\App\Http\Controllers\Api\StockOpnameController::class, 'transfer']);
     Route::post('/inventory/bulk-transaction', [\App\Http\Controllers\Api\StockOpnameController::class, 'bulkTransaction']);
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
 });
