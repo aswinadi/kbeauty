@@ -11,8 +11,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/products', [\App\Http\Controllers\Api\ProductController::class, 'index']);
+    Route::post('/products/{product}', [\App\Http\Controllers\Api\ProductController::class, 'update']);
     Route::get('/products/{product}/balance', [\App\Http\Controllers\Api\ProductController::class, 'stockBalance']);
     Route::get('/categories', [\App\Http\Controllers\Api\ProductController::class, 'categories']);
+    Route::get('/units', [\App\Http\Controllers\Api\ProductController::class, 'units']);
 
     Route::get('/locations', [\App\Http\Controllers\Api\StockOpnameController::class, 'locations']);
     Route::get('/stats', [\App\Http\Controllers\Api\StockOpnameController::class, 'stats']);

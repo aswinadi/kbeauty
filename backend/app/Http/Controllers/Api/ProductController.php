@@ -31,7 +31,9 @@ class ProductController extends Controller
                 'name' => $product->name,
                 'sku' => $product->sku,
                 'price' => $product->price,
+                'unit_id' => $product->unit_id,
                 'unit' => $product->unit?->name ?? '-',
+                'category_id' => $product->category_id,
                 'category_name' => $product->category?->name,
                 'image_url' => $product->getFirstMediaUrl('products') ?: null,
             ];
@@ -40,9 +42,48 @@ class ProductController extends Controller
         return response()->json($products);
     }
 
+    public function update(Request $request, Product $product)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'sku' => 'required|string|max:255|unique:products,sku,' . $product->id,
+            'price' => 'required|numeric',
+            'category_id' => 'required|exists:categories,id',
+            'unit_id' => 'required|exists:units,id',
+            'image' => 'nullable|image|max:2048',
+        ]);
+
+        $product->update($request->only(['name', 'sku', 'price', 'category_id', 'unit_id']));
+
+        if ($request->hasFile('image')) {
+            $product->clearMediaCollection('products');
+            $product->addMediaFromRequest('image')->toMediaCollection('products');
+        }
+
+        return response()->json([
+            'message' => 'Product updated successfully',
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'sku' => $product->sku,
+                'price' => $product->price,
+                'unit_id' => $product->unit_id,
+                'unit' => $product->unit?->name ?? '-',
+                'category_id' => $product->category_id,
+                'category_name' => $product->category?->name,
+                'image_url' => $product->getFirstMediaUrl('products') ?: null,
+            ],
+        ]);
+    }
+
     public function categories()
     {
         return response()->json(Category::all());
+    }
+
+    public function units()
+    {
+        return response()->json(\App\Models\Unit::all());
     }
 
     public function stockBalance(Product $product)

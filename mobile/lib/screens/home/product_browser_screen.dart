@@ -3,6 +3,7 @@ import '../../models/product.dart';
 import '../../services/product_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/product_card.dart';
+import 'product_detail_screen.dart';
 
 class ProductBrowserScreen extends StatefulWidget {
   const ProductBrowserScreen({super.key});
@@ -134,8 +135,16 @@ class _ProductBrowserScreenState extends State<ProductBrowserScreen> {
                                 ],
                               ),
                               child: InkWell(
-                                onTap: () {
-                                  // TODO: Show Product Details
+                                onTap: () async {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => ProductDetailScreen(product: product),
+                                    ),
+                                  );
+                                  if (result == true) {
+                                    _loadInitialData();
+                                  }
                                 },
                                 borderRadius: BorderRadius.circular(12),
                                 child: Padding(
