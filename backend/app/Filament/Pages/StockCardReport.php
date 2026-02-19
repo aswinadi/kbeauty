@@ -112,6 +112,7 @@ class StockCardReport extends Page implements HasForms, HasTable
                     ])
                     ->whereNotNull('inventory_movements.product_id')
                     ->whereNotNull('inventory_movements.to_location_id')
+                    ->distinct()
                     ->union(
                         \App\Models\InventoryMovement::query()
                             ->join('products', 'inventory_movements.product_id', '=', 'products.id')
@@ -125,6 +126,7 @@ class StockCardReport extends Page implements HasForms, HasTable
                             ])
                             ->whereNotNull('inventory_movements.product_id')
                             ->whereNotNull('inventory_movements.from_location_id')
+                            ->distinct()
                     );
 
                 $model = new \App\Models\InventoryMovement();
@@ -142,6 +144,7 @@ class StockCardReport extends Page implements HasForms, HasTable
                     ])
                     ->when($this->product_id, fn($q) => $q->where('combinations.product_id', $this->product_id))
                     ->when($this->location_id, fn($q) => $q->where('combinations.location_id', $this->location_id))
+                    ->distinct()
                     ->reorder()
                     ->orderBy('product_name');
             })
@@ -275,6 +278,7 @@ class StockCardReport extends Page implements HasForms, HasTable
             ])
             ->whereNotNull('inventory_movements.product_id')
             ->whereNotNull('inventory_movements.to_location_id')
+            ->distinct()
             ->union(
                 \App\Models\InventoryMovement::query()
                     ->join('products', 'inventory_movements.product_id', '=', 'products.id')
@@ -288,6 +292,7 @@ class StockCardReport extends Page implements HasForms, HasTable
                     ])
                     ->whereNotNull('inventory_movements.product_id')
                     ->whereNotNull('inventory_movements.from_location_id')
+                    ->distinct()
             );
         $model = new \App\Models\InventoryMovement();
         $model->setTable('combinations');
