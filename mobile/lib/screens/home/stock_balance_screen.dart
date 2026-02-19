@@ -75,13 +75,27 @@ class _StockBalanceScreenState extends State<StockBalanceScreen> {
                     products: _products,
                     selectedProduct: _selectedProduct,
                     onChanged: (p) {
-                      if (p != null) _fetchBalance(p);
+                      setState(() {
+                        _selectedProduct = p;
+                        _balanceData = null; // Reset data when product changes
+                      });
                     },
                   ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: (_selectedProduct == null || _isFetchingBalance) 
+                          ? null 
+                          : () => _fetchBalance(_selectedProduct!),
+                      icon: _isFetchingBalance 
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : const Icon(Icons.search),
+                      label: const Text('CHECK STOCK'),
+                    ),
+                  ),
                   const SizedBox(height: 32),
-                  if (_isFetchingBalance)
-                    const Center(child: CircularProgressIndicator())
-                  else if (_balanceData != null) ...[
+                  if (_balanceData != null) ...[
                     Text(
                       'Stock per Location',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -95,16 +109,30 @@ class _StockBalanceScreenState extends State<StockBalanceScreen> {
                     Expanded(
                       child: _buildBalanceList(),
                     ),
-                  ] else if (_selectedProduct == null)
+                  ] else if (_selectedProduct != null && !_isFetchingBalance && _balanceData == null)
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.info_outline, size: 64, color: Colors.grey[300]),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Select product and tap "Check Stock"',
+                            style: TextStyle(color: Colors.grey[500]),
+                          ),
+                        ],
+                      ),
+                    )
+                  else if (_selectedProduct == null)
                     Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[300]),
                           const SizedBox(height: 16),
-                          Text(
-                            'Select a product to see availability',
-                            style: TextStyle(color: Colors.grey[500]),
+                          const Text(
+                            'Please select a product first',
+                            style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
                           ),
                         ],
                       ),
