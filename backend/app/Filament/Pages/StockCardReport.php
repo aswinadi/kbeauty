@@ -26,7 +26,6 @@ class StockCardReport extends Page implements HasForms, HasTable
 {
     use InteractsWithForms;
     use InteractsWithTable;
-    use \App\Traits\HasStandardPageActions;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Reports';
     protected static ?int $navigationSort = 1;
@@ -185,10 +184,4 @@ class StockCardReport extends Page implements HasForms, HasTable
         return 0;
     }
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            $this->getBackAction(),
-        ];
-    }
 }
