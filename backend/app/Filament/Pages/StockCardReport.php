@@ -142,12 +142,13 @@ class StockCardReport extends Page implements HasForms, HasTable
             ->columns([
                 TextColumn::make('product_name')
                     ->label('Product')
-                    ->searchable()
-                    ->sortable()
+                    ->searchable(query: fn($query, $search) => $query->where('products.name', 'like', "%{$search}%"))
+                    ->sortable(query: fn($query, $direction) => $query->orderBy('products.name', $direction))
                     ->weight('bold'),
                 TextColumn::make('location_name')
                     ->label('Location')
-                    ->sortable(),
+                    ->searchable(query: fn($query, $search) => $query->where('locations.name', 'like', "%{$search}%"))
+                    ->sortable(query: fn($query, $direction) => $query->orderBy('locations.name', $direction)),
                 TextColumn::make('initial')
                     ->label('Initial')
                     ->alignRight()
