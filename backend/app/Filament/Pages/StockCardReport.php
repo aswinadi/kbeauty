@@ -4,21 +4,24 @@ namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
 
-use \Filament\Forms\Components\Actions;
-use \Filament\Forms\Components\Actions\Action;
+use \Filament\Actions\Action;
 use \Filament\Forms\Components\DatePicker;
-use \Filament\Forms\Components\Section;
 use \Filament\Forms\Components\Select;
 use \Filament\Forms\Concerns\InteractsWithForms;
 use \Filament\Forms\Contracts\HasForms;
-use \Filament\Forms\Form;
+use \Filament\Schemas\Components\Actions;
+use \Filament\Schemas\Components\Section;
+use \Filament\Schemas\Schema;
 use \Illuminate\Contracts\View\View;
 use \Livewire\Attributes\Url;
+use \UnitEnum;
 
 class StockCardReport extends Page implements HasForms
 {
     use InteractsWithForms;
 
+    protected static string|\UnitEnum|null $navigationGroup = 'Reports';
+    protected static ?int $navigationSort = 1;
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
     protected string $view = 'filament.pages.stock-card-report';
@@ -45,12 +48,12 @@ class StockCardReport extends Page implements HasForms
         ]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make()
-                    ->schema([
+                    ->components([
                         Select::make('location_id')
                             ->label('Location')
                             ->options(\App\Models\Location::all()->pluck('name', 'id'))
