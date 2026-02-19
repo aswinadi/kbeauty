@@ -18,7 +18,7 @@ class LocationResource extends Resource
 {
     protected static ?string $model = Location::class;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Master Data';
+    protected static ?string $navigationGroup = 'Master Data';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
