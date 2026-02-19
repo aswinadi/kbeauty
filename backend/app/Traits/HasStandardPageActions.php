@@ -8,14 +8,24 @@ trait HasStandardPageActions
 {
     protected function getRedirectUrl(): string
     {
-        return $this->getResource()::getUrl('index');
+        if (method_exists($this, 'getResource')) {
+            return $this->getResource()::getUrl('index');
+        }
+
+        return '/admin';
     }
 
     protected function getBackAction(): Action
     {
+        $url = '/admin';
+
+        if (method_exists($this, 'getResource')) {
+            $url = $this->getResource()::getUrl('index');
+        }
+
         return Action::make('back')
             ->label('Back')
             ->color('gray')
-            ->url($this->getResource()::getUrl('index'));
+            ->url($url);
     }
 }
