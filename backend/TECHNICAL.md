@@ -51,3 +51,9 @@ Modernized the report generator to use native Filament components for a "premium
     - **Stock**: Real-time balance as of the end date (Initial + In - Out).
 - **Summary Footer**: Added a "Total" row at the bottom of the table to summarize quantities across all filtered locations.
 - **Reactive UI**: The table refreshes automatically when filters are applied.
+#### Stock Card Report Enhancements
+- Replaced database-level summarizers with PHP-based calculations to ensure stability for virtual state columns.
+- Broadened type hints in `calculateStock` to handle both Eloquent models and standard objects returned by Filament's summarizer query.
+- Added "All Products" filter support by conditionally applying product scoping to inventory movement queries.
+- Integrated `maatwebsite/excel` for .xlsx exports.
+- Integrated `barryvdh/laravel-dompdf` for PDF generation using custom Blade templates.
