@@ -111,7 +111,11 @@ class StockCardReport extends Page implements HasForms, HasTable
                             ->whereNotNull('from_location_id')
                     );
 
-                return \App\Models\InventoryMovement::query()
+                $model = new \App\Models\InventoryMovement();
+                $model->setTable('combinations');
+                $model->setKeyName('id');
+
+                return $model->newQuery()
                     ->fromSub($subquery, 'combinations')
                     ->join('products', 'combinations.product_id', '=', 'products.id')
                     ->join('locations', 'combinations.location_id', '=', 'locations.id')
@@ -254,16 +258,20 @@ class StockCardReport extends Page implements HasForms, HasTable
                     ->whereNotNull('product_id')
                     ->whereNotNull('from_location_id')
             );
-        $query = \App\Models\InventoryMovement::query()
+        $model = new \App\Models\InventoryMovement();
+        $model->setTable('combinations');
+        $model->setKeyName('id');
+
+        $query = $model->newQuery()
             ->fromSub($subquery, 'combinations')
             ->join('products', 'combinations.product_id', '=', 'products.id')
             ->join('locations', 'combinations.location_id', '=', 'locations.id')
-            ->select(
+            ->select([
                 'combinations.product_id',
                 'combinations.location_id',
                 'products.name as product_name',
                 'locations.name as location_name'
-            )
+            ])
             ->distinct();
 
         if ($this->product_id) {
