@@ -31,7 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->login(\App\Filament\Pages\Auth\Login::class)
             ->brandName('K-Beauty House')
             ->brandLogo(asset('images/logo.jpg'))
-            ->brandLogoHeight('13.5rem')
+            ->brandLogoHeight('4.5rem')
             ->favicon(asset('images/logo.jpg'))
             ->colors([
                 'primary' => Color::Pink,
