@@ -32,30 +32,31 @@
                             </td>
                         </tr>
                         @forelse ($movements as $movement)
-                            $in = 0;
-                            $out = 0;
+                            @php
+                                $in = 0;
+                                $out = 0;
 
-                            if ($this->location_id) {
-                            // Specific Location View
-                            if ($movement->to_location_id == $this->location_id) {
-                            $in = $movement->qty;
-                            }
-                            if ($movement->from_location_id == $this->location_id) {
-                            $out = $movement->qty;
-                            }
-                            } else {
-                            // Global View (All Locations)
-                            // Only count strict In/Out. Transfers are neutral.
-                            if ($movement->to_location_id && !$movement->from_location_id) {
-                            $in = $movement->qty;
-                            }
-                            if ($movement->from_location_id && !$movement->to_location_id) {
-                            $out = $movement->qty;
-                            }
-                            // Transfers (both set) result in 0 change to global balance
-                            }
+                                if ($this->location_id) {
+                                    // Specific Location View
+                                    if ($movement->to_location_id == $this->location_id) {
+                                        $in = $movement->qty;
+                                    }
+                                    if ($movement->from_location_id == $this->location_id) {
+                                        $out = $movement->qty;
+                                    }
+                                } else {
+                                    // Global View (All Locations)
+                                    // Only count strict In/Out. Transfers are neutral.
+                                    if ($movement->to_location_id && !$movement->from_location_id) {
+                                        $in = $movement->qty;
+                                    }
+                                    if ($movement->from_location_id && !$movement->to_location_id) {
+                                        $out = $movement->qty;
+                                    }
+                                    // Transfers (both set) result in 0 change to global balance
+                                }
 
-                            $balance = $balance + $in - $out;
+                                $balance = $balance + $in - $out;
                             @endphp
                             <tr
                                 class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
