@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\StockOpnames\Pages;
 
+use App\Filament\Resources\StockOpnames\StockOpnameResource;
 use App\Traits\HasStandardPageActions;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;

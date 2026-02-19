@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\InventoryMovements\Pages;
 
+use App\Filament\Resources\InventoryMovements\InventoryMovementResource;
 use App\Traits\HasStandardPageActions;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;

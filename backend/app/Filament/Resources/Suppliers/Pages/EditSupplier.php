@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Suppliers\Pages;
 
+use App\Filament\Resources\Suppliers\SupplierResource;
 use App\Traits\HasStandardPageActions;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;

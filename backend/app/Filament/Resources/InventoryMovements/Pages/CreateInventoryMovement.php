@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\InventoryMovements\Pages;
 
+use App\Filament\Resources\InventoryMovements\InventoryMovementResource;
 use App\Traits\HasStandardPageActions;
 use Filament\Resources\Pages\CreateRecord;
 
