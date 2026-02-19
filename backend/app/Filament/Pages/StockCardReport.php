@@ -111,7 +111,7 @@ class StockCardReport extends Page implements HasForms, HasTable
                             ->whereNotNull('from_location_id')
                     );
 
-                return \Illuminate\Support\Facades\DB::table('combinations')
+                return \App\Models\InventoryMovement::query()
                     ->fromSub($subquery, 'combinations')
                     ->join('products', 'combinations.product_id', '=', 'products.id')
                     ->join('locations', 'combinations.location_id', '=', 'locations.id')
