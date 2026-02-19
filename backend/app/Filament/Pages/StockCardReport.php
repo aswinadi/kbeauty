@@ -111,7 +111,7 @@ class StockCardReport extends Page implements HasForms, HasTable
                             ->whereNotNull('from_location_id')
                     );
 
-                $query = \App\Models\InventoryMovement::query() // Use any model for the builder, we'll overwrite it
+                return \Illuminate\Support\Facades\DB::table('combinations')
                     ->fromSub($subquery, 'combinations')
                     ->join('products', 'combinations.product_id', '=', 'products.id')
                     ->join('locations', 'combinations.location_id', '=', 'locations.id')
@@ -121,17 +121,11 @@ class StockCardReport extends Page implements HasForms, HasTable
                         'combinations.location_id',
                         'products.name as product_name',
                         'locations.name as location_name',
-                    ]);
-
-                if ($this->product_id) {
-                    $query->where('combinations.product_id', $this->product_id);
-                }
-
-                if ($this->location_id) {
-                    $query->where('combinations.location_id', $this->location_id);
-                }
-
-                return $query->reorder()->orderBy('product_name');
+                    ])
+                    ->when($this->product_id, fn($q) => $q->where('combinations.product_id', $this->product_id))
+                    ->when($this->location_id, fn($q) => $q->where('combinations.location_id', $this->location_id))
+                    ->reorder()
+                    ->orderBy('product_name');
             })
             ->columns([
                 TextColumn::make('product_name')
