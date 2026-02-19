@@ -101,13 +101,19 @@ class StockCardReport extends Page implements HasForms, HasTable
         return $table
             ->query(function () {
                 $subquery = \Illuminate\Support\Facades\DB::table('inventory_movements')
-                    ->select('product_id', 'to_location_id as location_id')
-                    ->whereNotNull('product_id')
+                    ->select([
+                        \Illuminate\Support\Facades\DB::raw("CONCAT(product_id, '-', to_location_id) as id"),
+                        'product_id',
+                        'to_location_id as location_id'
+                    ])
                     ->whereNotNull('to_location_id')
                     ->union(
                         \Illuminate\Support\Facades\DB::table('inventory_movements')
-                            ->select('product_id', 'from_location_id as location_id')
-                            ->whereNotNull('product_id')
+                            ->select([
+                                \Illuminate\Support\Facades\DB::raw("CONCAT(product_id, '-', from_location_id) as id"),
+                                'product_id',
+                                'from_location_id as location_id'
+                            ])
                             ->whereNotNull('from_location_id')
                     );
 
@@ -120,16 +126,14 @@ class StockCardReport extends Page implements HasForms, HasTable
                     ->join('products', 'stock_report.product_id', '=', 'products.id')
                     ->join('locations', 'stock_report.location_id', '=', 'locations.id')
                     ->select([
-                        \Illuminate\Support\Facades\DB::raw("CONCAT(stock_report.product_id, '-', stock_report.location_id) as id"),
+                        'stock_report.id',
                         'stock_report.product_id',
                         'stock_report.location_id',
                         'products.name as product_name',
                         'locations.name as location_name',
                     ])
                     ->when($this->product_id, fn($q) => $q->where('stock_report.product_id', $this->product_id))
-                    ->when($this->location_id, fn($q) => $q->where('stock_report.location_id', $this->location_id))
-                    ->groupBy('stock_report.product_id', 'stock_report.location_id', 'products.name', 'locations.name')
-                    ->distinct();
+                    ->when($this->location_id, fn($q) => $q->where('stock_report.location_id', $this->location_id));
             })
             ->columns([
                 TextColumn::make('product_name')
@@ -227,13 +231,19 @@ class StockCardReport extends Page implements HasForms, HasTable
     protected function getReportData(): array
     {
         $subquery = \Illuminate\Support\Facades\DB::table('inventory_movements')
-            ->select('product_id', 'to_location_id as location_id')
-            ->whereNotNull('product_id')
+            ->select([
+                \Illuminate\Support\Facades\DB::raw("CONCAT(product_id, '-', to_location_id) as id"),
+                'product_id',
+                'to_location_id as location_id'
+            ])
             ->whereNotNull('to_location_id')
             ->union(
                 \Illuminate\Support\Facades\DB::table('inventory_movements')
-                    ->select('product_id', 'from_location_id as location_id')
-                    ->whereNotNull('product_id')
+                    ->select([
+                        \Illuminate\Support\Facades\DB::raw("CONCAT(product_id, '-', from_location_id) as id"),
+                        'product_id',
+                        'from_location_id as location_id'
+                    ])
                     ->whereNotNull('from_location_id')
             );
 
@@ -246,14 +256,12 @@ class StockCardReport extends Page implements HasForms, HasTable
             ->join('products', 'stock_report.product_id', '=', 'products.id')
             ->join('locations', 'stock_report.location_id', '=', 'locations.id')
             ->select([
-                \Illuminate\Support\Facades\DB::raw("CONCAT(stock_report.product_id, '-', stock_report.location_id) as id"),
+                'stock_report.id',
                 'stock_report.product_id',
                 'stock_report.location_id',
                 'products.name as product_name',
                 'locations.name as location_name',
-            ])
-            ->groupBy('stock_report.product_id', 'stock_report.location_id', 'products.name', 'locations.name')
-            ->distinct();
+            ]);
 
         if ($this->product_id) {
             $query->where('stock_report.product_id', $this->product_id);
