@@ -19,6 +19,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        \Filament\Tables\Columns\TextColumn::configureUsing(function (\Filament\Tables\Columns\TextColumn $column): void {
+            $column->timezone('Asia/Jakarta');
+        });
+
+        \Filament\Infolists\Components\TextEntry::configureUsing(function (\Filament\Infolists\Components\TextEntry $entry): void {
+            $entry->timezone('Asia/Jakarta');
+        });
     }
 }

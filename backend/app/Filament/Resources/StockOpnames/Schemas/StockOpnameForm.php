@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\StockOpnames\Schemas;
 
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Schemas\Schema;
 
 class StockOpnameForm
@@ -32,12 +34,33 @@ class StockOpnameForm
                             ->relationship('product', 'name')
                             ->required()
                             ->searchable()
-                            ->preload(),
-                        \Filament\Forms\Components\TextInput::make('system_qty')
-                            ->numeric()
-                            ->required()
-                            ->default(0)
-                            ->label('System Qty'),
+                            ->preload()
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, \Filament\Forms\Set $set, \Filament\Forms\Get $get) {
+                                if (!$state) {
+                                    $set('system_qty', 0);
+                                    $set('adjustment_qty', $get('actual_qty') ?? 0);
+                                    return;
+                                }
+
+                                $locationId = $get('../../location_id');
+                                if (!$locationId) {
+                                    return;
+                                }
+
+                                $stock = \App\Models\InventoryMovement::where('product_id', $state)
+                                    ->where('to_location_id', $locationId)
+                                    ->sum('qty') -
+                                    \App\Models\InventoryMovement::where('product_id', $state)
+                                        ->where('from_location_id', $locationId)
+                                        ->sum('qty');
+
+                                $systemQty = $stock ?? 0;
+                                $set('system_qty', $systemQty);
+                                $set('adjustment_qty', ($get('actual_qty') ?? 0) - $systemQty);
+                            }),
+                        \Filament\Forms\Components\Hidden::make('system_qty')
+                            ->default(0),
                         \Filament\Forms\Components\TextInput::make('actual_qty')
                             ->numeric()
                             ->required()
@@ -47,10 +70,8 @@ class StockOpnameForm
                                 fn($state, \Filament\Forms\Get $get, \Filament\Forms\Set $set) =>
                                 $set('adjustment_qty', $state - $get('system_qty'))
                             ),
-                        \Filament\Forms\Components\TextInput::make('adjustment_qty')
-                            ->numeric()
-                            ->readOnly()
-                            ->label('Adjustment'),
+                        \Filament\Forms\Components\Hidden::make('adjustment_qty')
+                            ->default(0),
                     ])
                     ->columns(4)
                     ->columnSpanFull(),

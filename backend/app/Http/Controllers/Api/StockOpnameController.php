@@ -105,7 +105,7 @@ class StockOpnameController extends Controller
             'items' => 'required|array',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.actual_qty' => 'required|numeric',
-            'items.*.system_qty' => 'required|numeric',
+            'items.*.system_qty' => 'nullable|numeric',
         ]);
 
         return DB::transaction(function () use ($request) {
@@ -116,25 +116,35 @@ class StockOpnameController extends Controller
             ]);
 
             foreach ($request->items as $item) {
+                // Calculate system_qty server-side
+                $systemQty = InventoryMovement::where('product_id', $item['product_id'])
+                    ->where('to_location_id', $request->location_id)
+                    ->sum('qty') -
+                    InventoryMovement::where('product_id', $item['product_id'])
+                        ->where('from_location_id', $request->location_id)
+                        ->sum('qty');
+
                 StockOpnameItem::create([
                     'stock_opname_id' => $stockOpname->id,
                     'product_id' => $item['product_id'],
-                    'system_qty' => $item['system_qty'],
+                    'system_qty' => $systemQty,
                     'actual_qty' => $item['actual_qty'],
-                    'adjustment_qty' => $item['actual_qty'] - $item['system_qty'],
+                    'adjustment_qty' => $item['actual_qty'] - $systemQty,
                 ]);
 
                 // Record Inventory Movement for the adjustment
-                InventoryMovement::create([
-                    'product_id' => $item['product_id'],
-                    'from_location_id' => $item['actual_qty'] < $item['system_qty'] ? $request->location_id : null,
-                    'to_location_id' => $item['actual_qty'] > $item['system_qty'] ? $request->location_id : null,
-                    'qty' => abs($item['actual_qty'] - $item['system_qty']),
-                    'type' => 'adjustment',
-                    'user_id' => auth()->id(),
-                    'reference_type' => StockOpname::class,
-                    'reference_id' => $stockOpname->id,
-                ]);
+                if ($item['actual_qty'] != $systemQty) {
+                    InventoryMovement::create([
+                        'product_id' => $item['product_id'],
+                        'from_location_id' => $item['actual_qty'] < $systemQty ? $request->location_id : null,
+                        'to_location_id' => $item['actual_qty'] > $systemQty ? $request->location_id : null,
+                        'qty' => abs($item['actual_qty'] - $systemQty),
+                        'type' => 'adjustment',
+                        'user_id' => auth()->id(),
+                        'reference_type' => StockOpname::class,
+                        'reference_id' => $stockOpname->id,
+                    ]);
+                }
             }
 
             return response()->json([
