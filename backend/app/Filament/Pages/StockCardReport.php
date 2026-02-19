@@ -115,25 +115,33 @@ class StockCardReport extends Page implements HasForms, HasTable
                     ->label('Initial')
                     ->alignRight()
                     ->state(fn(Location $record) => $this->calculateStock($record, 'initial'))
-                    ->summarize(\Filament\Tables\Columns\Summarizers\Sum::make()->label('Total')),
+                    ->summarize(\Filament\Tables\Columns\Summarizers\Summarizer::make()
+                        ->label('Total')
+                        ->using(fn($query) => $query->get()->sum(fn($record) => $this->calculateStock($record, 'initial')))),
                 TextColumn::make('in')
                     ->label('In')
                     ->alignRight()
                     ->color('success')
                     ->state(fn(Location $record) => $this->calculateStock($record, 'in'))
-                    ->summarize(\Filament\Tables\Columns\Summarizers\Sum::make()->label('')),
+                    ->summarize(\Filament\Tables\Columns\Summarizers\Summarizer::make()
+                        ->label('')
+                        ->using(fn($query) => $query->get()->sum(fn($record) => $this->calculateStock($record, 'in')))),
                 TextColumn::make('out')
                     ->label('Out')
                     ->alignRight()
                     ->color('danger')
                     ->state(fn(Location $record) => $this->calculateStock($record, 'out'))
-                    ->summarize(\Filament\Tables\Columns\Summarizers\Sum::make()->label('')),
+                    ->summarize(\Filament\Tables\Columns\Summarizers\Summarizer::make()
+                        ->label('')
+                        ->using(fn($query) => $query->get()->sum(fn($record) => $this->calculateStock($record, 'out')))),
                 TextColumn::make('stock')
                     ->label('Stock')
                     ->alignRight()
                     ->weight('bold')
                     ->state(fn(Location $record) => $this->calculateStock($record, 'stock'))
-                    ->summarize(\Filament\Tables\Columns\Summarizers\Sum::make()->label('')),
+                    ->summarize(\Filament\Tables\Columns\Summarizers\Summarizer::make()
+                        ->label('')
+                        ->using(fn($query) => $query->get()->sum(fn($record) => $this->calculateStock($record, 'stock')))),
             ])
             ->emptyStateHeading('No stock data to display')
             ->emptyStateDescription($this->product_id ? 'Try adjusting your filters.' : 'Please select a product first.')
