@@ -3,31 +3,39 @@
 namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
+use Filament\Tables\Table;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Url;
+use App\Models\Location;
+use App\Models\InventoryMovement;
+use App\Models\Product;
+use Carbon\Carbon;
+use Filament\Actions\Action as HeaderAction;
 
-use \Filament\Actions\Action;
-use \Filament\Forms\Components\DatePicker;
-use \Filament\Forms\Components\Select;
-use \Filament\Forms\Concerns\InteractsWithForms;
-use \Filament\Forms\Contracts\HasForms;
-use \Filament\Schemas\Components\Actions;
-use \Filament\Schemas\Components\Section;
-use \Filament\Schemas\Schema;
-use \Illuminate\Contracts\View\View;
-use \Livewire\Attributes\Url;
-use \UnitEnum;
-
-class StockCardReport extends Page implements HasForms
+class StockCardReport extends Page implements HasForms, HasTable
 {
     use InteractsWithForms;
+    use InteractsWithTable;
+    use \App\Traits\HasStandardPageActions;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Reports';
     protected static ?int $navigationSort = 1;
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected string $view = 'filament.pages.stock-card-report';
 
     #[Url]
-    public string $report_type = 'summary';
+    public ?int $location_id = null;
 
     #[Url]
     public ?int $product_id = null;
@@ -41,7 +49,7 @@ class StockCardReport extends Page implements HasForms
     public function mount(): void
     {
         $this->form->fill([
-            'report_type' => $this->report_type,
+            'location_id' => $this->location_id,
             'product_id' => $this->product_id,
             'start_date' => $this->start_date ?? now()->startOfMonth()->toDateString(),
             'end_date' => $this->end_date ?? now()->endOfMonth()->toDateString(),
@@ -54,35 +62,34 @@ class StockCardReport extends Page implements HasForms
             ->components([
                 Section::make()
                     ->components([
-                        Select::make('report_type')
-                            ->label('Report Type')
-                            ->options([
-                                'summary' => 'Summary (Global)',
-                                'detail' => 'Detail (Per Location)',
-                            ])
-                            ->default('summary')
-                            ->required()
-                            ->reactive(),
                         Select::make('product_id')
                             ->label('Product')
-                            ->options(\App\Models\Product::all()->pluck('name', 'id'))
+                            ->options(Product::all()->pluck('name', 'id'))
                             ->required()
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->reactive(),
+                        Select::make('location_id')
+                            ->label('Location')
+                            ->options(Location::all()->pluck('name', 'id')->prepend('All Locations', ''))
+                            ->default('')
+                            ->reactive(),
                         DatePicker::make('start_date')
                             ->label('Start Date')
-                            ->required(),
+                            ->required()
+                            ->reactive(),
                         DatePicker::make('end_date')
                             ->label('End Date')
-                            ->required(),
+                            ->required()
+                            ->reactive(),
                     ])
                     ->columns(4),
                 Actions::make([
-                    Action::make('filter')
-                        ->label('Filter')
+                    \Filament\Actions\Action::make('filter')
+                        ->label('Generate Report')
                         ->action(function () {
                             $data = $this->form->getState();
-                            $this->report_type = $data['report_type'];
+                            $this->location_id = $data['location_id'] ?: null;
                             $this->product_id = $data['product_id'];
                             $this->start_date = $data['start_date'];
                             $this->end_date = $data['end_date'];
@@ -91,93 +98,97 @@ class StockCardReport extends Page implements HasForms
             ]);
     }
 
-    public function getViewData(): array
+    public function table(Table $table): Table
     {
-        if (!$this->product_id) {
-            return [
-                'report_type' => $this->report_type,
-                'data' => [],
-                'movements' => [],
-                'initial_balance' => 0,
-            ];
-        }
-
-        $startDate = \Carbon\Carbon::parse($this->start_date)->startOfDay();
-        $endDate = \Carbon\Carbon::parse($this->end_date)->endOfDay();
-
-        if ($this->report_type === 'detail') {
-            $locations = \App\Models\Location::all();
-            $data = [];
-
-            foreach ($locations as $location) {
-                // Initial Balance
-                $initialIn = \App\Models\InventoryMovement::where('product_id', $this->product_id)
-                    ->where('to_location_id', $location->id)
-                    ->where('created_at', '<', $startDate)
-                    ->sum('qty');
-
-                $initialOut = \App\Models\InventoryMovement::where('product_id', $this->product_id)
-                    ->where('from_location_id', $location->id)
-                    ->where('created_at', '<', $startDate)
-                    ->sum('qty');
-
-                $initialBalance = $initialIn - $initialOut;
-
-                // Period Movements
-                $in = \App\Models\InventoryMovement::where('product_id', $this->product_id)
-                    ->where('to_location_id', $location->id)
-                    ->whereBetween('created_at', [$startDate, $endDate])
-                    ->sum('qty');
-
-                $out = \App\Models\InventoryMovement::where('product_id', $this->product_id)
-                    ->where('from_location_id', $location->id)
-                    ->whereBetween('created_at', [$startDate, $endDate])
-                    ->sum('qty');
-
-                $data[] = [
-                    'location_name' => $location->name,
-                    'initial_balance' => $initialBalance,
-                    'in' => $in,
-                    'out' => $out,
-                    'final_balance' => $initialBalance + $in - $out,
-                ];
-            }
-
-            return [
-                'report_type' => 'detail',
-                'data' => $data,
-            ];
-
-        } else {
-            // Summary (Global)
-
-            $initialIn = \App\Models\InventoryMovement::where('product_id', $this->product_id)
-                ->whereNotNull('to_location_id')
-                ->where('created_at', '<', $startDate)
-                ->sum('qty');
-
-            $initialOut = \App\Models\InventoryMovement::where('product_id', $this->product_id)
-                ->whereNotNull('from_location_id')
-                ->where('created_at', '<', $startDate)
-                ->sum('qty');
-
-            $initialBalance = $initialIn - $initialOut;
-
-            $movements = \App\Models\InventoryMovement::where('product_id', $this->product_id)
-                ->whereBetween('created_at', [$startDate, $endDate])
-                ->with(['user', 'reference', 'toLocation', 'fromLocation'])
-                ->orderBy('created_at', 'asc')
-                ->get();
-
-            return [
-                'report_type' => 'summary',
-                'movements' => $movements,
-                'initial_balance' => $initialBalance,
-            ];
-        }
+        return $table
+            ->query(function () {
+                $query = Location::query();
+                if ($this->location_id) {
+                    $query->where('id', $this->location_id);
+                }
+                return $query;
+            })
+            ->columns([
+                TextColumn::make('name')
+                    ->label('Location')
+                    ->weight('bold'),
+                TextColumn::make('initial')
+                    ->label('Initial')
+                    ->alignRight()
+                    ->state(fn(Location $record) => $this->calculateStock($record, 'initial'))
+                    ->summarize(\Filament\Tables\Columns\Summarizers\Sum::make()->label('Total')),
+                TextColumn::make('in')
+                    ->label('In')
+                    ->alignRight()
+                    ->color('success')
+                    ->state(fn(Location $record) => $this->calculateStock($record, 'in'))
+                    ->summarize(\Filament\Tables\Columns\Summarizers\Sum::make()->label('')),
+                TextColumn::make('out')
+                    ->label('Out')
+                    ->alignRight()
+                    ->color('danger')
+                    ->state(fn(Location $record) => $this->calculateStock($record, 'out'))
+                    ->summarize(\Filament\Tables\Columns\Summarizers\Sum::make()->label('')),
+                TextColumn::make('stock')
+                    ->label('Stock')
+                    ->alignRight()
+                    ->weight('bold')
+                    ->state(fn(Location $record) => $this->calculateStock($record, 'stock'))
+                    ->summarize(\Filament\Tables\Columns\Summarizers\Sum::make()->label('')),
+            ])
+            ->emptyStateHeading('No stock data to display')
+            ->emptyStateDescription($this->product_id ? 'Try adjusting your filters.' : 'Please select a product first.')
+            ->paginated(false);
     }
-    public function getMaxContentWidth(): ?string
+
+    protected function calculateStock(Location $location, string $type): float
     {
-        return 'full';
+        if (!$this->product_id)
+            return 0;
+
+        $startDate = Carbon::parse($this->start_date)->startOfDay();
+        $endDate = Carbon::parse($this->end_date)->endOfDay();
+
+        if ($type === 'initial') {
+            $in = InventoryMovement::where('product_id', $this->product_id)
+                ->where('to_location_id', $location->id)
+                ->where('created_at', '<', $startDate)
+                ->sum('qty');
+            $out = InventoryMovement::where('product_id', $this->product_id)
+                ->where('from_location_id', $location->id)
+                ->where('created_at', '<', $startDate)
+                ->sum('qty');
+            return (float) ($in - $out);
+        }
+
+        if ($type === 'in') {
+            return (float) InventoryMovement::where('product_id', $this->product_id)
+                ->where('to_location_id', $location->id)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->sum('qty');
+        }
+
+        if ($type === 'out') {
+            return (float) InventoryMovement::where('product_id', $this->product_id)
+                ->where('from_location_id', $location->id)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->sum('qty');
+        }
+
+        if ($type === 'stock') {
+            $initial = $this->calculateStock($location, 'initial');
+            $in = $this->calculateStock($location, 'in');
+            $out = $this->calculateStock($location, 'out');
+            return $initial + $in - $out;
+        }
+
+        return 0;
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            $this->getBackAction(),
+        ];
     }
 }
