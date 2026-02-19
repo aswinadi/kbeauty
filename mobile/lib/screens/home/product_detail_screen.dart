@@ -219,8 +219,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _skuController,
-                      decoration: const InputDecoration(labelText: 'SKU', hintText: 'Enter SKU'),
-                      validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: 'SKU',
+                        hintText: 'Enter SKU',
+                        fillColor: Colors.grey[100],
+                        suffixIcon: const Icon(Icons.lock_outline, size: 16),
+                      ),
+                      style: TextStyle(color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 16),
                     
