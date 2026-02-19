@@ -29,6 +29,10 @@ class CategoryResource extends Resource
                 \Filament\Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
+                \Filament\Forms\Components\TextInput::make('prefix')
+                    ->label('SKU Prefix')
+                    ->placeholder('e.g. SK')
+                    ->maxLength(5),
             ]);
     }
 

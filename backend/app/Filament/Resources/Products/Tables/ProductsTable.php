@@ -26,7 +26,8 @@ class ProductsTable
                 \Filament\Tables\Columns\TextColumn::make('category.name')
                     ->searchable()
                     ->sortable(),
-                \Filament\Tables\Columns\TextColumn::make('unit')
+                \Filament\Tables\Columns\TextColumn::make('unit.name')
+                    ->label('Unit')
                     ->searchable()
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('price')

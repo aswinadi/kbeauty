@@ -20,12 +20,16 @@ class ProductForm
                     ->maxLength(255),
                 \Filament\Forms\Components\TextInput::make('sku')
                     ->label('SKU')
-                    ->unique(ignoreRecord: true)
-                    ->required()
+                    ->placeholder('Auto-generated')
+                    ->disabled()
+                    ->dehydrated(false)
                     ->maxLength(255),
-                \Filament\Forms\Components\TextInput::make('unit')
+                \Filament\Forms\Components\Select::make('unit_id')
+                    ->label('Unit')
+                    ->relationship('unit', 'name')
                     ->required()
-                    ->maxLength(255),
+                    ->searchable()
+                    ->preload(),
                 \Filament\Forms\Components\TextInput::make('price')
                     ->numeric()
                     ->default(0)
