@@ -177,4 +177,25 @@ class InventoryService {
       return false;
     }
   }
+
+  Future<Map<String, dynamic>?> getStockBalance(int productId) async {
+    try {
+      final token = await _authService.getToken();
+      final response = await http.get(
+        Uri.parse('$baseUrl/products/$productId/balance'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching stock balance: $e');
+      return null;
+    }
+  }
 }

@@ -27,7 +27,7 @@ class AuthController extends Controller
         }
 
         return response()->json([
-            'user' => $user,
+            'user' => $user->load('roles'),
             'token' => $user->createToken($request->device_name)->plainTextToken,
         ]);
     }
@@ -41,7 +41,7 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        return response()->json($request->user()->load('roles'));
     }
 
     public function changePassword(Request $request)

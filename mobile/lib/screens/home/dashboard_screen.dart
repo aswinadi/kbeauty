@@ -5,8 +5,11 @@ import 'product_browser_screen.dart';
 import 'stock_opname_screen.dart';
 import 'inventory_transaction_screen.dart';
 import 'stock_movement_screen.dart';
+import 'stock_balance_screen.dart';
 import 'profile_screen.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../../services/auth_service.dart';
+import '../../models/user.dart';
 import '../../config/app_config.dart';
 import '../../utils/responsive.dart';
 
@@ -19,7 +22,9 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final _inventoryService = InventoryService();
+  final _authService = AuthService();
   Map<String, dynamic> _stats = {};
+  User? _user;
   String _appVersion = '';
   bool _isLoading = true;
 
@@ -33,6 +38,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await Future.wait([
       _loadStats(),
       _loadVersion(),
+      _loadUser(),
     ]);
   }
 
@@ -40,6 +46,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final packageInfo = await PackageInfo.fromPlatform();
     setState(() {
       _appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
+    });
+  }
+
+  Future<void> _loadUser() async {
+    final user = await _authService.getUser();
+    setState(() {
+      _user = user;
     });
   }
 
@@ -58,6 +71,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
+
+    final isNailist = _user?.roles.contains('nailist') ?? false;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('K-Beauty House', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -66,7 +82,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: AppTheme.accentColor),
-            onPressed: _loadStats,
+            onPressed: _loadData,
           ),
           IconButton(
             icon: const Icon(Icons.person_outline, color: AppTheme.accentColor),
@@ -75,7 +91,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: _loadStats,
+        onRefresh: _loadData,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -124,6 +140,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _buildActionCard('Stock Opname', Icons.fact_check_outlined, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const StockOpnameScreen()));
                   }),
+                  if (!isNailist)
+                    _buildActionCard('Stock Balance', Icons.account_balance_wallet_outlined, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const StockBalanceScreen()));
+                    }),
                 ],
               ),
               const SizedBox(height: 48),
