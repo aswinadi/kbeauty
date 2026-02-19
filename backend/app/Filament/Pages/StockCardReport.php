@@ -142,31 +142,8 @@ class StockCardReport extends Page implements HasForms, HasTable
                     ->label('Location')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('initial')
-                    ->label('Initial')
-                    ->alignRight()
-                    ->state(fn(object $record) => $this->calculateStock($record, 'initial'))
-                    ->summarize(\Filament\Tables\Columns\Summarizers\Summarizer::make()
-                        ->label('Total')
-                        ->using(fn($query) => $query->get()->sum(fn($record) => $this->calculateStock($record, 'initial')))),
-                TextColumn::make('in')
-                    ->label('In')
-                    ->alignRight()
-                    ->color('success')
-                    ->state(fn(object $record) => $this->calculateStock($record, 'in'))
-                    ->summarize(\Filament\Tables\Columns\Summarizers\Summarizer::make()
-                        ->label('')
-                        ->using(fn($query) => $query->get()->sum(fn($record) => $this->calculateStock($record, 'in')))),
-                TextColumn::make('out')
-                    ->label('Out')
-                    ->alignRight()
-                    ->color('danger')
-                    ->state(fn(object $record) => $this->calculateStock($record, 'out'))
-                    ->summarize(\Filament\Tables\Columns\Summarizers\Summarizer::make()
-                        ->label('')
-                        ->using(fn($query) => $query->get()->sum(fn($record) => $this->calculateStock($record, 'out')))),
-                TextColumn::make('stock')
-                    ->label('Stock')
+                TextColumn::make('quantity')
+                    ->label('Quantity')
                     ->alignRight()
                     ->weight('bold')
                     ->state(fn(object $record) => $this->calculateStock($record, 'stock'))
@@ -290,10 +267,7 @@ class StockCardReport extends Page implements HasForms, HasTable
 
         return $query->reorder()->orderBy('product_name')->get()->map(fn($record) => [
             'name' => "{$record->location_name} - {$record->product_name}",
-            'initial' => $this->calculateStock($record, 'initial'),
-            'in' => $this->calculateStock($record, 'in'),
-            'out' => $this->calculateStock($record, 'out'),
-            'stock' => $this->calculateStock($record, 'stock'),
+            'quantity' => $this->calculateStock($record, 'stock'),
         ])->toArray();
     }
 
