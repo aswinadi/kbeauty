@@ -19,11 +19,16 @@ class InventoryMovementsTable
                 \Filament\Tables\Columns\TextColumn::make('type')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
-                        'IN' => 'success',
-                        'OUT' => 'danger',
-                        'MOVE' => 'info',
+                        'IN', 'PURCHASE', 'manual_in' => 'success',
+                        'OUT', 'manual_out' => 'danger',
+                        'MOVE', 'TRANSFER' => 'info',
+                        'OPNAME' => 'warning',
                         default => 'gray',
                     })
+                    ->sortable(),
+                \Filament\Tables\Columns\TextColumn::make('user.name')
+                    ->label('Responsible User')
+                    ->placeholder('System')
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('qty')
                     ->numeric()
@@ -36,7 +41,7 @@ class InventoryMovementsTable
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('reference_type')
                     ->label('Reference')
-                    ->formatStateUsing(fn($state, $record) => $state ? class_basename($state) . " #{$record->reference_id}" : 'Manual'),
+                    ->formatStateUsing(fn($state, $record) => $state ? class_basename($state) . " #{$record->reference_id}" : 'Manual Adjustment'),
                 \Filament\Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),

@@ -29,9 +29,9 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(\App\Filament\Pages\Auth\Login::class)
-            ->brandName('Beauty House')
+            ->brandName('K-Beauty House')
             ->brandLogo(asset('images/logo.png'))
-            ->brandLogoHeight('3rem')
+            ->brandLogoHeight('4.5rem')
             ->favicon(asset('images/logo.png'))
             ->colors([
                 'primary' => Color::Pink,

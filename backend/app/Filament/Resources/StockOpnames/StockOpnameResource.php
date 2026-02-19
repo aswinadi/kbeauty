@@ -18,6 +18,8 @@ class StockOpnameResource extends Resource
 {
     protected static ?string $model = StockOpname::class;
 
+    protected static \UnitEnum|string|null $navigationGroup = 'Transaction';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema

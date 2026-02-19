@@ -12,9 +12,15 @@ class InventoryMovement extends Model
         'to_location_id',
         'qty',
         'type',
+        'user_id',
         'reference_id',
         'reference_type'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function product()
     {

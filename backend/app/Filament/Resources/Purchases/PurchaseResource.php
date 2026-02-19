@@ -18,6 +18,8 @@ class PurchaseResource extends Resource
 {
     protected static ?string $model = Purchase::class;
 
+    protected static \UnitEnum|string|null $navigationGroup = 'Transaction';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function form(Schema $schema): Schema
