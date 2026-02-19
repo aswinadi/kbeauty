@@ -1,8 +1,6 @@
 <x-filament-panels::page>
     {{ $this->form }}
 
-    {{-- END TRACER BULLET --}}
-
     @php
         $data = $this->getViewData();
     @endphp
@@ -142,16 +140,25 @@
                                                             <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 mt-1">
                                                                 <div
                                                                     class="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded text-xs">
-                                                                    <div class="w-4 h-4 min-w-[16px] flex items-center justify-center">
-                                                                        <x-heroicon-m-map-pin class="w-full h-full text-gray-500" />
-                                                                    </div>
+                                                                    <!-- Raw SVG Map Pin -->
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                                                                        class="text-gray-500"
+                                                                        style="width: 16px !important; height: 16px !important; min-width: 16px; min-height: 16px;">
+                                                                        <path fill-rule="evenodd"
+                                                                            d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.006.003.003.001zM10 13a4 4 0 100-8 4 4 0 000 8z"
+                                                                            clip-rule="evenodd" />
+                                                                    </svg>
                                                                     {{ $locationLabel }}
                                                                 </div>
                                                                 <span class="text-gray-300">|</span>
                                                                 <div class="flex items-center gap-1 text-xs">
-                                                                    <div class="w-4 h-4 min-w-[16px] flex items-center justify-center">
-                                                                        <x-heroicon-m-user class="w-4 h-4 text-gray-500" />
-                                                                    </div>
+                                                                    <!-- Raw SVG User -->
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                                                                        class="text-gray-500"
+                                                                        style="width: 16px !important; height: 16px !important; min-width: 16px; min-height: 16px;">
+                                                                        <path
+                                                                            d="M10 8a3 3 0 100-6 3 3 0 000 6zM3.465 14.493a1.23 1.23 0 00.41 1.412A9.957 9.957 0 0010 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 00-13.074.003z" />
+                                                                    </svg>
                                                                     {{ $movement->user->name ?? 'System' }}
                                                                 </div>
                                                             </div>
