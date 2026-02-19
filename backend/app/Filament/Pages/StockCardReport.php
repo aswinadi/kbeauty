@@ -131,9 +131,8 @@ class StockCardReport extends Page implements HasForms, HasTable
                     $query->where('combinations.location_id', $this->location_id);
                 }
 
-                return $query->distinct()->reorder();
+                return $query->reorder()->orderBy('product_name');
             })
-            ->defaultSort('product_name')
             ->columns([
                 TextColumn::make('product_name')
                     ->label('Product')
