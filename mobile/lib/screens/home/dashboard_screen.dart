@@ -5,6 +5,7 @@ import 'product_browser_screen.dart';
 import 'stock_opname_screen.dart';
 import 'inventory_transaction_screen.dart';
 import 'stock_movement_screen.dart';
+import 'profile_screen.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../config/app_config.dart';
 import '../../utils/responsive.dart';
@@ -64,8 +65,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh, color: AppTheme.accentColor),
             onPressed: _loadStats,
+          ),
+          IconButton(
+            icon: const Icon(Icons.person_outline, color: AppTheme.accentColor),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
           ),
         ],
       ),

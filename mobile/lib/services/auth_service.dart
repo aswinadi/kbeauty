@@ -24,6 +24,7 @@ class AuthService {
         final data = jsonDecode(response.body);
         final user = User.fromJson(data['user'], token: data['token']);
         await _storage.write(key: 'auth_token', value: user.token);
+        await _storage.write(key: 'user_data', value: jsonEncode(user.toJson()));
         return user;
       } else {
         print('Login failed: ${response.body}');
@@ -46,7 +47,16 @@ class AuthService {
         },
       );
       await _storage.delete(key: 'auth_token');
+      await _storage.delete(key: 'user_data');
     }
+  }
+
+  Future<User?> getUser() async {
+    final userData = await _storage.read(key: 'user_data');
+    if (userData != null) {
+      return User.fromJson(jsonDecode(userData));
+    }
+    return null;
   }
 
   Future<String?> getToken() async {
