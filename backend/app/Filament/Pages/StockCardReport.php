@@ -27,7 +27,7 @@ class StockCardReport extends Page implements HasForms
     protected string $view = 'filament.pages.stock-card-report';
 
     #[Url]
-    public ?int $location_id = null;
+    public string $report_type = 'summary';
 
     #[Url]
     public ?int $product_id = null;
@@ -41,7 +41,7 @@ class StockCardReport extends Page implements HasForms
     public function mount(): void
     {
         $this->form->fill([
-            'location_id' => $this->location_id,
+            'report_type' => $this->report_type,
             'product_id' => $this->product_id,
             'start_date' => $this->start_date ?? now()->startOfMonth()->toDateString(),
             'end_date' => $this->end_date ?? now()->endOfMonth()->toDateString(),
@@ -54,11 +54,15 @@ class StockCardReport extends Page implements HasForms
             ->components([
                 Section::make()
                     ->components([
-                        Select::make('location_id')
-                            ->label('Location')
-                            ->placeholder('All Locations')
-                            ->options(\App\Models\Location::all()->pluck('name', 'id'))
-                            ->searchable(),
+                        Select::make('report_type')
+                            ->label('Report Type')
+                            ->options([
+                                'summary' => 'Summary (Global)',
+                                'detail' => 'Detail (Per Location)',
+                            ])
+                            ->default('summary')
+                            ->required()
+                            ->reactive(),
                         Select::make('product_id')
                             ->label('Product')
                             ->options(\App\Models\Product::all()->pluck('name', 'id'))
@@ -78,7 +82,7 @@ class StockCardReport extends Page implements HasForms
                         ->label('Filter')
                         ->action(function () {
                             $data = $this->form->getState();
-                            $this->location_id = $data['location_id'] ?? null;
+                            $this->report_type = $data['report_type'];
                             $this->product_id = $data['product_id'];
                             $this->start_date = $data['start_date'];
                             $this->end_date = $data['end_date'];
@@ -91,6 +95,8 @@ class StockCardReport extends Page implements HasForms
     {
         if (!$this->product_id) {
             return [
+                'report_type' => $this->report_type,
+                'data' => [],
                 'movements' => [],
                 'initial_balance' => 0,
             ];
@@ -99,46 +105,75 @@ class StockCardReport extends Page implements HasForms
         $startDate = \Carbon\Carbon::parse($this->start_date)->startOfDay();
         $endDate = \Carbon\Carbon::parse($this->end_date)->endOfDay();
 
-        // Calculate Initial Balance
-        $initialInQuery = \App\Models\InventoryMovement::where('product_id', $this->product_id)
-            ->where('created_at', '<', $startDate);
+        if ($this->report_type === 'detail') {
+            $locations = \App\Models\Location::all();
+            $data = [];
 
-        $initialOutQuery = \App\Models\InventoryMovement::where('product_id', $this->product_id)
-            ->where('created_at', '<', $startDate);
+            foreach ($locations as $location) {
+                // Initial Balance
+                $initialIn = \App\Models\InventoryMovement::where('product_id', $this->product_id)
+                    ->where('to_location_id', $location->id)
+                    ->where('created_at', '<', $startDate)
+                    ->sum('qty');
 
-        if ($this->location_id) {
-            $initialInQuery->where('to_location_id', $this->location_id);
-            $initialOutQuery->where('from_location_id', $this->location_id);
+                $initialOut = \App\Models\InventoryMovement::where('product_id', $this->product_id)
+                    ->where('from_location_id', $location->id)
+                    ->where('created_at', '<', $startDate)
+                    ->sum('qty');
+
+                $initialBalance = $initialIn - $initialOut;
+
+                // Period Movements
+                $in = \App\Models\InventoryMovement::where('product_id', $this->product_id)
+                    ->where('to_location_id', $location->id)
+                    ->whereBetween('created_at', [$startDate, $endDate])
+                    ->sum('qty');
+
+                $out = \App\Models\InventoryMovement::where('product_id', $this->product_id)
+                    ->where('from_location_id', $location->id)
+                    ->whereBetween('created_at', [$startDate, $endDate])
+                    ->sum('qty');
+
+                $data[] = [
+                    'location_name' => $location->name,
+                    'initial_balance' => $initialBalance,
+                    'in' => $in,
+                    'out' => $out,
+                    'final_balance' => $initialBalance + $in - $out,
+                ];
+            }
+
+            return [
+                'report_type' => 'detail',
+                'data' => $data,
+            ];
+
         } else {
-            // Global Balance: In is any valid 'to' (that isn't a transfer? No, all 'to' adds to physical stock at that location)
-            // But for Global Stock: Transfer A->B. A loses, B gains. Net 0.
-            // Formula: Sum(to) - Sum(from) works perfectly for Global too.
-            $initialInQuery->whereNotNull('to_location_id');
-            $initialOutQuery->whereNotNull('from_location_id');
+            // Summary (Global)
+
+            $initialIn = \App\Models\InventoryMovement::where('product_id', $this->product_id)
+                ->whereNotNull('to_location_id')
+                ->where('created_at', '<', $startDate)
+                ->sum('qty');
+
+            $initialOut = \App\Models\InventoryMovement::where('product_id', $this->product_id)
+                ->whereNotNull('from_location_id')
+                ->where('created_at', '<', $startDate)
+                ->sum('qty');
+
+            $initialBalance = $initialIn - $initialOut;
+
+            $movements = \App\Models\InventoryMovement::where('product_id', $this->product_id)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->with(['user', 'reference', 'toLocation', 'fromLocation'])
+                ->orderBy('created_at', 'asc')
+                ->get();
+
+            return [
+                'report_type' => 'summary',
+                'movements' => $movements,
+                'initial_balance' => $initialBalance,
+            ];
         }
-
-        $initialBalance = $initialInQuery->sum('qty') - $initialOutQuery->sum('qty');
-
-        // Fetch Movements
-        $movementsQuery = \App\Models\InventoryMovement::where('product_id', $this->product_id)
-            ->whereBetween('created_at', [$startDate, $endDate]);
-
-        if ($this->location_id) {
-            $movementsQuery->where(function ($query) {
-                $query->where('from_location_id', $this->location_id)
-                    ->orWhere('to_location_id', $this->location_id);
-            });
-        }
-        // If location_id is null (All), we fetch EVERYTHING for this product.
-
-        $movements = $movementsQuery
-            ->with(['user', 'reference'])
-            ->orderBy('created_at', 'asc')
-            ->get();
-
-        return [
-            'movements' => $movements,
-            'initial_balance' => $initialBalance,
-        ];
     }
 }
