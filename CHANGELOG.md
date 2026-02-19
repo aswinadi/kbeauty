@@ -11,10 +11,15 @@
 - **Filtering**: Added specific Location filtering to the Stock Card Report.
 - **Summary**: Grouped totals added to the footer of the Stock Card Report.
 
+### Added
+- **Export Capabilities**: Added Excel (.xlsx) and PDF export for the Stock Card Report.
+- **Enhanced Filtering**: New "All Products" option in the Stock Card Report (calculates totals across all items).
+- **Export Templates**: Custom Blade templates for professional-looking PDF reports.
+
 ### Fixed
-- **Mobile Feedback**: Improved empty states and error handling when "Check Stock" is clicked.
-- **API Performance**: Eager loaded roles in authentication endpoints to speed up role checks.
+- **Stability**: Resolved `QueryException` and `TypeError` in report footers by shifting to manual PHP summarization.
+- **Resilience**: Made navigation traits robust to handle custom non-resource pages gracefully.
 
 ### Improvements
-- **Technical**: Introduced `HasStandardPageActions` trait for consistent Filament UI management.
-- **Documentation**: Added technical implementation guide and comprehensive changelog.
+- **Dependencies**: Added `maatwebsite/excel` and `barryvdh/laravel-dompdf` to backend infrastructure.
+- **Documentation**: Updated technical docs with export logic and virtual column handling.
