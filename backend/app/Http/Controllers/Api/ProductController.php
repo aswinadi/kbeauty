@@ -11,15 +11,18 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['category']);
+        $query = Product::with(['category', 'unit']);
 
-        if ($request->has('category_id')) {
+        if ($request->has('category_id') && !empty($request->category_id)) {
             $query->where('category_id', $request->category_id);
         }
 
-        if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                ->orWhere('sku', 'like', '%' . $request->search . '%');
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('sku', 'like', '%' . $search . '%');
+            });
         }
 
         $products = $query->latest()->get()->map(function (Product $product) {
@@ -28,7 +31,7 @@ class ProductController extends Controller
                 'name' => $product->name,
                 'sku' => $product->sku,
                 'price' => $product->price,
-                'unit' => $product->unit,
+                'unit' => $product->unit?->name ?? '-',
                 'category_name' => $product->category?->name,
                 'image_url' => $product->getFirstMediaUrl('products') ?: null,
             ];

@@ -20,15 +20,13 @@ class StockOpnameController extends Controller
 
     public function products(Request $request)
     {
-        $products = Product::all()->map(function ($product) {
-            // In a real app, we would calculate stock from InventoryMovement
-            // For this version, we'll return products and the mobile app will track current vs actual
+        $products = Product::with('unit')->get()->map(function ($product) {
             return [
                 'id' => $product->id,
                 'name' => $product->name,
                 'sku' => $product->sku,
-                'unit' => $product->unit,
-                'system_qty' => 0, // Current stock calculation logic here
+                'unit' => $product->unit?->name ?? '-',
+                'system_qty' => 0,
             ];
         });
 
