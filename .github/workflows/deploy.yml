@@ -24,9 +24,14 @@ jobs:
             # Backend Setup
             cd backend
             composer install --no-dev --optimize-autoloader
+            php artisan optimize:clear
+            php artisan view:clear
+            php artisan config:clear
+            php artisan route:clear
             php artisan migrate --force
-            php artisan optimize
             php artisan filament:upgrade
+            php artisan queue:restart
+            php artisan optimize
             
             # Mobile assets (if served via backend)
             # Add any mobile build steps here if needed
