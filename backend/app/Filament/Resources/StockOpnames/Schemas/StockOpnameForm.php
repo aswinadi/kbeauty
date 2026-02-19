@@ -10,7 +10,7 @@ class StockOpnameForm
     {
         return $schema
             ->components([
-                \Filament\Forms\Components\Section::make()
+                \Filament\Forms\Components\Group::make()
                     ->schema([
                         \Filament\Forms\Components\Select::make('location_id')
                             ->relationship('location', 'name')
@@ -28,7 +28,7 @@ class StockOpnameForm
                             ->required(),
                     ])->columns(2),
 
-                \Filament\Forms\Components\Section::make('Stock Opname Items')
+                \Filament\Forms\Components\Fieldset::make('Stock Opname Items')
                     ->schema([
                         \Filament\Forms\Components\Repeater::make('items')
                             ->relationship()

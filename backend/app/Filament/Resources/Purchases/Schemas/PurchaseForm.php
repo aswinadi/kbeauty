@@ -10,7 +10,7 @@ class PurchaseForm
     {
         return $schema
             ->components([
-                \Filament\Forms\Components\Section::make()
+                \Filament\Forms\Components\Group::make()
                     ->schema([
                         \Filament\Forms\Components\Select::make('supplier_id')
                             ->relationship('supplier', 'name')
@@ -30,7 +30,7 @@ class PurchaseForm
                             ->columnSpanFull(),
                     ])->columns(2),
 
-                \Filament\Forms\Components\Section::make('Purchase Items')
+                \Filament\Forms\Components\Fieldset::make('Purchase Items')
                     ->schema([
                         \Filament\Forms\Components\Repeater::make('items')
                             ->relationship()
