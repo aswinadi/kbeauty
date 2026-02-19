@@ -100,7 +100,7 @@ class StockCardReport extends Page implements HasForms, HasTable
     {
         return $table
             ->query(function () {
-                $rawIds = \Illuminate\Support\Facades\DB::table('inventory_movements')
+                $subquery = \Illuminate\Support\Facades\DB::table('inventory_movements')
                     ->select('product_id', 'to_location_id as location_id')
                     ->whereNotNull('product_id')
                     ->whereNotNull('to_location_id')
@@ -111,26 +111,25 @@ class StockCardReport extends Page implements HasForms, HasTable
                             ->whereNotNull('from_location_id')
                     );
 
-                $withMetadata = \Illuminate\Support\Facades\DB::table(\Illuminate\Support\Facades\DB::raw("({$rawIds->toSql()}) as raw_ids"))
-                    ->mergeBindings($rawIds)
-                    ->join('products', 'raw_ids.product_id', '=', 'products.id')
-                    ->join('locations', 'raw_ids.location_id', '=', 'locations.id')
-                    ->select([
-                        \Illuminate\Support\Facades\DB::raw("CONCAT(raw_ids.product_id, '-', raw_ids.location_id) as id"),
-                        'raw_ids.product_id',
-                        'raw_ids.location_id',
-                        'products.name as product_name',
-                        'locations.name as location_name',
-                    ]);
-
                 $model = new \App\Models\InventoryMovement();
                 $model->setTable('stock_report');
                 $model->setKeyName('id');
 
                 return $model->newQuery()
-                    ->fromSub($withMetadata, 'stock_report')
-                    ->when($this->product_id, fn($q) => $q->where('product_id', $this->product_id))
-                    ->when($this->location_id, fn($q) => $q->where('location_id', $this->location_id));
+                    ->fromSub($subquery, 'stock_report')
+                    ->join('products', 'stock_report.product_id', '=', 'products.id')
+                    ->join('locations', 'stock_report.location_id', '=', 'locations.id')
+                    ->select([
+                        \Illuminate\Support\Facades\DB::raw("CONCAT(stock_report.product_id, '-', stock_report.location_id) as id"),
+                        'stock_report.product_id',
+                        'stock_report.location_id',
+                        'products.name as product_name',
+                        'locations.name as location_name',
+                    ])
+                    ->when($this->product_id, fn($q) => $q->where('stock_report.product_id', $this->product_id))
+                    ->when($this->location_id, fn($q) => $q->where('stock_report.location_id', $this->location_id))
+                    ->groupBy('stock_report.product_id', 'stock_report.location_id', 'products.name', 'locations.name')
+                    ->distinct();
             })
             ->columns([
                 TextColumn::make('product_name')
@@ -227,7 +226,7 @@ class StockCardReport extends Page implements HasForms, HasTable
 
     protected function getReportData(): array
     {
-        $rawIds = \Illuminate\Support\Facades\DB::table('inventory_movements')
+        $subquery = \Illuminate\Support\Facades\DB::table('inventory_movements')
             ->select('product_id', 'to_location_id as location_id')
             ->whereNotNull('product_id')
             ->whereNotNull('to_location_id')
@@ -238,34 +237,33 @@ class StockCardReport extends Page implements HasForms, HasTable
                     ->whereNotNull('from_location_id')
             );
 
-        $withMetadata = \Illuminate\Support\Facades\DB::table(\Illuminate\Support\Facades\DB::raw("({$rawIds->toSql()}) as raw_ids"))
-            ->mergeBindings($rawIds)
-            ->join('products', 'raw_ids.product_id', '=', 'products.id')
-            ->join('locations', 'raw_ids.location_id', '=', 'locations.id')
-            ->select([
-                \Illuminate\Support\Facades\DB::raw("CONCAT(raw_ids.product_id, '-', raw_ids.location_id) as id"),
-                'raw_ids.product_id',
-                'raw_ids.location_id',
-                'products.name as product_name',
-                'locations.name as location_name',
-            ]);
-
         $model = new \App\Models\InventoryMovement();
         $model->setTable('stock_report');
         $model->setKeyName('id');
 
         $query = $model->newQuery()
-            ->fromSub($withMetadata, 'stock_report');
+            ->fromSub($subquery, 'stock_report')
+            ->join('products', 'stock_report.product_id', '=', 'products.id')
+            ->join('locations', 'stock_report.location_id', '=', 'locations.id')
+            ->select([
+                \Illuminate\Support\Facades\DB::raw("CONCAT(stock_report.product_id, '-', stock_report.location_id) as id"),
+                'stock_report.product_id',
+                'stock_report.location_id',
+                'products.name as product_name',
+                'locations.name as location_name',
+            ])
+            ->groupBy('stock_report.product_id', 'stock_report.location_id', 'products.name', 'locations.name')
+            ->distinct();
 
         if ($this->product_id) {
-            $query->where('product_id', $this->product_id);
+            $query->where('stock_report.product_id', $this->product_id);
         }
 
         if ($this->location_id) {
-            $query->where('location_id', $this->location_id);
+            $query->where('stock_report.location_id', $this->location_id);
         }
 
-        return $query->reorder()->orderBy('product_name')->get()->map(fn($record) => [
+        return $query->distinct()->reorder()->orderBy('product_name')->get()->map(fn($record) => [
             'name' => "{$record->location_name} - {$record->product_name}",
             'quantity' => $this->calculateStock($record, 'stock'),
         ])->toArray();
