@@ -24,6 +24,8 @@ class InventoryInResource extends Resource
 
     protected static ?string $navigationLabel = 'Inventory In';
 
+    protected static ?string $modelLabel = 'Stock In';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPlusCircle;
 
     public static function form(Schema $schema): Schema

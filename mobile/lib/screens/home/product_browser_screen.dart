@@ -112,23 +112,119 @@ class _ProductBrowserScreenState extends State<ProductBrowserScreen> {
                           ],
                         ),
                       )
-                    : GridView.builder(
-                        padding: const EdgeInsets.all(16),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 0.75,
+                    : RefreshIndicator(
+                        onRefresh: _filterProducts,
+                        child: ListView.separated(
+                          padding: const EdgeInsets.all(16),
+                          separatorBuilder: (context, index) => const SizedBox(height: 12),
+                          itemCount: _products.length,
+                          itemBuilder: (context, index) {
+                            final product = _products[index];
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey[200]!),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.02),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: InkWell(
+                                onTap: () {
+                                  // TODO: Show Product Details
+                                },
+                                borderRadius: BorderRadius.circular(12),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Thumbnail Image
+                                      Container(
+                                        width: 80,
+                                        height: 80,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[100],
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: product.imageUrl != null && product.imageUrl!.isNotEmpty
+                                            ? ClipRRect(
+                                                borderRadius: BorderRadius.circular(8),
+                                                child: Image.network(
+                                                  product.imageUrl!,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stackTrace) =>
+                                                      Icon(Icons.image_not_supported, color: Colors.grey[400]),
+                                                ),
+                                              )
+                                            : Icon(Icons.image, color: Colors.grey[400]),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      // Product Details
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              product.name,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              product.categoryName ?? 'Uncategorized',
+                                              style: TextStyle(
+                                                color: AppTheme.primaryColor,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  product.sku,
+                                                  style: TextStyle(
+                                                    color: Colors.grey[600],
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: AppTheme.accentColor.withOpacity(0.1),
+                                                    borderRadius: BorderRadius.circular(4),
+                                                  ),
+                                                  child: Text(
+                                                    product.unit,
+                                                    style: TextStyle(
+                                                      color: AppTheme.accentColor,
+                                                      fontSize: 10,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                        itemCount: _products.length,
-                        itemBuilder: (context, index) {
-                          return ProductCard(
-                            product: _products[index],
-                            onTap: () {
-                              // TODO: Show Product Details
-                            },
-                          );
-                        },
                       ),
           ),
         ],

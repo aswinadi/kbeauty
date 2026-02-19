@@ -52,4 +52,30 @@ class AuthService {
   Future<String?> getToken() async {
     return await _storage.read(key: 'auth_token');
   }
+
+  Future<bool> changePassword(String currentPassword, String newPassword) async {
+    final token = await _storage.read(key: 'auth_token');
+    if (token == null) return false;
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/change-password'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'current_password': currentPassword,
+          'new_password': newPassword,
+          'new_password_confirmation': newPassword,
+        }),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Change password error: $e');
+      return false;
+    }
+  }
 }

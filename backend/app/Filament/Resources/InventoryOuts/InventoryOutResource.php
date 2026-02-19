@@ -24,6 +24,8 @@ class InventoryOutResource extends Resource
 
     protected static ?string $navigationLabel = 'Inventory Out';
 
+    protected static ?string $modelLabel = 'Stock Out';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMinusCircle;
 
     public static function form(Schema $schema): Schema

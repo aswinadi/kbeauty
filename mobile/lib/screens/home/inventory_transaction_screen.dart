@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/product.dart';
 import '../../services/inventory_service.dart';
 import '../../services/product_service.dart';
-import '../../theme/app_theme.dart';
+import '../../widgets/product_selector.dart';
 import '../../widgets/product_thumbnail.dart';
 
 class InventoryTransactionScreen extends StatefulWidget {
@@ -139,11 +139,16 @@ class _InventoryTransactionScreenState extends State<InventoryTransactionScreen>
                       children: [
                         DropdownButtonFormField<int>(
                           decoration: const InputDecoration(labelText: 'Store / Location'),
-                          value: _selectedLocationId,
+                          initialValue: _selectedLocationId,
                           items: _locations.map((l) => DropdownMenuItem(value: l.id, child: Text(l.name))).toList(),
                           onChanged: _transactionItems.isEmpty ? (id) => setState(() => _selectedLocationId = id) : null,
                           hint: const Text('Select Location'),
-                          disabledHint: Text(_locations.firstWhere((l) => l.id == _selectedLocationId).name),
+                          disabledHint: _selectedLocationId != null 
+                              ? Text(_locations.firstWhere(
+                                  (l) => l.id == _selectedLocationId, 
+                                  orElse: () => _locations.isNotEmpty ? _locations.first : Category(id: 0, name: 'Unknown')
+                                ).name)
+                              : null,
                         ),
                         if (_transactionItems.isNotEmpty)
                           const Padding(
@@ -153,19 +158,9 @@ class _InventoryTransactionScreenState extends State<InventoryTransactionScreen>
                         const SizedBox(height: 32),
                         const Text('Add Products', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 16),
-                        DropdownButtonFormField<Product>(
-                          decoration: const InputDecoration(labelText: 'Product'),
-                          value: _selectedProduct,
-                          items: _products.map((p) => DropdownMenuItem(
-                            value: p, 
-                            child: Row(
-                              children: [
-                                ProductThumbnail(imageUrl: p.imageUrl, size: 30),
-                                const SizedBox(width: 12),
-                                Text('${p.name} (${p.sku})'),
-                              ],
-                            )
-                          )).toList(),
+                        ProductSelector(
+                          products: _products,
+                          selectedProduct: _selectedProduct,
                           onChanged: (p) => setState(() => _selectedProduct = p),
                         ),
                         const SizedBox(height: 16),
