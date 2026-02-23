@@ -33,6 +33,9 @@ class Product {
   final double price;
   final int? unitId;
   final String unit;
+  final int? secondaryUnitId;
+  final String? secondaryUnitName;
+  final double? conversionRatio;
   final int? categoryId;
   final String? categoryName;
   final String? imageUrl;
@@ -44,6 +47,9 @@ class Product {
     required this.price,
     this.unitId,
     required this.unit,
+    this.secondaryUnitId,
+    this.secondaryUnitName,
+    this.conversionRatio,
     this.categoryId,
     this.categoryName,
     this.imageUrl,
@@ -57,6 +63,11 @@ class Product {
       price: double.tryParse(json['price'].toString()) ?? 0.0,
       unitId: json['unit_id'],
       unit: json['unit'] ?? '-',
+      secondaryUnitId: json['secondary_unit_id'],
+      secondaryUnitName: json['secondary_unit_name'],
+      conversionRatio: json['conversion_ratio'] != null 
+          ? double.tryParse(json['conversion_ratio'].toString()) 
+          : null,
       categoryId: json['category_id'],
       categoryName: json['category_name'],
       imageUrl: json['image_url'],

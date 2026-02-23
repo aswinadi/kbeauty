@@ -213,13 +213,35 @@ class _ProductBrowserScreenState extends State<ProductBrowserScreen> {
                                                     color: AppTheme.accentColor.withOpacity(0.1),
                                                     borderRadius: BorderRadius.circular(4),
                                                   ),
-                                                  child: Text(
-                                                    product.unit,
-                                                    style: TextStyle(
-                                                      color: AppTheme.accentColor,
-                                                      fontSize: 10,
-                                                      fontWeight: FontWeight.bold,
-                                                    ),
+                                                  child: Row(
+                                                    children: [
+                                                      if (product.secondaryUnitName != null)
+                                                        Container(
+                                                          margin: const EdgeInsets.only(right: 4),
+                                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                          decoration: BoxDecoration(
+                                                            color: Colors.grey[100],
+                                                            borderRadius: BorderRadius.circular(4),
+                                                            border: Border.all(color: Colors.grey[300]!),
+                                                          ),
+                                                          child: Text(
+                                                            product.secondaryUnitName!,
+                                                            style: TextStyle(
+                                                              color: Colors.grey[600],
+                                                              fontSize: 9,
+                                                              fontWeight: FontWeight.bold,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      Text(
+                                                        product.unit,
+                                                        style: TextStyle(
+                                                          color: AppTheme.accentColor,
+                                                          fontSize: 10,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
                                               ],

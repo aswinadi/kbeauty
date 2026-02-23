@@ -341,99 +341,163 @@ class StockOpnameTile extends StatefulWidget {
 }
 
 class _StockOpnameTileState extends State<StockOpnameTile> {
-  late TextEditingController _qtyController;
+  late TextEditingController _primaryController;
+  late TextEditingController _secondaryController;
 
   @override
   void initState() {
     super.initState();
-    _qtyController = TextEditingController(
-      text: widget.initialQty != null && widget.initialQty! > 0 
-          ? (widget.initialQty! % 1 == 0 ? widget.initialQty!.toInt().toString() : widget.initialQty.toString())
-          : ''
+    _initControllers();
+  }
+
+  void _initControllers() {
+    final conversionRatio = widget.product.conversionRatio ?? 1.0;
+    final totalQty = widget.initialQty ?? 0.0;
+    
+    double secondary = 0;
+    double primary = 0;
+
+    if (widget.product.secondaryUnitName != null && conversionRatio > 0) {
+      secondary = (totalQty / conversionRatio).floorToDouble();
+      primary = totalQty % conversionRatio;
+    } else {
+      primary = totalQty;
+    }
+
+    _primaryController = TextEditingController(
+      text: primary > 0 ? (primary % 1 == 0 ? primary.toInt().toString() : primary.toString()) : ''
+    );
+    _secondaryController = TextEditingController(
+      text: secondary > 0 ? (secondary % 1 == 0 ? secondary.toInt().toString() : secondary.toString()) : ''
     );
   }
 
   @override
   void didUpdateWidget(StockOpnameTile oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Only update text if the value actually changed from outside (e.g. search filter reset or data reload)
-    // and DOES NOT match current text (to avoid cursor jump on loopback)
     if (widget.initialQty != oldWidget.initialQty) {
-       final newText = widget.initialQty != null && widget.initialQty! > 0 
-          ? (widget.initialQty! % 1 == 0 ? widget.initialQty!.toInt().toString() : widget.initialQty.toString())
-          : '';
-       
-       if (_qtyController.text != newText) {
-          // Check if difference is just parsing (e.g. 1.0 vs 1)
-          double? currentVal = double.tryParse(_qtyController.text);
-          if (currentVal != widget.initialQty) {
-             _qtyController.text = newText;
-             _qtyController.selection = TextSelection.collapsed(offset: _qtyController.text.length);
-          }
-       }
+      // Logic to update controllers if initialQty changed from outside
+      // But avoid loopback cursor jumps
+      final currentTotal = _calculateTotal();
+      if (widget.initialQty != currentTotal) {
+        setState(() {
+          _initControllers();
+        });
+      }
     }
+  }
+
+  double _calculateTotal() {
+    final pVal = double.tryParse(_primaryController.text) ?? 0.0;
+    final sVal = double.tryParse(_secondaryController.text) ?? 0.0;
+    final ratio = widget.product.conversionRatio ?? 1.0;
+    return (sVal * ratio) + pVal;
+  }
+
+  void _onChanged() {
+    final total = _calculateTotal();
+    widget.onQtyChanged(total > 0 ? total : null);
   }
 
   @override
   void dispose() {
-    _qtyController.dispose();
+    _primaryController.dispose();
+    _secondaryController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final hasSecondary = widget.product.secondaryUnitName != null && (widget.product.conversionRatio ?? 0) > 0;
+    final totalQty = _calculateTotal();
+
     return Container(
       color: widget.isChecked ? Colors.green.withOpacity(0.05) : Colors.white,
-      child: ListTile(
-        leading: Checkbox(
-          value: widget.isChecked,
-          activeColor: AppTheme.primaryColor,
-          onChanged: widget.onCheckChanged,
-        ),
-        title: Text(
-          widget.product.name, 
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-            color: widget.isChecked ? Colors.black : Colors.black87,
-          )
-        ),
-        subtitle: Text(
-          'SKU: ${widget.product.sku} • Unit: ${widget.product.unit}',
-          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-        ),
-        trailing: SizedBox(
-          width: 70,
-          child: TextField(
-            controller: _qtyController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-            decoration: InputDecoration(
-              hintText: '0',
-              contentPadding: const EdgeInsets.symmetric(vertical: 8),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey[300]!),
-              ),
-              focusedBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(8)),
-                borderSide: BorderSide(color: AppTheme.primaryColor, width: 2),
-              ),
-              filled: true,
-              fillColor: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        children: [
+          ListTile(
+            leading: Checkbox(
+              value: widget.isChecked,
+              activeColor: AppTheme.primaryColor,
+              onChanged: widget.onCheckChanged,
             ),
-            onChanged: (val) {
-              if (val.isEmpty) {
-                widget.onQtyChanged(null);
-              } else {
-                widget.onQtyChanged(double.tryParse(val));
-              }
-            },
+            title: Text(
+              widget.product.name, 
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: widget.isChecked ? Colors.black : Colors.black87,
+              )
+            ),
+            subtitle: Text(
+              'SKU: ${widget.product.sku}',
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            ),
+            trailing: hasSecondary 
+              ? null // Use custom row below for dual input
+              : SizedBox(
+                  width: 80,
+                  child: _buildQtyField(_primaryController, widget.product.unit),
+                ),
+            onTap: () => widget.onCheckChanged(!widget.isChecked),
           ),
-        ),
-        onTap: () => widget.onCheckChanged(!widget.isChecked),
+          if (hasSecondary)
+            Padding(
+              padding: const EdgeInsets.only(left: 72, right: 16, bottom: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildQtyField(_secondaryController, widget.product.secondaryUnitName!),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildQtyField(_primaryController, widget.product.unit),
+                      ),
+                    ],
+                  ),
+                  if (totalQty > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Text(
+                        'Total: ${totalQty % 1 == 0 ? totalQty.toInt() : totalQty} ${widget.product.unit}',
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildQtyField(TextEditingController controller, String label) {
+    return TextField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      textAlign: TextAlign.center,
+      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+      decoration: InputDecoration(
+        hintText: '0',
+        labelText: label,
+        labelStyle: const TextStyle(fontSize: 10),
+        contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: AppTheme.primaryColor, width: 2),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+      ),
+      onChanged: (_) => _onChanged(),
     );
   }
 }

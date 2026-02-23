@@ -209,20 +209,25 @@ class _StockBalanceScreenState extends State<StockBalanceScreen> {
                   style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: balance > 0 
-                      ? AppTheme.primaryColor.withValues(alpha: 0.1)
-                      : Colors.red.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '$balance ${_selectedProduct?.unit ?? ''}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: balance > 0 ? AppTheme.accentColor : Colors.red,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '$balance ${_selectedProduct?.unit ?? ''}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: balance > 0 ? AppTheme.accentColor : Colors.red,
+                      ),
+                    ),
+                    if (_selectedProduct?.secondaryUnitName != null && (_selectedProduct?.conversionRatio ?? 0) > 0 && balance > 0)
+                      Text(
+                        '(${ (balance / _selectedProduct!.conversionRatio!).floor() } ${_selectedProduct?.secondaryUnitName} ${ (balance % _selectedProduct!.conversionRatio!).toInt() } ${_selectedProduct?.unit})',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],
