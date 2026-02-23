@@ -209,6 +209,14 @@ class _StockBalanceScreenState extends State<StockBalanceScreen> {
                   style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
                 ),
               ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: balance > 0 
+                      ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                      : Colors.red.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
