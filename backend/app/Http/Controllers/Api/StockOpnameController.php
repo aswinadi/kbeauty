@@ -20,12 +20,15 @@ class StockOpnameController extends Controller
 
     public function products(Request $request)
     {
-        $products = Product::with('unit')->orderBy('name')->get()->map(function ($product) {
+        $products = Product::with(['unit', 'secondaryUnit'])->orderBy('name')->get()->map(function ($product) {
             return [
                 'id' => $product->id,
                 'name' => $product->name,
                 'sku' => $product->sku,
                 'unit' => $product->unit?->name ?? '-',
+                'secondary_unit_id' => $product->secondary_unit_id,
+                'secondary_unit_name' => $product->secondaryUnit?->name,
+                'conversion_ratio' => $product->conversion_ratio,
                 'system_qty' => 0,
             ];
         });

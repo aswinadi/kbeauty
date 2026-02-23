@@ -13,7 +13,7 @@ class Product extends Model implements HasMedia
 {
     use InteractsWithMedia;
 
-    protected $fillable = ['category_id', 'unit_id', 'name', 'sku', 'price'];
+    protected $fillable = ['category_id', 'unit_id', 'secondary_unit_id', 'name', 'sku', 'price', 'conversion_ratio'];
 
     protected static function booted()
     {
@@ -44,6 +44,11 @@ class Product extends Model implements HasMedia
     public function unit()
     {
         return $this->belongsTo(Unit::class);
+    }
+
+    public function secondaryUnit()
+    {
+        return $this->belongsTo(Unit::class, 'secondary_unit_id');
     }
 
     public function inventoryMovements()

@@ -25,11 +25,20 @@ class ProductForm
                     ->dehydrated(false)
                     ->maxLength(255),
                 \Filament\Forms\Components\Select::make('unit_id')
-                    ->label('Unit')
+                    ->label('Primary Unit')
                     ->relationship('unit', 'name')
                     ->required()
                     ->searchable()
                     ->preload(),
+                \Filament\Forms\Components\Select::make('secondary_unit_id')
+                    ->label('Secondary Unit')
+                    ->relationship('secondaryUnit', 'name')
+                    ->searchable()
+                    ->preload(),
+                \Filament\Forms\Components\TextInput::make('conversion_ratio')
+                    ->label('Conversion Ratio (1 [Secondary] = ? [Primary])')
+                    ->numeric()
+                    ->placeholder('e.g. 12 for 1 Box = 12 Pcs'),
                 \Filament\Forms\Components\TextInput::make('price')
                     ->numeric()
                     ->default(0)
