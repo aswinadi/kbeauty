@@ -6,9 +6,9 @@ import '../../services/product_service.dart';
 import '../../theme/app_theme.dart';
 
 class ProductDetailScreen extends StatefulWidget {
-  final Product product;
+  final Product? product;
 
-  const ProductDetailScreen({super.key, required this.product});
+  const ProductDetailScreen({super.key, this.product});
 
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
@@ -22,9 +22,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   late TextEditingController _nameController;
   late TextEditingController _skuController;
   late TextEditingController _priceController;
+  late TextEditingController _conversionRatioController;
   
   int? _selectedCategoryId;
   int? _selectedUnitId;
+  int? _selectedSecondaryUnitId;
   File? _imageFile;
   bool _isLoading = false;
   bool _isSaving = false;
@@ -32,14 +34,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   List<Category> _categories = [];
   List<Unit> _units = [];
 
+  bool get _isEditMode => widget.product != null;
+
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.product.name);
-    _skuController = TextEditingController(text: widget.product.sku);
-    _priceController = TextEditingController(text: widget.product.price.toString());
-    _selectedCategoryId = widget.product.categoryId;
-    _selectedUnitId = widget.product.unitId;
+    _nameController = TextEditingController(text: widget.product?.name ?? '');
+    _skuController = TextEditingController(text: widget.product?.sku ?? '');
+    _priceController = TextEditingController(text: widget.product?.price.toString() ?? '');
+    _conversionRatioController = TextEditingController(
+      text: widget.product?.conversionRatio?.toString() ?? ''
+    );
+    _selectedCategoryId = widget.product?.categoryId;
+    _selectedUnitId = widget.product?.unitId;
+    _selectedSecondaryUnitId = widget.product?.secondaryUnitId;
     _loadMetadata();
   }
 
@@ -114,26 +122,43 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
 
     setState(() => _isSaving = true);
-    final success = await _productService.updateProduct(
-      id: widget.product.id,
-      name: _nameController.text,
-      sku: _skuController.text,
-      price: double.parse(_priceController.text),
-      categoryId: _selectedCategoryId!,
-      unitId: _selectedUnitId!,
-      imageFile: _imageFile,
-    );
+    
+    bool success;
+    if (_isEditMode) {
+      success = await _productService.updateProduct(
+        id: widget.product!.id,
+        name: _nameController.text,
+        sku: _skuController.text,
+        price: double.parse(_priceController.text),
+        categoryId: _selectedCategoryId!,
+        unitId: _selectedUnitId!,
+        secondaryUnitId: _selectedSecondaryUnitId,
+        conversionRatio: double.tryParse(_conversionRatioController.text),
+        imageFile: _imageFile,
+      );
+    } else {
+      success = await _productService.createProduct(
+        name: _nameController.text,
+        sku: _skuController.text.isNotEmpty ? _skuController.text : null,
+        price: double.parse(_priceController.text),
+        categoryId: _selectedCategoryId!,
+        unitId: _selectedUnitId!,
+        secondaryUnitId: _selectedSecondaryUnitId,
+        conversionRatio: double.tryParse(_conversionRatioController.text),
+        imageFile: _imageFile,
+      );
+    }
 
     setState(() => _isSaving = false);
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Product updated successfully')),
+        SnackBar(content: Text('Product ${_isEditMode ? 'updated' : 'created'} successfully')),
       );
       Navigator.pop(context, true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update product')),
+        SnackBar(content: Text('Failed to ${_isEditMode ? 'update' : 'create'} product')),
       );
     }
   }
@@ -142,7 +167,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Product', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(_isEditMode ? 'Edit Product' : 'New Product', style: const TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         actions: [
@@ -172,8 +197,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       child: Stack(
                         children: [
                           Container(
-                            width: 160,
-                            height: 160,
+                            width: 140,
+                            height: 140,
                             decoration: BoxDecoration(
                               color: Colors.grey[100],
                               borderRadius: BorderRadius.circular(20),
@@ -184,12 +209,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     borderRadius: BorderRadius.circular(20),
                                     child: Image.file(_imageFile!, fit: BoxFit.cover),
                                   )
-                                : widget.product.imageUrl != null
+                                : widget.product?.imageUrl != null
                                     ? ClipRRect(
                                         borderRadius: BorderRadius.circular(20),
-                                        child: Image.network(widget.product.imageUrl!, fit: BoxFit.cover),
+                                        child: Image.network(widget.product!.imageUrl!, fit: BoxFit.cover),
                                       )
-                                    : Icon(Icons.inventory_2, size: 64, color: Colors.grey[300]),
+                                    : Icon(Icons.inventory_2, size: 56, color: Colors.grey[300]),
                           ),
                           Positioned(
                             bottom: 0,
@@ -199,7 +224,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               shape: const CircleBorder(),
                               elevation: 4,
                               child: IconButton(
-                                icon: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                                icon: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
                                 onPressed: _showImagePickerOptions,
                               ),
                             ),
@@ -209,7 +234,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                     const SizedBox(height: 32),
                     
-                    Text('General Information', style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.bold, fontSize: 13)),
+                    _buildSectionHeader('General Information'),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _nameController,
@@ -219,41 +244,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _skuController,
-                      readOnly: true,
+                      readOnly: _isEditMode,
                       decoration: InputDecoration(
                         labelText: 'SKU',
-                        hintText: 'Enter SKU',
-                        fillColor: Colors.grey[100],
-                        suffixIcon: const Icon(Icons.lock_outline, size: 16),
+                        hintText: _isEditMode ? 'SKU (Locked)' : 'Enter SKU (optional)',
+                        fillColor: _isEditMode ? Colors.grey[100] : Colors.white,
+                        suffixIcon: _isEditMode ? const Icon(Icons.lock_outline, size: 16) : null,
                       ),
-                      style: TextStyle(color: Colors.grey[600]),
+                      style: TextStyle(color: _isEditMode ? Colors.grey[600] : Colors.black),
                     ),
                     const SizedBox(height: 16),
                     
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButtonFormField<int>(
-                            value: _selectedCategoryId,
-                            items: _categories.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
-                            onChanged: (val) => setState(() => _selectedCategoryId = val),
-                            decoration: const InputDecoration(labelText: 'Category'),
-                            validator: (val) => val == null ? 'Required' : null,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: DropdownButtonFormField<int>(
-                            value: _selectedUnitId,
-                            items: _units.map((u) => DropdownMenuItem(value: u.id, child: Text(u.name))).toList(),
-                            onChanged: (val) => setState(() => _selectedUnitId = val),
-                            decoration: const InputDecoration(labelText: 'Unit'),
-                            validator: (val) => val == null ? 'Required' : null,
-                          ),
-                        ),
-                      ],
+                    DropdownButtonFormField<int>(
+                      value: _selectedCategoryId,
+                      items: _categories.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
+                      onChanged: (val) => setState(() => _selectedCategoryId = val),
+                      decoration: const InputDecoration(labelText: 'Category'),
+                      validator: (val) => val == null ? 'Required' : null,
                     ),
                     const SizedBox(height: 16),
+                    
                     TextFormField(
                       controller: _priceController,
                       decoration: const InputDecoration(labelText: 'Price', prefixText: 'Rp '),
@@ -264,6 +274,63 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         return null;
                       },
                     ),
+
+                    const SizedBox(height: 32),
+                    _buildSectionHeader('Unit of Measure'),
+                    const SizedBox(height: 16),
+                    
+                    DropdownButtonFormField<int>(
+                      value: _selectedUnitId,
+                      items: _units.map((u) => DropdownMenuItem(value: u.id, child: Text(u.name))).toList(),
+                      onChanged: (val) => setState(() => _selectedUnitId = val),
+                      decoration: const InputDecoration(labelText: 'Primary Unit'),
+                      validator: (val) => val == null ? 'Required' : null,
+                    ),
+                    const SizedBox(height: 16),
+
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: DropdownButtonFormField<int>(
+                            value: _selectedSecondaryUnitId,
+                            items: [
+                              const DropdownMenuItem<int>(value: null, child: Text('None')),
+                              ..._units.map((u) => DropdownMenuItem(value: u.id, child: Text(u.name))),
+                            ],
+                            onChanged: (val) => setState(() => _selectedSecondaryUnitId = val),
+                            decoration: const InputDecoration(labelText: 'Secondary Unit'),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          flex: 2,
+                          child: TextFormField(
+                            controller: _conversionRatioController,
+                            decoration: const InputDecoration(labelText: 'Ratio', hintText: 'Ratio'),
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            enabled: _selectedSecondaryUnitId != null,
+                            validator: (value) {
+                              if (_selectedSecondaryUnitId != null) {
+                                if (value == null || value.isEmpty) return 'Required';
+                                if (double.tryParse(value) == null) return 'Invalid';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_selectedSecondaryUnitId != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          '1 ${_units.firstWhere((u) => u.id == _selectedSecondaryUnitId).name} = ${_conversionRatioController.text.isEmpty ? '?' : _conversionRatioController.text} ${_selectedUnitId != null ? _units.firstWhere((u) => u.id == _selectedUnitId).name : 'units'}',
+                          style: TextStyle(fontSize: 11, color: Colors.grey[600], fontStyle: FontStyle.italic),
+                        ),
+                      ),
+
                     const SizedBox(height: 48),
                   ],
                 ),
@@ -271,6 +338,28 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ),
     );
   }
+
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title, 
+      style: TextStyle(
+        color: AppTheme.primaryColor, 
+        fontWeight: FontWeight.bold, 
+        fontSize: 13,
+        letterSpacing: 0.5
+      )
+    );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _skuController.dispose();
+    _priceController.dispose();
+    _conversionRatioController.dispose();
+    super.dispose();
+  }
+}
 
   @override
   void dispose() {

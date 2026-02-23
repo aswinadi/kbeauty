@@ -33,6 +33,9 @@ class ProductController extends Controller
                 'price' => $product->price,
                 'unit_id' => $product->unit_id,
                 'unit' => $product->unit?->name ?? '-',
+                'secondary_unit_id' => $product->secondary_unit_id,
+                'secondary_unit_name' => $product->secondaryUnit?->name,
+                'conversion_ratio' => $product->conversion_ratio,
                 'category_id' => $product->category_id,
                 'category_name' => $product->category?->name,
                 'image_url' => $product->getFirstMediaUrl('products') ?: null,
@@ -41,6 +44,52 @@ class ProductController extends Controller
 
         return response()->json($products);
     }
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'sku' => 'nullable|string|max:255|unique:products,sku',
+            'price' => 'required|numeric',
+            'category_id' => 'required|exists:categories,id',
+            'unit_id' => 'required|exists:units,id',
+            'secondary_unit_id' => 'nullable|exists:units,id',
+            'conversion_ratio' => 'nullable|numeric',
+            'image' => 'nullable|image|max:2048',
+        ]);
+
+        $product = Product::create($request->only([
+            'name',
+            'sku',
+            'price',
+            'category_id',
+            'unit_id',
+            'secondary_unit_id',
+            'conversion_ratio'
+        ]));
+
+        if ($request->hasFile('image')) {
+            $product->addMediaFromRequest('image')->toMediaCollection('products');
+        }
+
+        return response()->json([
+            'message' => 'Product created successfully',
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'sku' => $product->sku,
+                'price' => $product->price,
+                'unit_id' => $product->unit_id,
+                'unit' => $product->unit?->name ?? '-',
+                'secondary_unit_id' => $product->secondary_unit_id,
+                'secondary_unit_name' => $product->secondaryUnit?->name,
+                'conversion_ratio' => $product->conversion_ratio,
+                'category_id' => $product->category_id,
+                'category_name' => $product->category?->name,
+                'image_url' => $product->getFirstMediaUrl('products') ?: null,
+            ],
+        ], 201);
+    }
+
 
     public function update(Request $request, Product $product)
     {
@@ -50,10 +99,20 @@ class ProductController extends Controller
             'price' => 'required|numeric',
             'category_id' => 'required|exists:categories,id',
             'unit_id' => 'required|exists:units,id',
+            'secondary_unit_id' => 'nullable|exists:units,id',
+            'conversion_ratio' => 'nullable|numeric',
             'image' => 'nullable|image|max:2048',
         ]);
 
-        $product->update($request->only(['name', 'sku', 'price', 'category_id', 'unit_id']));
+        $product->update($request->only([
+            'name',
+            'sku',
+            'price',
+            'category_id',
+            'unit_id',
+            'secondary_unit_id',
+            'conversion_ratio'
+        ]));
 
         if ($request->hasFile('image')) {
             $product->clearMediaCollection('products');
@@ -69,6 +128,9 @@ class ProductController extends Controller
                 'price' => $product->price,
                 'unit_id' => $product->unit_id,
                 'unit' => $product->unit?->name ?? '-',
+                'secondary_unit_id' => $product->secondary_unit_id,
+                'secondary_unit_name' => $product->secondaryUnit?->name,
+                'conversion_ratio' => $product->conversion_ratio,
                 'category_id' => $product->category_id,
                 'category_name' => $product->category?->name,
                 'image_url' => $product->getFirstMediaUrl('products') ?: null,

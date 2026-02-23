@@ -85,7 +85,10 @@ class ProductService {
     required String sku,
     required double price,
     required int categoryId,
+    required int categoryId,
     required int unitId,
+    int? secondaryUnitId,
+    double? conversionRatio,
     File? imageFile,
   }) async {
     try {
@@ -102,6 +105,13 @@ class ProductService {
       request.fields['price'] = price.toString();
       request.fields['category_id'] = categoryId.toString();
       request.fields['unit_id'] = unitId.toString();
+      
+      if (secondaryUnitId != null) {
+        request.fields['secondary_unit_id'] = secondaryUnitId.toString();
+      }
+      if (conversionRatio != null) {
+        request.fields['conversion_ratio'] = conversionRatio.toString();
+      }
 
       if (imageFile != null) {
         request.files.add(await http.MultipartFile.fromPath(
@@ -121,6 +131,60 @@ class ProductService {
       }
     } catch (e) {
       print('Exception updating product: $e');
+      return false;
+    }
+  }
+
+  Future<bool> createProduct({
+    required String name,
+    String? sku,
+    required double price,
+    required int categoryId,
+    required int unitId,
+    int? secondaryUnitId,
+    double? conversionRatio,
+    File? imageFile,
+  }) async {
+    try {
+      final token = await _authService.getToken();
+      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/products'));
+      
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      });
+
+      request.fields['name'] = name;
+      if (sku != null) request.fields['sku'] = sku;
+      request.fields['price'] = price.toString();
+      request.fields['category_id'] = categoryId.toString();
+      request.fields['unit_id'] = unitId.toString();
+
+      if (secondaryUnitId != null) {
+        request.fields['secondary_unit_id'] = secondaryUnitId.toString();
+      }
+      if (conversionRatio != null) {
+        request.fields['conversion_ratio'] = conversionRatio.toString();
+      }
+
+      if (imageFile != null) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'image',
+          imageFile.path,
+        ));
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 201) {
+        return true;
+      } else {
+        print('Error creating product: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Exception creating product: $e');
       return false;
     }
   }

@@ -260,6 +260,21 @@ class _ProductBrowserScreenState extends State<ProductBrowserScreen> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ProductDetailScreen()),
+          );
+          if (result == true) {
+            _loadInitialData();
+          }
+        },
+        label: const Text('Add Product'),
+        icon: const Icon(Icons.add),
+        backgroundColor: AppTheme.primaryColor,
+        foregroundColor: AppTheme.accentColor,
+      ),
     );
   }
 
