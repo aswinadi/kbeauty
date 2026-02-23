@@ -283,7 +283,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       value: _selectedUnitId,
                       items: _units.map((u) => DropdownMenuItem(value: u.id, child: Text(u.name))).toList(),
                       onChanged: (val) => setState(() => _selectedUnitId = val),
-                      decoration: const InputDecoration(labelText: 'Primary Unit'),
+                      decoration: const InputDecoration(
+                        labelText: 'Primary Unit',
+                        helperText: 'Satuan terkecil (misal: Pcs)',
+                      ),
                       validator: (val) => val == null ? 'Required' : null,
                     ),
                     const SizedBox(height: 16),

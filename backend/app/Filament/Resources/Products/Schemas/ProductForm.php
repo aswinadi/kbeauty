@@ -26,6 +26,7 @@ class ProductForm
                     ->maxLength(255),
                 \Filament\Forms\Components\Select::make('unit_id')
                     ->label('Primary Unit')
+                    ->helperText('Satuan terkecil (misal: Pcs)')
                     ->relationship('unit', 'name')
                     ->required()
                     ->searchable()
