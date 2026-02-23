@@ -85,7 +85,6 @@ class ProductService {
     required String sku,
     required double price,
     required int categoryId,
-    required int categoryId,
     required int unitId,
     int? secondaryUnitId,
     double? conversionRatio,

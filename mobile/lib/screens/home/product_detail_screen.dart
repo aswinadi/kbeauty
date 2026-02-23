@@ -360,12 +360,3 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     super.dispose();
   }
 }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _skuController.dispose();
-    _priceController.dispose();
-    super.dispose();
-  }
-}
