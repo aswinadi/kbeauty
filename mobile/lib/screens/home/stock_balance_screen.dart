@@ -228,12 +228,22 @@ class _StockBalanceScreenState extends State<StockBalanceScreen> {
                       ),
                     ),
                     if (_selectedProduct?.secondaryUnitName != null && (_selectedProduct?.conversionRatio ?? 0) > 0 && balance > 0)
-                      Text(
-                        '(${ (balance / _selectedProduct!.conversionRatio!).floor() } ${_selectedProduct?.secondaryUnitName} ${ (balance % _selectedProduct!.conversionRatio!).toInt() } ${_selectedProduct?.unit})',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.grey[600],
-                        ),
+                      Builder(
+                        builder: (context) {
+                          final double ratio = _selectedProduct!.conversionRatio!;
+                          final int primaryPart = balance.toInt();
+                          final int secondaryPart = ((balance - primaryPart) * ratio).round();
+                          
+                          if (secondaryPart == 0) return const SizedBox.shrink();
+                          
+                          return Text(
+                            '(${primaryPart > 0 ? '$primaryPart ${_selectedProduct?.unit} ' : ''}$secondaryPart ${_selectedProduct?.secondaryUnitName})',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey[600],
+                            ),
+                          );
+                        },
                       ),
                   ],
                 ),

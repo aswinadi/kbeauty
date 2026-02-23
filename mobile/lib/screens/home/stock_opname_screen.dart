@@ -391,7 +391,8 @@ class _StockOpnameTileState extends State<StockOpnameTile> {
     final pVal = double.tryParse(_primaryController.text) ?? 0.0;
     final sVal = double.tryParse(_secondaryController.text) ?? 0.0;
     final ratio = widget.product.conversionRatio ?? 1.0;
-    return (sVal * ratio) + pVal;
+    if (ratio <= 0) return pVal + sVal; 
+    return pVal + (sVal / ratio);
   }
 
   void _onChanged() {

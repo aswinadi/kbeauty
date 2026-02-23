@@ -310,8 +310,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             controller: _conversionRatioController,
                             decoration: const InputDecoration(
                               labelText: 'Rasio', 
-                              hintText: 'misal: 12',
-                              helperText: 'Isi per Satuan Sekunder',
+                              hintText: 'misal: 10',
+                              helperText: 'Isi per Satuan Utama',
                             ),
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
                             enabled: _selectedSecondaryUnitId != null,
@@ -350,12 +350,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '1 ${_units.firstWhere((u) => u.id == _selectedSecondaryUnitId).name} = ${_conversionRatioController.text.isEmpty ? '?' : _conversionRatioController.text} ${_selectedUnitId != null ? _units.firstWhere((u) => u.id == _selectedUnitId).name : 'satuan'}',
+                                '1 ${_selectedUnitId != null ? _units.firstWhere((u) => u.id == _selectedUnitId).name : 'satuan utama'} = ${_conversionRatioController.text.isEmpty ? '?' : _conversionRatioController.text} ${_units.firstWhere((u) => u.id == _selectedSecondaryUnitId).name}',
                                 style: TextStyle(fontSize: 13, color: Colors.blue[900], fontWeight: FontWeight.w500),
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Contoh: Jika Anda membeli dalam Dus dan setiap Dus berisi 12 Pcs, masukkan 12 sebagai rasio.',
+                                'Contoh: Jika 1 Kotak berisi 10 Baris, pilih Kotak sebagai Satuan Utama dan Baris sebagai Satuan Sekunder, lalu isi 10 sebagai rasio.',
                                 style: TextStyle(fontSize: 11, color: Colors.grey[600], fontStyle: FontStyle.italic),
                               ),
                             ],

@@ -36,9 +36,9 @@ class ProductForm
                     ->searchable()
                     ->preload(),
                 \Filament\Forms\Components\TextInput::make('conversion_ratio')
-                    ->label('Conversion Ratio (1 [Secondary] = ? [Primary])')
+                    ->label('Conversion Ratio (1 [Primary] = ? [Secondary])')
                     ->numeric()
-                    ->placeholder('e.g. 12 for 1 Box = 12 Pcs'),
+                    ->placeholder('e.g. 10 for 1 Box = 10 Rows'),
                 \Filament\Forms\Components\TextInput::make('price')
                     ->numeric()
                     ->default(0)
