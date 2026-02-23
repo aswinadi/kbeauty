@@ -296,11 +296,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           child: DropdownButtonFormField<int>(
                             value: _selectedSecondaryUnitId,
                             items: [
-                              const DropdownMenuItem<int>(value: null, child: Text('None')),
+                              const DropdownMenuItem<int>(value: null, child: Text('Tidak ada')),
                               ..._units.map((u) => DropdownMenuItem(value: u.id, child: Text(u.name))),
                             ],
                             onChanged: (val) => setState(() => _selectedSecondaryUnitId = val),
-                            decoration: const InputDecoration(labelText: 'Secondary Unit'),
+                            decoration: const InputDecoration(labelText: 'Satuan Sekunder'),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -308,13 +308,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           flex: 2,
                           child: TextFormField(
                             controller: _conversionRatioController,
-                            decoration: const InputDecoration(labelText: 'Ratio', hintText: 'Ratio'),
+                            decoration: const InputDecoration(
+                              labelText: 'Rasio', 
+                              hintText: 'misal: 12',
+                              helperText: 'Isi per Satuan Sekunder',
+                            ),
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
                             enabled: _selectedSecondaryUnitId != null,
+                            onChanged: (val) => setState(() {}),
                             validator: (value) {
                               if (_selectedSecondaryUnitId != null) {
-                                if (value == null || value.isEmpty) return 'Required';
-                                if (double.tryParse(value) == null) return 'Invalid';
+                                if (value == null || value.isEmpty) return 'Wajib diisi';
+                                if (double.tryParse(value) == null) return 'Angka tidak valid';
                               }
                               return null;
                             },
@@ -324,10 +329,37 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                     if (_selectedSecondaryUnitId != null)
                       Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          '1 ${_units.firstWhere((u) => u.id == _selectedSecondaryUnitId).name} = ${_conversionRatioController.text.isEmpty ? '?' : _conversionRatioController.text} ${_selectedUnitId != null ? _units.firstWhere((u) => u.id == _selectedUnitId).name : 'units'}',
-                          style: TextStyle(fontSize: 11, color: Colors.grey[600], fontStyle: FontStyle.italic),
+                        padding: const EdgeInsets.only(top: 12.0),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.blue.withOpacity(0.1)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Aturan Konversi:',
+                                style: TextStyle(
+                                  fontSize: 12, 
+                                  fontWeight: FontWeight.bold, 
+                                  color: Colors.blue[800]
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '1 ${_units.firstWhere((u) => u.id == _selectedSecondaryUnitId).name} = ${_conversionRatioController.text.isEmpty ? '?' : _conversionRatioController.text} ${_selectedUnitId != null ? _units.firstWhere((u) => u.id == _selectedUnitId).name : 'satuan'}',
+                                style: TextStyle(fontSize: 13, color: Colors.blue[900], fontWeight: FontWeight.w500),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Contoh: Jika Anda membeli dalam Dus dan setiap Dus berisi 12 Pcs, masukkan 12 sebagai rasio.',
+                                style: TextStyle(fontSize: 11, color: Colors.grey[600], fontStyle: FontStyle.italic),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
 
