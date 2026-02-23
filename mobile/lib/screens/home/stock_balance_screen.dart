@@ -231,13 +231,13 @@ class _StockBalanceScreenState extends State<StockBalanceScreen> {
                       Builder(
                         builder: (context) {
                           final double ratio = _selectedProduct!.conversionRatio!;
-                          final int primaryPart = balance.toInt();
-                          final int secondaryPart = ((balance - primaryPart) * ratio).round();
+                          final int secondaryPart = (balance / ratio).floor();
+                          final int primaryPart = (balance % ratio).toInt();
                           
-                          if (secondaryPart == 0) return const SizedBox.shrink();
+                          if (secondaryPart == 0 && primaryPart == 0) return const SizedBox.shrink();
                           
                           return Text(
-                            '(${primaryPart > 0 ? '$primaryPart ${_selectedProduct?.unit} ' : ''}$secondaryPart ${_selectedProduct?.secondaryUnitName})',
+                            '(${secondaryPart > 0 ? '$secondaryPart ${_selectedProduct?.secondaryUnitName} ' : ''}$primaryPart ${_selectedProduct?.unit})',
                             style: TextStyle(
                               fontSize: 10,
                               color: Colors.grey[600],
