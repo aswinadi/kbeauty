@@ -1,5 +1,23 @@
 # Project Changelog
 
+## [1.2.0] - 2026-02-23
+
+### Added
+- **Multi-UOM Support**: Comprehensive system for Primary and Secondary units of measure.
+- **Mobile Product Creation**: Added "Add Product" functionality to the mobile app with image upload and UOM configuration.
+- **Stock Opname Enhancements**: Support for dual-unit input (e.g., Box & Pcs) with real-time total calculation.
+- **Stock Balance Breakdown**: Displaying inventory in human-readable unit breakdowns (e.g., "1 Box 5 Pcs").
+- **UI Guidance**: Added helpful instructions and Indonesian translations for technical fields like conversion ratios.
+
+### Changed
+- **Architecture Refactor**: Standardized on "Smallest-Unit-First" as Primary Unit to ensure database integrity and avoid decimal drift.
+- **Mobile UI**: Refactored `ProductDetailScreen` to handle both creation and editing modes efficiently.
+
+### Fixed
+- **Mobile Build**: Resolved syntax errors and duplicate parameters in `ProductService` and `ProductDetailScreen`.
+- **Logic Correction**: Aligned conversion formulas across backend and mobile to `1 Secondary = N Primary`.
+
+
 ## [1.1.0] - 2026-02-19
 
 ### Added
