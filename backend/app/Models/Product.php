@@ -19,15 +19,20 @@ class Product extends Model implements HasMedia
     {
         static::creating(function ($product) {
             if (empty($product->sku)) {
-                $category = $product->category;
+                $category = $product->category ?? \App\Models\Category::find($product->category_id);
+
+                if (!$category) {
+                    return;
+                }
+
                 $prefix = $category->prefix ?: Str::upper(Str::substr($category->name, 0, 2));
 
                 $lastProduct = static::where('category_id', $product->category_id)
-                    ->latest('id')
+                    ->orderBy('id', 'desc')
                     ->first();
 
                 $sequence = 1;
-                if ($lastProduct && preg_match('/-(\d{3})$/', $lastProduct->sku, $matches)) {
+                if ($lastProduct && $lastProduct->sku && preg_match('/-(\d{3})$/', $lastProduct->sku, $matches)) {
                     $sequence = (int) $matches[1] + 1;
                 }
 
@@ -54,5 +59,25 @@ class Product extends Model implements HasMedia
     public function inventoryMovements()
     {
         return $this->hasMany(InventoryMovement::class);
+    }
+
+    public function formatQuantity(float $qty): string
+    {
+        if ($this->secondary_unit_id && $this->conversion_ratio > 0) {
+            $secondaryQty = floor($qty / $this->conversion_ratio);
+            $primaryQty = $qty % $this->conversion_ratio;
+
+            $parts = [];
+            if ($secondaryQty > 0) {
+                $parts[] = $secondaryQty . ' ' . ($this->secondaryUnit?->name ?? 'Unit');
+            }
+            if ($primaryQty > 0 || empty($parts)) {
+                $parts[] = $primaryQty . ' ' . ($this->unit?->name ?? 'Unit');
+            }
+
+            return implode(', ', $parts);
+        }
+
+        return $qty . ' ' . ($this->unit?->name ?? 'Unit');
     }
 }

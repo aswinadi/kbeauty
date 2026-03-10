@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/product.dart';
 import '../../services/inventory_service.dart';
 import '../../services/product_service.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/product_selector.dart';
 import '../../widgets/product_thumbnail.dart';
 
@@ -23,6 +24,7 @@ class _InventoryTransactionScreenState extends State<InventoryTransactionScreen>
   List<Product> _products = [];
   int? _selectedLocationId;
   Product? _selectedProduct;
+  bool _useSecondaryUnit = false;
   
   // List to hold pending items
   final List<Map<String, dynamic>> _transactionItems = [];
@@ -56,11 +58,22 @@ class _InventoryTransactionScreenState extends State<InventoryTransactionScreen>
       return;
     }
 
-    final qty = double.tryParse(_qtyController.text) ?? 0;
-    if (qty <= 0) return;
+    final inputQty = double.tryParse(_qtyController.text) ?? 0;
+    if (inputQty <= 0) return;
+
+    // Convert to base quantity if secondary unit is used
+    double qty = inputQty;
+    String unitName = _selectedProduct!.unit;
+    
+    if (_useSecondaryUnit && _selectedProduct!.secondaryUnitName != null) {
+      final ratio = _selectedProduct!.conversionRatio ?? 1.0;
+      qty = inputQty * ratio;
+      unitName = _selectedProduct!.secondaryUnitName!;
+    }
 
     setState(() {
-      // Check if product already in list
+      // Check if product already in list (with same unit to be safe, or just merge)
+      // For simplicity, we merge into base quantity
       final existingIndex = _transactionItems.indexWhere((item) => item['product_id'] == _selectedProduct!.id);
       if (existingIndex >= 0) {
         _transactionItems[existingIndex]['qty'] += qty;
@@ -69,11 +82,14 @@ class _InventoryTransactionScreenState extends State<InventoryTransactionScreen>
           'product_id': _selectedProduct!.id,
           'product_name': _selectedProduct!.name,
           'qty': qty,
-          'unit': _selectedProduct!.unit,
+          'display_qty': inputQty,
+          'unit': unitName,
+          'base_unit': _selectedProduct!.unit,
         });
       }
       _qtyController.clear();
       _selectedProduct = null;
+      _useSecondaryUnit = false;
     });
   }
 
@@ -97,7 +113,7 @@ class _InventoryTransactionScreenState extends State<InventoryTransactionScreen>
       locationId: _selectedLocationId!,
       items: _transactionItems.map((item) => {
         'product_id': item['product_id'],
-        'qty': item['qty'],
+        'qty': item['qty'], // Always send base quantity
       }).toList(),
       notes: _notesController.text,
     );
@@ -161,19 +177,45 @@ class _InventoryTransactionScreenState extends State<InventoryTransactionScreen>
                         ProductSelector(
                           products: _products,
                           selectedProduct: _selectedProduct,
-                          onChanged: (p) => setState(() => _selectedProduct = p),
+                          onChanged: (p) => setState(() {
+                            _selectedProduct = p;
+                            _useSecondaryUnit = false;
+                          }),
                         ),
                         const SizedBox(height: 16),
+                        if (_selectedProduct != null && _selectedProduct!.secondaryUnitName != null)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16.0),
+                            child: Row(
+                              children: [
+                                const Text('Unit: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                const SizedBox(width: 8),
+                                ChoiceChip(
+                                  label: Text(_selectedProduct!.unit),
+                                  selected: !_useSecondaryUnit,
+                                  onSelected: (val) => setState(() => _useSecondaryUnit = !val),
+                                ),
+                                const SizedBox(width: 8),
+                                ChoiceChip(
+                                  label: Text(_selectedProduct!.secondaryUnitName!),
+                                  selected: _useSecondaryUnit,
+                                  onSelected: (val) => setState(() => _useSecondaryUnit = val),
+                                ),
+                              ],
+                            ),
+                          ),
                         Row(
                           children: [
                             Expanded(
                               flex: 2,
                               child: TextField(
                                 controller: _qtyController,
-                                keyboardType: TextInputType.number,
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                 decoration: InputDecoration(
                                   labelText: 'Quantity',
-                                  suffixText: _selectedProduct?.unit ?? '',
+                                  suffixText: _selectedProduct != null 
+                                    ? (_useSecondaryUnit ? _selectedProduct!.secondaryUnitName : _selectedProduct!.unit)
+                                    : '',
                                 ),
                               ),
                             ),
@@ -187,6 +229,14 @@ class _InventoryTransactionScreenState extends State<InventoryTransactionScreen>
                             ),
                           ],
                         ),
+                        if (_useSecondaryUnit && _selectedProduct != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              'Converts to: ${(double.tryParse(_qtyController.text) ?? 0) * (_selectedProduct!.conversionRatio ?? 1.0)} ${_selectedProduct!.unit}',
+                              style: TextStyle(fontSize: 12, color: AppTheme.primaryColor, fontWeight: FontWeight.bold),
+                            ),
+                          ),
                         const SizedBox(height: 32),
                         if (_transactionItems.isNotEmpty) ...[
                           const Text('Items List', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -201,7 +251,7 @@ class _InventoryTransactionScreenState extends State<InventoryTransactionScreen>
                               return ListTile(
                                 contentPadding: EdgeInsets.zero,
                                 title: Text(item['product_name']),
-                                subtitle: Text('${item['qty']} ${item['unit']}'),
+                                subtitle: Text('${item['qty']} ${item['base_unit']}'), // Show total base quantity
                                 trailing: IconButton(
                                   icon: const Icon(Icons.delete_outline, color: Colors.red),
                                   onPressed: () => _removeItem(index),

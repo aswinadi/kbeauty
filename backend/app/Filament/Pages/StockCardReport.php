@@ -30,7 +30,7 @@ class StockCardReport extends Page implements HasForms, HasTable
     use InteractsWithForms;
     use InteractsWithTable;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Reports';
+    protected static string|\UnitEnum|null $navigationGroup = 'Laporan';
     protected static ?int $navigationSort = 1;
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
@@ -113,12 +113,15 @@ class StockCardReport extends Page implements HasForms, HasTable
                     ->mergeBindings($rawPairs)
                     ->join('products', 'pairs.product_id', '=', 'products.id')
                     ->join('locations', 'pairs.location_id', '=', 'locations.id')
+                    ->leftJoin('units', 'products.unit_id', '=', 'units.id')
                     ->select([
                         \Illuminate\Support\Facades\DB::raw("CONCAT(pairs.product_id, '-', pairs.location_id) as id"),
                         'pairs.product_id',
                         'pairs.location_id',
                         'products.name as product_name',
+                        'products.sku as product_sku',
                         'locations.name as location_name',
+                        'units.name as unit_name',
                     ]);
 
                 $model = new \App\Models\InventoryMovement();
@@ -131,23 +134,36 @@ class StockCardReport extends Page implements HasForms, HasTable
                     ->when($this->location_id, fn($q) => $q->where('location_id', $this->location_id));
             })
             ->columns([
+                TextColumn::make('product_sku')
+                    ->label('SKU')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('product_name')
                     ->label('Product')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
+                TextColumn::make('unit_name')
+                    ->label('UOM')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('location_name')
                     ->label('Location')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('quantity')
-                    ->label('Quantity')
+                    ->label('Qty (Base)')
+                    ->alignRight()
+                    ->state(fn(object $record) => $this->calculateStock($record, 'stock')),
+                TextColumn::make('breakdown')
+                    ->label('Breakdown')
                     ->alignRight()
                     ->weight('bold')
-                    ->state(fn(object $record) => $this->calculateStock($record, 'stock'))
-                    ->summarize(\Filament\Tables\Columns\Summarizers\Summarizer::make()
-                        ->label('')
-                        ->using(fn($query) => $query->get()->sum(fn($record) => $this->calculateStock($record, 'stock')))),
+                    ->state(function (object $record) {
+                        $qty = $this->calculateStock($record, 'stock');
+                        $product = Product::find($record->product_id);
+                        return $product ? $product->formatQuantity($qty) : $qty;
+                    }),
             ])
             ->groups([
                 'product_name',
@@ -238,12 +254,15 @@ class StockCardReport extends Page implements HasForms, HasTable
             ->mergeBindings($rawPairs)
             ->join('products', 'pairs.product_id', '=', 'products.id')
             ->join('locations', 'pairs.location_id', '=', 'locations.id')
+            ->leftJoin('units', 'products.unit_id', '=', 'units.id')
             ->select([
                 \Illuminate\Support\Facades\DB::raw("CONCAT(pairs.product_id, '-', pairs.location_id) as id"),
                 'pairs.product_id',
                 'pairs.location_id',
                 'products.name as product_name',
+                'products.sku as product_sku',
                 'locations.name as location_name',
+                'units.name as unit_name',
             ]);
 
         $model = new \App\Models\InventoryMovement();
@@ -261,10 +280,25 @@ class StockCardReport extends Page implements HasForms, HasTable
             $query->where('location_id', $this->location_id);
         }
 
-        return $query->reorder()->orderBy('product_name')->get()->map(fn($record) => [
-            'name' => "{$record->location_name} - {$record->product_name}",
-            'quantity' => $this->calculateStock($record, 'stock'),
-        ])->toArray();
+        return $query->reorder()->orderBy('product_name')->get()->map(function ($record) {
+            $initial = $this->calculateStock($record, 'initial');
+            $in = $this->calculateStock($record, 'in');
+            $out = $this->calculateStock($record, 'out');
+            $stock = $this->calculateStock($record, 'stock');
+            $product = Product::find($record->product_id);
+
+            return [
+                'location' => $record->location_name,
+                'product' => $record->product_name,
+                'sku' => $record->product_sku,
+                'uom' => $record->unit_name,
+                'initial' => $initial,
+                'in' => $in,
+                'out' => $out,
+                'stock' => $stock,
+                'breakdown' => $product ? $product->formatQuantity($stock) : $stock,
+            ];
+        })->toArray();
     }
 
     protected function getHeaderActions(): array

@@ -74,13 +74,14 @@ class ProductCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        '\$${product.price.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          color: AppTheme.accentColor,
-                          fontWeight: FontWeight.bold,
+                      if (product.price != null)
+                        Text(
+                          'Rp ${product.price!.toStringAsFixed(0)}',
+                          style: const TextStyle(
+                            color: AppTheme.accentColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(

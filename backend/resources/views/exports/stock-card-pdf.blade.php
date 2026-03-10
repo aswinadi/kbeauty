@@ -60,31 +60,40 @@
     <table>
         <thead>
             <tr>
+                <th>SKU</th>
+                <th>Product</th>
+                <th>UOM</th>
                 <th>Location</th>
                 <th class="text-right">Initial</th>
                 <th class="text-right">In</th>
                 <th class="text-right">Out</th>
                 <th class="text-right">Stock</th>
+                <th class="text-right">Breakdown</th>
             </tr>
         </thead>
         <tbody>
             @foreach($data as $row)
                 <tr>
-                    <td>{{ $row['name'] }}</td>
+                    <td>{{ $row['sku'] }}</td>
+                    <td>{{ $row['product'] }}</td>
+                    <td>{{ $row['uom'] }}</td>
+                    <td>{{ $row['location'] }}</td>
                     <td class="text-right">{{ number_format($row['initial'], 0) }}</td>
                     <td class="text-right">{{ number_format($row['in'], 0) }}</td>
                     <td class="text-right">{{ number_format($row['out'], 0) }}</td>
                     <td class="text-right">{{ number_format($row['stock'], 0) }}</td>
+                    <td class="text-right">{{ $row['breakdown'] }}</td>
                 </tr>
             @endforeach
         </tbody>
         <tfoot>
             <tr style="font-weight: bold; background-color: #f9f9f9;">
-                <td>TOTAL</td>
+                <td colspan="4">TOTAL</td>
                 <td class="text-right">{{ number_format(collect($data)->sum('initial'), 0) }}</td>
                 <td class="text-right">{{ number_format(collect($data)->sum('in'), 0) }}</td>
                 <td class="text-right">{{ number_format(collect($data)->sum('out'), 0) }}</td>
                 <td class="text-right">{{ number_format(collect($data)->sum('stock'), 0) }}</td>
+                <td></td>
             </tr>
         </tfoot>
     </table>

@@ -83,7 +83,7 @@ class ProductService {
     required int id,
     required String name,
     required String sku,
-    required double price,
+    double? price,
     required int categoryId,
     required int unitId,
     int? secondaryUnitId,
@@ -101,7 +101,9 @@ class ProductService {
 
       request.fields['name'] = name;
       request.fields['sku'] = sku;
-      request.fields['price'] = price.toString();
+      if (price != null) {
+        request.fields['price'] = price.toString();
+      }
       request.fields['category_id'] = categoryId.toString();
       request.fields['unit_id'] = unitId.toString();
       
@@ -137,7 +139,7 @@ class ProductService {
   Future<bool> createProduct({
     required String name,
     String? sku,
-    required double price,
+    double? price,
     required int categoryId,
     required int unitId,
     int? secondaryUnitId,
@@ -155,7 +157,9 @@ class ProductService {
 
       request.fields['name'] = name;
       if (sku != null) request.fields['sku'] = sku;
-      request.fields['price'] = price.toString();
+      if (price != null) {
+        request.fields['price'] = price.toString();
+      }
       request.fields['category_id'] = categoryId.toString();
       request.fields['unit_id'] = unitId.toString();
 

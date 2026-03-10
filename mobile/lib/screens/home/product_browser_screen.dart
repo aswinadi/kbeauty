@@ -215,7 +215,7 @@ class _ProductBrowserScreenState extends State<ProductBrowserScreen> {
                                                   ),
                                                   child: Row(
                                                     children: [
-                                                      if (product.secondaryUnitName != null)
+                                                      if (product.secondaryUnitName != null && product.secondaryUnitName != product.unit)
                                                         Container(
                                                           margin: const EdgeInsets.only(right: 4),
                                                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

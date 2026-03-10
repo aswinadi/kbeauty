@@ -43,11 +43,13 @@ class ProductForm
                 \Filament\Forms\Components\TextInput::make('price')
                     ->numeric()
                     ->default(0)
-                    ->prefix('Rp'),
+                    ->prefix('Rp')
+                    ->visible(fn() => auth()->user()->hasRole('Super Admin')),
                 \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('image')
                     ->collection('product_images')
                     ->image()
                     ->imageEditor()
+                    ->capture()
                     ->columnSpanFull(),
             ]);
     }

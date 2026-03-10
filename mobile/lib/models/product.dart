@@ -30,7 +30,7 @@ class Product {
   final int id;
   final String name;
   final String sku;
-  final double price;
+  final double? price;
   final int? unitId;
   final String unit;
   final int? secondaryUnitId;
@@ -60,7 +60,7 @@ class Product {
       id: json['id'],
       name: json['name'] ?? '',
       sku: json['sku'] ?? '',
-      price: double.tryParse(json['price'].toString()) ?? 0.0,
+      price: json['price'] != null ? double.tryParse(json['price'].toString()) : null,
       unitId: json['unit_id'],
       unit: json['unit'] ?? '-',
       secondaryUnitId: json['secondary_unit_id'],

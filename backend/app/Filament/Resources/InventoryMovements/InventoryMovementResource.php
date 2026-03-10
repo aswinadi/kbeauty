@@ -18,7 +18,7 @@ class InventoryMovementResource extends Resource
 {
     protected static ?string $model = InventoryMovement::class;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Reports';
+    protected static \UnitEnum|string|null $navigationGroup = 'Laporan';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

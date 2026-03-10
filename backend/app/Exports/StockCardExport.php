@@ -27,11 +27,15 @@ class StockCardExport implements FromArray, WithHeadings, ShouldAutoSize, WithTi
     public function headings(): array
     {
         return [
+            'SKU',
+            'Product',
+            'UOM',
             'Location',
             'Initial',
             'In',
             'Out',
             'Stock',
+            'Breakdown',
         ];
     }
 

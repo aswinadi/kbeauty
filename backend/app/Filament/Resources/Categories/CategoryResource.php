@@ -18,7 +18,7 @@ class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Master Data';
+    protected static \UnitEnum|string|null $navigationGroup = 'Data Master';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

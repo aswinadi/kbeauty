@@ -20,7 +20,7 @@ class InventoryOutResource extends Resource
 {
     protected static ?string $model = InventoryTransaction::class;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Transaction';
+    protected static \UnitEnum|string|null $navigationGroup = 'Transaksi';
 
     protected static ?string $navigationLabel = 'Inventory Out';
 

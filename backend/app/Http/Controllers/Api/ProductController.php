@@ -25,12 +25,14 @@ class ProductController extends Controller
             });
         }
 
-        $products = $query->latest()->get()->map(function (Product $product) {
+        $isSuperAdmin = auth()->user()?->hasRole('Super Admin');
+
+        $products = $query->orderByRaw('LOWER(TRIM(name)) ASC')->get()->map(function (Product $product) use ($isSuperAdmin) {
             return [
                 'id' => $product->id,
                 'name' => $product->name,
                 'sku' => $product->sku,
-                'price' => $product->price,
+                'price' => $isSuperAdmin ? $product->price : null,
                 'unit_id' => $product->unit_id,
                 'unit' => $product->unit?->name ?? '-',
                 'secondary_unit_id' => $product->secondary_unit_id,
@@ -49,7 +51,7 @@ class ProductController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'sku' => 'nullable|string|max:255|unique:products,sku',
-            'price' => 'required|numeric',
+            'price' => 'nullable|numeric',
             'category_id' => 'required|exists:categories,id',
             'unit_id' => 'required|exists:units,id',
             'secondary_unit_id' => 'nullable|exists:units,id',
@@ -71,13 +73,15 @@ class ProductController extends Controller
             $product->addMediaFromRequest('image')->toMediaCollection('products');
         }
 
+        $isSuperAdmin = auth()->user()?->hasRole('Super Admin');
+
         return response()->json([
             'message' => 'Product created successfully',
             'product' => [
                 'id' => $product->id,
                 'name' => $product->name,
                 'sku' => $product->sku,
-                'price' => $product->price,
+                'price' => $isSuperAdmin ? $product->price : null,
                 'unit_id' => $product->unit_id,
                 'unit' => $product->unit?->name ?? '-',
                 'secondary_unit_id' => $product->secondary_unit_id,
@@ -96,7 +100,7 @@ class ProductController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'sku' => 'required|string|max:255|unique:products,sku,' . $product->id,
-            'price' => 'required|numeric',
+            'price' => 'nullable|numeric',
             'category_id' => 'required|exists:categories,id',
             'unit_id' => 'required|exists:units,id',
             'secondary_unit_id' => 'nullable|exists:units,id',
@@ -119,13 +123,15 @@ class ProductController extends Controller
             $product->addMediaFromRequest('image')->toMediaCollection('products');
         }
 
+        $isSuperAdmin = auth()->user()?->hasRole('Super Admin');
+
         return response()->json([
             'message' => 'Product updated successfully',
             'product' => [
                 'id' => $product->id,
                 'name' => $product->name,
                 'sku' => $product->sku,
-                'price' => $product->price,
+                'price' => $isSuperAdmin ? $product->price : null,
                 'unit_id' => $product->unit_id,
                 'unit' => $product->unit?->name ?? '-',
                 'secondary_unit_id' => $product->secondary_unit_id,
@@ -140,12 +146,12 @@ class ProductController extends Controller
 
     public function categories()
     {
-        return response()->json(Category::all());
+        return response()->json(Category::orderByRaw('LOWER(TRIM(name)) ASC')->get());
     }
 
     public function units()
     {
-        return response()->json(\App\Models\Unit::all());
+        return response()->json(\App\Models\Unit::orderByRaw('LOWER(TRIM(name)) ASC')->get());
     }
 
     public function stockBalance(Product $product)

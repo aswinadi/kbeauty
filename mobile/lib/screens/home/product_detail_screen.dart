@@ -28,8 +28,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int? _selectedUnitId;
   int? _selectedSecondaryUnitId;
   File? _imageFile;
-  bool _isLoading = false;
   bool _isSaving = false;
+  bool _isSuperAdmin = false;
 
   List<Category> _categories = [];
   List<Unit> _units = [];
@@ -56,10 +56,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final results = await Future.wait([
       _productService.getCategories(),
       _productService.getUnits(),
+      AuthService().getUser(),
     ]);
     setState(() {
       _categories = results[0] as List<Category>;
       _units = results[1] as List<Unit>;
+      final user = results[2] as User?;
+      _isSuperAdmin = user?.roles.contains('Super Admin') ?? false;
       _isLoading = false;
     });
   }
@@ -129,7 +132,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         id: widget.product!.id,
         name: _nameController.text,
         sku: _skuController.text,
-        price: double.parse(_priceController.text),
+        price: _isSuperAdmin ? (double.tryParse(_priceController.text) ?? 0) : null,
         categoryId: _selectedCategoryId!,
         unitId: _selectedUnitId!,
         secondaryUnitId: _selectedSecondaryUnitId,
@@ -140,7 +143,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       success = await _productService.createProduct(
         name: _nameController.text,
         sku: _skuController.text.isNotEmpty ? _skuController.text : null,
-        price: double.parse(_priceController.text),
+        price: _isSuperAdmin ? (double.tryParse(_priceController.text) ?? 0) : null,
         categoryId: _selectedCategoryId!,
         unitId: _selectedUnitId!,
         secondaryUnitId: _selectedSecondaryUnitId,
@@ -264,17 +267,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                     const SizedBox(height: 16),
                     
-                    TextFormField(
-                      controller: _priceController,
-                      decoration: const InputDecoration(labelText: 'Price', prefixText: 'Rp '),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) return 'Required';
-                        if (double.tryParse(value) == null) return 'Invalid number';
-                        return null;
-                      },
-                    ),
-
+                    if (_isSuperAdmin) ...[
+                      TextFormField(
+                        controller: _priceController,
+                        decoration: const InputDecoration(labelText: 'Price', prefixText: 'Rp '),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value != null && value.isNotEmpty && double.tryParse(value) == null) return 'Invalid number';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     const SizedBox(height: 32),
                     _buildSectionHeader('Unit of Measure'),
                     const SizedBox(height: 16),

@@ -32,7 +32,8 @@ class ProductsTable
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('price')
                     ->money('idr')
-                    ->sortable(),
+                    ->sortable()
+                    ->visible(fn() => auth()->user()->hasRole('Super Admin')),
                 \Filament\Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

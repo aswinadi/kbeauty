@@ -15,12 +15,12 @@ class StockOpnameController extends Controller
 {
     public function locations()
     {
-        return response()->json(Location::all());
+        return response()->json(Location::orderByRaw('LOWER(TRIM(name)) ASC')->get());
     }
 
     public function products(Request $request)
     {
-        $products = Product::with(['unit', 'secondaryUnit'])->orderBy('name')->get()->map(function ($product) {
+        $products = Product::with(['unit', 'secondaryUnit'])->orderByRaw('LOWER(TRIM(name)) ASC')->get()->map(function ($product) {
             return [
                 'id' => $product->id,
                 'name' => $product->name,
