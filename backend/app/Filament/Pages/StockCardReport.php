@@ -144,9 +144,12 @@ class StockCardReport extends Page implements HasForms, HasTable
                         'units.name as unit_name',
                     ]);
 
-                $model = new \App\Models\InventoryMovement();
-                $model->setTable('final_report');
-                $model->setKeyName('id');
+                $model = new class extends \App\Models\InventoryMovement {
+                    protected $table = 'final_report';
+                    protected $primaryKey = 'id';
+                    protected $keyType = 'string';
+                    public $incrementing = false;
+                };
 
                 return $model->newQuery()
                     ->fromSub($dataWithMetadata, 'final_report')
@@ -291,9 +294,12 @@ class StockCardReport extends Page implements HasForms, HasTable
                 'units.name as unit_name',
             ]);
 
-        $model = new \App\Models\InventoryMovement();
-        $model->setTable('final_report');
-        $model->setKeyName('id');
+        $model = new class extends \App\Models\InventoryMovement {
+            protected $table = 'final_report';
+            protected $primaryKey = 'id';
+            protected $keyType = 'string';
+            public $incrementing = false;
+        };
 
         $query = $model->newQuery()
             ->fromSub($dataWithMetadata, 'final_report');
