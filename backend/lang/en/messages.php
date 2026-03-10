@@ -50,6 +50,7 @@ return [
         'from_location' => 'From Location',
         'to_location' => 'To Location',
         'reference' => 'Reference',
+        'uom' => 'UOM',
     ],
     'status' => [
         'pending' => 'Pending',

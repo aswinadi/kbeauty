@@ -33,6 +33,9 @@ class InventoryMovementsTable
                 \Filament\Tables\Columns\TextColumn::make('qty')
                     ->numeric()
                     ->sortable(),
+                \Filament\Tables\Columns\TextColumn::make('product.unit.name')
+                    ->label(__('messages.fields.uom'))
+                    ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('fromLocation.name')
                     ->label(__('messages.fields.from_location'))
                     ->placeholder(__('messages.placeholders.n_a'))

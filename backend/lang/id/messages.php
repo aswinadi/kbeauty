@@ -50,6 +50,7 @@ return [
         'from_location' => 'Dari Lokasi',
         'to_location' => 'Ke Lokasi',
         'reference' => 'Referensi',
+        'uom' => 'UOM',
     ],
     'status' => [
         'pending' => 'Tertunda',
