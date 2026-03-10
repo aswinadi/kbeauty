@@ -26,5 +26,14 @@ class AppServiceProvider extends ServiceProvider
         \Filament\Infolists\Components\TextEntry::configureUsing(function (\Filament\Infolists\Components\TextEntry $entry): void {
             $entry->timezone('Asia/Jakarta');
         });
+
+        \BezhanSalleh\LanguageSwitch\LanguageSwitch::configureUsing(function (\BezhanSalleh\LanguageSwitch\LanguageSwitch $switch) {
+            $switch
+                ->locales(['en', 'id'])
+                ->labels([
+                    'en' => 'English',
+                    'id' => 'Bahasa Indonesia',
+                ]);
+        });
     }
 }
