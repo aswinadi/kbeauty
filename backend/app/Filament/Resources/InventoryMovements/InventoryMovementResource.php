@@ -18,7 +18,25 @@ class InventoryMovementResource extends Resource
 {
     protected static ?string $model = InventoryMovement::class;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Laporan';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('messages.navigation_groups.reports');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('messages.models.inventory_movement');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('messages.models.inventory_movement');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('messages.models.inventory_movement');
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

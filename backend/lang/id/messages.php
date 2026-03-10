@@ -48,6 +48,7 @@ return [
         'adjustment_qty' => 'Selisih Stok',
         'from_location' => 'Dari Lokasi',
         'to_location' => 'Ke Lokasi',
+        'reference' => 'Referensi',
     ],
     'status' => [
         'pending' => 'Tertunda',
@@ -55,6 +56,9 @@ return [
     ],
     'placeholders' => [
         'auto_generated' => 'Otomatis',
+        'n_a' => 'Tidak Ada',
+        'system' => 'Sistem',
+        'manual_adjustment' => 'Penyesuaian Manual',
     ],
     'models' => [
         'category' => 'Kategori',
@@ -66,8 +70,8 @@ return [
         'inventory_out' => 'Stok Keluar',
         'purchase' => 'Pembelian',
         'stock_opname' => 'Stok Opname',
-        'inventory_movement' => 'Mutasi Stok',
-        'stock_card' => 'Kartu Stok',
+        'inventory_movement' => 'Laporan Mutasi Stok',
+        'stock_card_report' => 'Laporan Kartu Stok',
         'user' => 'Pengguna',
     ],
 ];

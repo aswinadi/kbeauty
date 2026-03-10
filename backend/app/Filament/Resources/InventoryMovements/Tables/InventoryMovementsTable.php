@@ -27,22 +27,25 @@ class InventoryMovementsTable
                     })
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('user.name')
-                    ->label('Responsible User')
-                    ->placeholder('System')
+                    ->label(__('messages.fields.responsible_user'))
+                    ->placeholder(__('messages.placeholders.system'))
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('qty')
                     ->numeric()
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('fromLocation.name')
-                    ->placeholder('N/A')
+                    ->label(__('messages.fields.from_location'))
+                    ->placeholder(__('messages.placeholders.n_a'))
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('toLocation.name')
-                    ->placeholder('N/A')
+                    ->label(__('messages.fields.to_location'))
+                    ->placeholder(__('messages.placeholders.n_a'))
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('reference_type')
-                    ->label('Reference')
-                    ->formatStateUsing(fn($state, $record) => $state ? class_basename($state) . " #{$record->reference_id}" : 'Manual Adjustment'),
+                    ->label(__('messages.fields.reference'))
+                    ->formatStateUsing(fn($state, $record) => $state ? class_basename($state) . " #{$record->reference_id}" : __('messages.placeholders.manual_adjustment')),
                 \Filament\Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('messages.fields.created_at'))
                     ->dateTime()
                     ->sortable(),
             ])

@@ -30,7 +30,21 @@ class StockCardReport extends Page implements HasForms, HasTable
     use InteractsWithForms;
     use InteractsWithTable;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Laporan';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('messages.navigation_groups.reports');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('messages.models.stock_card_report');
+    }
+
+    public function getTitle(): string
+    {
+        return __('messages.models.stock_card_report');
+    }
+
     protected static ?int $navigationSort = 1;
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
@@ -218,7 +232,7 @@ class StockCardReport extends Page implements HasForms, HasTable
     public function exportExcel()
     {
         $data = $this->getReportData();
-        $title = 'Stock Card - ' . ($this->product_id ? Product::find($this->product_id)->name : 'All Products');
+        $title = __('messages.models.stock_card_report') . ' - ' . ($this->product_id ? Product::find($this->product_id)->name : 'All Products');
 
         return Excel::download(new StockCardExport($data, $title), $title . '.xlsx');
     }
@@ -229,7 +243,7 @@ class StockCardReport extends Page implements HasForms, HasTable
         $product_name = $this->product_id ? Product::find($this->product_id)->name : 'All Products';
 
         $pdf = Pdf::loadView('exports.stock-card-pdf', [
-            'title' => 'Stock Card Report',
+            'title' => __('messages.models.stock_card_report'),
             'product_name' => $product_name,
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,

@@ -48,6 +48,7 @@ return [
         'adjustment_qty' => 'Adjustment Qty',
         'from_location' => 'From Location',
         'to_location' => 'To Location',
+        'reference' => 'Reference',
     ],
     'status' => [
         'pending' => 'Pending',
@@ -55,6 +56,9 @@ return [
     ],
     'placeholders' => [
         'auto_generated' => 'Auto-generated',
+        'n_a' => 'N/A',
+        'system' => 'System',
+        'manual_adjustment' => 'Manual Adjustment',
     ],
     'models' => [
         'category' => 'Category',
@@ -67,7 +71,7 @@ return [
         'purchase' => 'Purchase',
         'stock_opname' => 'Stock Opname',
         'inventory_movement' => 'Inventory Movement',
-        'stock_card' => 'Stock Card',
+        'stock_card_report' => 'Stock Card Report',
         'user' => 'User',
     ],
 ];
