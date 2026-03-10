@@ -2,7 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../models/product.dart';
+import '../../models/user.dart';
 import '../../services/product_service.dart';
+import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -28,6 +30,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int? _selectedUnitId;
   int? _selectedSecondaryUnitId;
   File? _imageFile;
+  bool _isLoading = false;
   bool _isSaving = false;
   bool _isSuperAdmin = false;
 
@@ -53,7 +56,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   Future<void> _loadMetadata() async {
     setState(() => _isLoading = true);
-    final results = await Future.wait([
+    final results = await Future.wait<dynamic>([
       _productService.getCategories(),
       _productService.getUnits(),
       AuthService().getUser(),
