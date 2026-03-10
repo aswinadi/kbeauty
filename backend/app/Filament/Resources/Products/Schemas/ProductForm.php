@@ -49,6 +49,7 @@ class ProductForm
                     ->collection('product_images')
                     ->image()
                     ->imageEditor()
+                    ->capture('camera')
                     ->columnSpanFull(),
             ]);
     }
