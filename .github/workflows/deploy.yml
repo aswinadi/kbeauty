@@ -19,20 +19,29 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.REMOTE_PORT }}
           script: |
+            set -e
             cd ${{ secrets.REMOTE_PATH }}
-            git pull origin main
             
-            # Backend Setup
+            echo "Checking environment..."
+            which php || (echo "PHP NOT FOUND" && exit 1)
+            which composer || (echo "COMPOSER NOT FOUND" && exit 1)
+            
+            echo "Pulling latest code..."
+            git fetch origin main
+            git reset --hard origin/main
+            
+            echo "Setting up Backend..."
             cd backend
-            composer install --no-dev --optimize-autoloader
+            composer install --no-dev --optimize-autoloader --no-interaction
+            
             php artisan optimize:clear
-            php artisan view:clear
-            php artisan config:clear
-            php artisan route:clear
             php artisan migrate --force
+            
+            echo "Running Seeders..."
+            php artisan db:seed --class=RolesSeeder --force
+            
             php artisan filament:upgrade
             php artisan queue:restart
             php artisan optimize
             
-            # Mobile assets (if served via backend)
-            # Add any mobile build steps here if needed
+            echo "Deployment finished successfully!"
