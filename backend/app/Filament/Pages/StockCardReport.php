@@ -114,24 +114,30 @@ class StockCardReport extends Page implements HasForms, HasTable
     {
         return $table
             ->query(function () {
-                $rawPairs = \Illuminate\Support\Facades\DB::table('inventory_movements')
+                $toLocations = \Illuminate\Support\Facades\DB::table('inventory_movements')
                     ->select('product_id', 'to_location_id as location_id')
-                    ->whereNotNull('to_location_id')
-                    ->union(
-                        \Illuminate\Support\Facades\DB::table('inventory_movements')
-                            ->select('product_id', 'from_location_id as location_id')
-                            ->whereNotNull('from_location_id')
-                    );
+                    ->whereNotNull('to_location_id');
 
-                $dataWithMetadata = \Illuminate\Support\Facades\DB::table(\Illuminate\Support\Facades\DB::raw("({$rawPairs->toSql()}) as pairs"))
-                    ->mergeBindings($rawPairs)
-                    ->join('products', 'pairs.product_id', '=', 'products.id')
-                    ->join('locations', 'pairs.location_id', '=', 'locations.id')
+                $fromLocations = \Illuminate\Support\Facades\DB::table('inventory_movements')
+                    ->select('product_id', 'from_location_id as location_id')
+                    ->whereNotNull('from_location_id');
+
+                $rawPairs = $toLocations->union($fromLocations);
+
+                $uniquePairs = \Illuminate\Support\Facades\DB::query()
+                    ->fromSub($rawPairs, 'pairs')
+                    ->select('product_id', 'location_id')
+                    ->distinct();
+
+                $dataWithMetadata = \Illuminate\Support\Facades\DB::query()
+                    ->fromSub($uniquePairs, 'u')
+                    ->join('products', 'u.product_id', '=', 'products.id')
+                    ->join('locations', 'u.location_id', '=', 'locations.id')
                     ->leftJoin('units', 'products.unit_id', '=', 'units.id')
                     ->select([
-                        \Illuminate\Support\Facades\DB::raw("CONCAT(pairs.product_id, '-', pairs.location_id) as id"),
-                        'pairs.product_id',
-                        'pairs.location_id',
+                        \Illuminate\Support\Facades\DB::raw("CONCAT(u.product_id, '-', u.location_id) as id"),
+                        'u.product_id',
+                        'u.location_id',
                         'products.name as product_name',
                         'products.sku as product_sku',
                         'locations.name as location_name',
@@ -255,24 +261,30 @@ class StockCardReport extends Page implements HasForms, HasTable
 
     protected function getReportData(): array
     {
-        $rawPairs = \Illuminate\Support\Facades\DB::table('inventory_movements')
+        $toLocations = \Illuminate\Support\Facades\DB::table('inventory_movements')
             ->select('product_id', 'to_location_id as location_id')
-            ->whereNotNull('to_location_id')
-            ->union(
-                \Illuminate\Support\Facades\DB::table('inventory_movements')
-                    ->select('product_id', 'from_location_id as location_id')
-                    ->whereNotNull('from_location_id')
-            );
+            ->whereNotNull('to_location_id');
 
-        $dataWithMetadata = \Illuminate\Support\Facades\DB::table(\Illuminate\Support\Facades\DB::raw("({$rawPairs->toSql()}) as pairs"))
-            ->mergeBindings($rawPairs)
-            ->join('products', 'pairs.product_id', '=', 'products.id')
-            ->join('locations', 'pairs.location_id', '=', 'locations.id')
+        $fromLocations = \Illuminate\Support\Facades\DB::table('inventory_movements')
+            ->select('product_id', 'from_location_id as location_id')
+            ->whereNotNull('from_location_id');
+
+        $rawPairs = $toLocations->union($fromLocations);
+
+        $uniquePairs = \Illuminate\Support\Facades\DB::query()
+            ->fromSub($rawPairs, 'pairs')
+            ->select('product_id', 'location_id')
+            ->distinct();
+
+        $dataWithMetadata = \Illuminate\Support\Facades\DB::query()
+            ->fromSub($uniquePairs, 'u')
+            ->join('products', 'u.product_id', '=', 'products.id')
+            ->join('locations', 'u.location_id', '=', 'locations.id')
             ->leftJoin('units', 'products.unit_id', '=', 'units.id')
             ->select([
-                \Illuminate\Support\Facades\DB::raw("CONCAT(pairs.product_id, '-', pairs.location_id) as id"),
-                'pairs.product_id',
-                'pairs.location_id',
+                \Illuminate\Support\Facades\DB::raw("CONCAT(u.product_id, '-', u.location_id) as id"),
+                'u.product_id',
+                'u.location_id',
                 'products.name as product_name',
                 'products.sku as product_sku',
                 'locations.name as location_name',

@@ -23,6 +23,7 @@ return [
         'price' => 'Harga',
         'image' => 'Gambar',
         'category' => 'Kategori',
+        'product' => 'Produk',
         'unit' => 'Satuan',
         'sku_prefix_hint' => 'misal: SK',
         'conversion_ratio_hint' => '1 [Sekunder] = ? [Utama]',

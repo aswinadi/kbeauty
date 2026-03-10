@@ -23,6 +23,7 @@ return [
         'price' => 'Price',
         'image' => 'Image',
         'category' => 'Category',
+        'product' => 'Product',
         'unit' => 'Unit',
         'sku_prefix_hint' => 'e.g. SK',
         'conversion_ratio_hint' => '1 [Secondary] = ? [Primary]',
