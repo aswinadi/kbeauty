@@ -11,41 +11,45 @@ class ProductForm
         return $schema
             ->components([
                 \Filament\Forms\Components\Select::make('category_id')
+                    ->label(__('messages.fields.category'))
                     ->relationship('category', 'name')
                     ->required()
                     ->searchable()
                     ->preload(),
                 \Filament\Forms\Components\TextInput::make('name')
+                    ->label(__('messages.fields.name'))
                     ->required()
                     ->maxLength(255),
                 \Filament\Forms\Components\TextInput::make('sku')
-                    ->label('SKU')
-                    ->placeholder('Auto-generated')
+                    ->label(__('messages.fields.sku'))
+                    ->placeholder(__('messages.placeholders.auto_generated'))
                     ->disabled()
                     ->dehydrated(false)
                     ->maxLength(255),
                 \Filament\Forms\Components\Select::make('unit_id')
-                    ->label('Primary Unit')
-                    ->helperText('Satuan terkecil (misal: Pcs)')
+                    ->label(__('messages.fields.primary_unit'))
+                    ->helperText(__('messages.fields.primary_unit_helper'))
                     ->relationship('unit', 'name')
                     ->required()
                     ->searchable()
                     ->preload(),
                 \Filament\Forms\Components\Select::make('secondary_unit_id')
-                    ->label('Secondary Unit')
+                    ->label(__('messages.fields.secondary_unit'))
                     ->relationship('secondaryUnit', 'name')
                     ->searchable()
                     ->preload(),
                 \Filament\Forms\Components\TextInput::make('conversion_ratio')
-                    ->label('Conversion Ratio (1 [Secondary] = ? [Primary])')
-                    ->numeric()
-                    ->placeholder('e.g. 12 for 1 Box = 12 Pcs'),
+                    ->label(__('messages.fields.conversion_ratio'))
+                    ->placeholder(__('messages.fields.conversion_ratio_hint'))
+                    ->numeric(),
                 \Filament\Forms\Components\TextInput::make('price')
+                    ->label(__('messages.fields.price'))
                     ->numeric()
                     ->default(0)
                     ->prefix('Rp')
                     ->visible(fn() => auth()->user()->hasRole('Super Admin')),
                 \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('image')
+                    ->label(__('messages.fields.image'))
                     ->collection('product_images')
                     ->image()
                     ->imageEditor()

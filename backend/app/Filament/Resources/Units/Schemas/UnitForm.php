@@ -12,8 +12,10 @@ class UnitForm
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label(__('messages.fields.name'))
                     ->required(),
-                TextInput::make('short_name'),
+                TextInput::make('short_name')
+                    ->label(__('messages.fields.short_name')),
             ]);
     }
 }

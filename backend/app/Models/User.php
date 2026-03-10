@@ -26,6 +26,7 @@ class User extends Authenticatable implements FilamentUser
         'username',
         'email',
         'password',
+        'is_active',
     ];
 
     /**
@@ -48,11 +49,12 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return true; // Allow all users for now, Shield handles granular permissions
+        return $this->is_active; // Prevent inactive users from accessing the panel
     }
 }

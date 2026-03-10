@@ -14,12 +14,16 @@ class StockOpnamesTable
         return $table
             ->columns([
                 \Filament\Tables\Columns\TextColumn::make('location.name')
+                    ->label(__('messages.fields.location'))
                     ->searchable()
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('user.name')
+                    ->label(__('messages.fields.responsible_user'))
                     ->searchable()
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('status')
+                    ->label(__('messages.fields.status'))
+                    ->formatStateUsing(fn(string $state): string => __("messages.status.{$state}"))
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'pending' => 'warning',
@@ -29,8 +33,9 @@ class StockOpnamesTable
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('items_count')
                     ->counts('items')
-                    ->label('Items'),
+                    ->label(__('messages.fields.items')),
                 \Filament\Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('messages.fields.created_at'))
                     ->dateTime()
                     ->sortable(),
             ])

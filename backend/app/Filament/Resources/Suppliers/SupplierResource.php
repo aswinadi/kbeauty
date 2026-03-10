@@ -18,7 +18,20 @@ class SupplierResource extends Resource
 {
     protected static ?string $model = Supplier::class;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Data Master';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('messages.navigation_groups.master_data');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('messages.models.supplier');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('messages.models.supplier');
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

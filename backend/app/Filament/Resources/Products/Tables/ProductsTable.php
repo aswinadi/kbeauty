@@ -14,27 +14,32 @@ class ProductsTable
         return $table
             ->columns([
                 \Filament\Tables\Columns\SpatieMediaLibraryImageColumn::make('image')
+                    ->label(__('messages.fields.image'))
                     ->collection('product_images')
                     ->circular(),
                 \Filament\Tables\Columns\TextColumn::make('name')
+                    ->label(__('messages.fields.name'))
                     ->searchable()
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('sku')
-                    ->label('SKU')
+                    ->label(__('messages.fields.sku'))
                     ->searchable()
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('category.name')
+                    ->label(__('messages.fields.category'))
                     ->searchable()
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('unit.name')
-                    ->label('Unit')
+                    ->label(__('messages.fields.unit'))
                     ->searchable()
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('price')
+                    ->label(__('messages.fields.price'))
                     ->money('idr')
                     ->sortable()
                     ->visible(fn() => auth()->user()->hasRole('Super Admin')),
                 \Filament\Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('messages.fields.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

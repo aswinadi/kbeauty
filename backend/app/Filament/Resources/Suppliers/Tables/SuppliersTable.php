@@ -14,12 +14,15 @@ class SuppliersTable
         return $table
             ->columns([
                 \Filament\Tables\Columns\TextColumn::make('name')
+                    ->label(__('messages.fields.name'))
                     ->searchable()
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('contact_info')
+                    ->label(__('messages.fields.contact_info'))
                     ->searchable()
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('messages.fields.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

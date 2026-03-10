@@ -18,7 +18,20 @@ class PurchaseResource extends Resource
 {
     protected static ?string $model = Purchase::class;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Transaksi';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('messages.navigation_groups.transactions');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('messages.models.purchase');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('messages.models.purchase');
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

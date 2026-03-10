@@ -18,7 +18,20 @@ class StockOpnameResource extends Resource
 {
     protected static ?string $model = StockOpname::class;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Transaksi';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('messages.navigation_groups.transactions');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('messages.models.stock_opname');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('messages.models.stock_opname');
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

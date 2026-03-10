@@ -18,7 +18,20 @@ class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Data Master';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('messages.navigation_groups.master_data');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('messages.models.product');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('messages.models.product');
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

@@ -14,18 +14,22 @@ class PurchasesTable
         return $table
             ->columns([
                 \Filament\Tables\Columns\TextColumn::make('supplier.name')
+                    ->label(__('messages.fields.supplier'))
                     ->searchable()
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('buying_date')
+                    ->label(__('messages.fields.buying_date'))
                     ->date()
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('total_amount')
+                    ->label(__('messages.fields.total_amount'))
                     ->money('idr')
                     ->sortable(),
                 \Filament\Tables\Columns\TextColumn::make('items_count')
                     ->counts('items')
-                    ->label('Total Items'),
+                    ->label(__('messages.fields.items')),
                 \Filament\Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('messages.fields.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

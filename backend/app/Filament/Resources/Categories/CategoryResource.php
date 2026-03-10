@@ -18,7 +18,20 @@ class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Data Master';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('messages.navigation_groups.master_data');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('messages.models.category');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('messages.models.category');
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
@@ -27,10 +40,11 @@ class CategoryResource extends Resource
         return $schema
             ->components([
                 \Filament\Forms\Components\TextInput::make('name')
+                    ->label(__('messages.fields.name'))
                     ->required()
                     ->maxLength(255),
                 \Filament\Forms\Components\TextInput::make('prefix')
-                    ->label('SKU Prefix')
+                    ->label(__('messages.fields.sku_prefix'))
                     ->placeholder('e.g. SK')
                     ->maxLength(5),
             ]);
