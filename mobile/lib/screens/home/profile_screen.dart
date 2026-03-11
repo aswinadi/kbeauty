@@ -166,6 +166,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     '@${_user?.username ?? 'username'}',
                     style: TextStyle(color: Colors.grey[600]),
                   ),
+                  if (_user != null) ...[
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      children: _user!.roles.map((role) => Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          role,
+                          style: const TextStyle(fontSize: 10, color: AppTheme.accentColor, fontWeight: FontWeight.bold),
+                        ),
+                      )).toList(),
+                    ),
+                  ],
                   const SizedBox(height: 32),
                   _buildProfileItem(Icons.email_outlined, 'Email', _user?.email ?? 'Not provided'),
                   const SizedBox(height: 16),
@@ -179,7 +196,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     ),
                   ),
-                  if (_user?.roles.contains('Super Admin') ?? false) ...[
+                  if (_user?.roles.any((r) => r.toLowerCase().replaceAll('_', ' ') == 'super admin') ?? false) ...[
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
