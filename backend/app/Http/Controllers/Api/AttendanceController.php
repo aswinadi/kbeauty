@@ -196,15 +196,26 @@ class AttendanceController extends Controller
             $size = 64;
             $thumb1 = imagecreatetruecolor($size, $size);
             $thumb2 = imagecreatetruecolor($size, $size);
+            imagecopyresampled($thumb1, $img1, 0, 0, 0, 0, $size, $size, $w1, $h1);
+            imagecopyresampled($thumb2, $img2, 0, 0, 0, 0, $size, $size, $w2, $h2);
 
-            imagecopyresampled($thumb1, $img1, 0, 0, 0, 0, $size, $size, imagesx($img1), imagesy($img1));
-            imagecopyresampled($thumb2, $img2, 0, 0, 0, 0, $size, $size, imagesx($img2), imagesy($img2));
-
-            // Convert to grayscale for more robust comparison
-            imagefilter($thumb1, IMG_FILTER_GRAYSCALE);
-            imagefilter($thumb2, IMG_FILTER_GRAYSCALE);
+            // Calculate average brightness for normalization
+            $sumBright1 = 0; $sumBright2 = 0;
+            for ($x = 0; $x < $size; $x++) {
+                for ($y = 0; $y < $size; $y++) {
+                    $c1 = imagecolorat($thumb1, $x, $y); $c2 = imagecolorat($thumb2, $x, $y);
+                    $sumBright1 += (($c1 >> 16) & 0xFF) + (($c1 >> 8) & 0xFF) + ($c1 & 0xFF);
+                    $sumBright2 += (($c2 >> 16) & 0xFF) + (($c2 >> 8) & 0xFF) + ($c2 & 0xFF);
+                }
+            }
+            $avgB1 = $sumBright1 / ($size * $size * 3);
+            $avgB2 = $sumBright2 / ($size * $size * 3);
+            $brightnessRatio = $avgB1 > 0 ? $avgB2 / $avgB1 : 1;
 
             $diff = 0;
+            $totalWeight = 0;
+            $center = $size / 2;
+
             for ($x = 0; $x < $size; $x++) {
                 for ($y = 0; $y < $size; $y++) {
                     $color1 = imagecolorat($thumb1, $x, $y);
@@ -213,19 +224,28 @@ class AttendanceController extends Controller
                     $r1 = ($color1 >> 16) & 0xFF; $g1 = ($color1 >> 8) & 0xFF; $b1 = $color1 & 0xFF;
                     $r2 = ($color2 >> 16) & 0xFF; $g2 = ($color2 >> 8) & 0xFF; $b2 = $color2 & 0xFF;
 
-                    $diff += abs($r1 - $r2) + abs($g1 - $g2) + abs($b1 - $b2);
+                    // Normalize brightness of image 1 to match image 2 approx.
+                    $r1n = min(255, $r1 * $brightnessRatio);
+                    $g1n = min(255, $g1 * $brightnessRatio);
+                    $b1n = min(255, $b1 * $brightnessRatio);
+
+                    // Center weighting: weight is higher in the middle (where face is)
+                    $dist = sqrt(pow($x - $center, 2) + pow($y - $center, 2));
+                    $weight = max(0.1, 1 - ($dist / ($size / 1.2))); // Drop off weight towards edges
+
+                    $diff += (abs($r1n - $r2) + abs($g1n - $g2) + abs($b1n - $b2)) * $weight;
+                    $totalWeight += $weight;
                 }
             }
 
             imagedestroy($img1); imagedestroy($img2);
             imagedestroy($thumb1); imagedestroy($thumb2);
 
-            // Max diff for RGB is size * size * 3 * 255
-            $maxDiff = $size * $size * 3 * 255;
-            $similarity = (1 - ($diff / $maxDiff)) * 100;
+            // Max weighted diff
+            $maxWeightedDiff = $totalWeight * 3 * 255;
+            $similarity = (1 - ($diff / $maxWeightedDiff)) * 100;
 
-            \Log::info("Face Verification raw diff for employee {$employee->id}: {$diff} / {$maxDiff}");
-            \Log::info("Face Verification similarity for employee {$employee->id}: " . round($similarity, 2) . "%");
+            \Log::info("Face Verification (Center-Weighted) similarity for employee {$employee->id}: " . round($similarity, 2) . "%");
 
             return $similarity;
         } catch (\Exception $e) {
