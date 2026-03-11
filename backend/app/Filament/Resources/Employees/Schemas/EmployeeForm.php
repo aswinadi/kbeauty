@@ -48,8 +48,7 @@ class EmployeeForm
                 SpatieMediaLibraryFileUpload::make('photo')
                     ->label(__('messages.fields.image'))
                     ->collection('photo')
-                    ->avatar()
-                    ->required(),
+                    ->avatar(),
             ]);
     }
 }
