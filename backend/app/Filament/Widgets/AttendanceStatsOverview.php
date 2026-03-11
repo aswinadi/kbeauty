@@ -12,7 +12,7 @@ class AttendanceStatsOverview extends StatsOverviewWidget
         $today = now()->toDateString();
         
         $presentCount = \App\Models\Attendance::whereDate('date', $today)->count();
-        $lateCount = \App\Models\Attendance::whereDate('date', $today)->where('type', 'late')->count();
+        $lateCount = \App\Models\Attendance::whereDate('date', $today)->where('status', 'late')->count();
         $absentCount = \App\Models\AbsentAttendance::whereDate('date', $today)->count();
         
         return [
