@@ -1,5 +1,24 @@
 # Project Changelog
 
+## [1.3.0] - 2026-03-11
+
+### Added
+- **Attendance History**: New mobile screen to view monthly-grouped records (Dashboard Access).
+- **Impersonation Feature**: Super Admins can now impersonate other users on both Web (Filament) and Mobile (API).
+- **Environment Indicator**: Premium icon-based badge (Cloud/Developer) on Login and Dashboard for environment awareness.
+- **Attendance Enhancements**: 
+  - Radius-based button disabling on mobile (prevents check-in/out if too far).
+  - Pull-to-refresh on Attendance screen.
+- **Android Optimization**: Full support for Android 15 (Target SDK 35, 16 KB Page Size alignment).
+
+### Changed
+- **Mobile UX**: Added password visibility toggles to Login and Change Password screens.
+- **Backend Security**: Case-insensitive and robust role checks for administrative tools.
+
+### Fixed
+- **Mobile Navigation**: Relocated History access to Dashboard for better accessibility.
+- **Bug Fix**: Resolved empty user list issue in mobile selection screen.
+
 ## [1.2.0] - 2026-02-23
 
 ### Added
