@@ -60,6 +60,14 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 FilamentShieldPlugin::make(),
             ])
+            ->navigationGroups([
+                'Attendance',
+                __('messages.navigation_groups.attendance'),
+                'Filament Shield',
+                __('messages.navigation_groups.inventory'),
+                'Transaksi',
+                __('messages.navigation_groups.reports'),
+            ])
             ->authMiddleware([
                 Authenticate::class,
             ])

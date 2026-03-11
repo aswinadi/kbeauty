@@ -45,7 +45,6 @@ class StockCardReport extends Page implements HasForms, HasTable
         return __('messages.models.stock_card_report');
     }
 
-    protected static ?int $navigationSort = 1;
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
     protected string $view = 'filament.pages.stock-card-report';
