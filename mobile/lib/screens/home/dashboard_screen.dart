@@ -182,14 +182,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Center(
                 child: Column(
                   children: [
-                    Text(
-                      'v$_appVersion (${AppConfig.env.toUpperCase()})',
-                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: (AppConfig.isProduction ? Colors.green : Colors.orange).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: (AppConfig.isProduction ? Colors.green : Colors.orange).withValues(alpha: 0.2),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            AppConfig.isProduction ? Icons.cloud_done : Icons.developer_mode,
+                            size: 14,
+                            color: AppConfig.isProduction ? Colors.green : Colors.orange,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'v$_appVersion (${AppConfig.env.toUpperCase()})',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppConfig.isProduction ? Colors.green : Colors.orange,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 8),
                     Text(
                       'Server: ${AppConfig.apiBaseUrl}',
-                      style: TextStyle(color: Colors.grey[400], fontSize: 10),
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey[400],
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ],
                 ),
