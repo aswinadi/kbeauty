@@ -41,7 +41,7 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return response()->json($request->user()->load('roles'));
+        return response()->json($request->user()->load(['roles', 'employee.office']));
     }
 
     public function changePassword(Request $request)

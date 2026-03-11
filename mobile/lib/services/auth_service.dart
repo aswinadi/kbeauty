@@ -8,7 +8,7 @@ class AuthService {
   static const String baseUrl = AppConfig.apiBaseUrl;
   final _storage = const FlutterSecureStorage();
 
-  Future<User?> login(String username, String password) async {
+  Future<User?> login(String username, String password, {bool rememberMe = true}) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
@@ -23,8 +23,11 @@ class AuthService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final user = User.fromJson(data['user'], token: data['token']);
+        
         await _storage.write(key: 'auth_token', value: user.token);
         await _storage.write(key: 'user_data', value: jsonEncode(user.toJson()));
+        await _storage.write(key: 'remember_me', value: rememberMe.toString());
+        
         return user;
       } else {
         print('Login failed: ${response.body}');
@@ -61,6 +64,14 @@ class AuthService {
 
   Future<String?> getToken() async {
     return await _storage.read(key: 'auth_token');
+  }
+
+  Future<void> checkPersistentSession() async {
+    final rememberMeStr = await _storage.read(key: 'remember_me');
+    if (rememberMeStr != 'true') {
+      await _storage.delete(key: 'auth_token');
+      await _storage.delete(key: 'user_data');
+    }
   }
 
   Future<bool> changePassword(String currentPassword, String newPassword) async {

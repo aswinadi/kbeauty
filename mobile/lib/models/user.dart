@@ -1,3 +1,5 @@
+import 'employee.dart';
+
 class User {
   final int id;
   final String name;
@@ -5,6 +7,7 @@ class User {
   final String? email;
   final String? token;
   final List<String> roles;
+  final Employee? employee;
 
   User({
     required this.id,
@@ -13,6 +16,7 @@ class User {
     this.email,
     this.token,
     this.roles = const [],
+    this.employee,
   });
 
   factory User.fromJson(Map<String, dynamic> json, {String? token}) {
@@ -30,6 +34,7 @@ class User {
       email: json['email'],
       token: token,
       roles: roles,
+      employee: json['employee'] != null ? Employee.fromJson(json['employee']) : null,
     );
   }
 
@@ -40,6 +45,7 @@ class User {
       'username': username,
       'email': email,
       'roles': roles.map((r) => {'name': r}).toList(),
+      'employee': employee?.toJson(),
     };
   }
 }

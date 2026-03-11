@@ -57,4 +57,9 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->is_active; // Prevent inactive users from accessing the panel
     }
+
+    public function employee()
+    {
+        return $this->hasOne(Employee::class);
+    }
 }

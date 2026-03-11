@@ -2,9 +2,11 @@
 
 return [
     'navigation_groups' => [
-        'master_data' => 'Data Master',
+        'inventory_master' => 'Master Data Inventori',
+        'attendance_master' => 'Master Data Absensi',
         'transactions' => 'Transaksi',
         'reports' => 'Laporan',
+        'attendance' => 'Attendance',
     ],
     'fields' => [
         'username' => 'Nama Pengguna',
@@ -75,5 +77,27 @@ return [
         'inventory_movement' => 'Laporan Mutasi Stok',
         'stock_card_report' => 'Laporan Kartu Stok',
         'user' => 'Pengguna',
+        'office' => 'Kantor',
+        'employee' => 'Karyawan',
+        'attendance' => 'Kehadiran',
+        'absent_attendance' => 'Izin/Sakit/Cuti',
+        'holiday' => 'Hari Libur',
+    ],
+    'attendance' => [
+        'type' => 'Tipe',
+        'reason' => 'Alasan',
+        'check_in' => 'Masuk',
+        'check_out' => 'Pulang',
+        'date' => 'Tanggal',
+        'status' => 'Status',
+        'present' => 'Hadir',
+        'late' => 'Terlambat',
+        'early_out' => 'Pulang Awal',
+        'sick' => 'Sakit',
+        'leave' => 'Cuti',
+        'latitude' => 'Latitude',
+        'longitude' => 'Longitude',
+        'radius' => 'Radius (m)',
+        'nik' => 'NIK',
     ],
 ];

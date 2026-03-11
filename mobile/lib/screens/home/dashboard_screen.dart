@@ -12,6 +12,8 @@ import '../../services/auth_service.dart';
 import '../../models/user.dart';
 import '../../config/app_config.dart';
 import '../../utils/responsive.dart';
+import '../attendance/attendance_screen.dart';
+import '../attendance/absent_form_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -111,7 +113,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 32),
               Text(
-                'Actions',
+                'Attendance',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: Responsive.isTablet(context) 
+                  ? (Responsive.isLandscape(context) ? 5 : 4) 
+                  : 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: Responsive.isTablet(context) ? 1.2 : 1.1,
+                children: [
+                  _buildActionCard('Absen', Icons.front_hand_outlined, () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const AbsentFormScreen()));
+                  }),
+                  _buildActionCard('Check In / Out', Icons.location_on_outlined, () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen()));
+                  }),
+                ],
+              ),
+              const SizedBox(height: 32),
+              Text(
+                'Inventory',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),

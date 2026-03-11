@@ -10,6 +10,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    Route::get('/offices', [\App\Http\Controllers\Api\AttendanceController::class, 'offices']);
+    Route::get('/attendance/status', [\App\Http\Controllers\Api\AttendanceController::class, 'getStatus']);
+    Route::get('/attendance/history', [\App\Http\Controllers\Api\AttendanceController::class, 'history']);
+    Route::post('/attendance/check-in', [\App\Http\Controllers\Api\AttendanceController::class, 'checkIn']);
+    Route::post('/attendance/check-out', [\App\Http\Controllers\Api\AttendanceController::class, 'checkOut']);
+    Route::post('/attendance/request', [\App\Http\Controllers\Api\AttendanceController::class, 'requestAbsent']);
+
     Route::get('/products', [\App\Http\Controllers\Api\ProductController::class, 'index']);
     Route::post('/products', [\App\Http\Controllers\Api\ProductController::class, 'store']);
     Route::post('/products/{product}', [\App\Http\Controllers\Api\ProductController::class, 'update']);
@@ -25,4 +32,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/inventory/transfer', [\App\Http\Controllers\Api\StockOpnameController::class, 'transfer']);
     Route::post('/inventory/bulk-transaction', [\App\Http\Controllers\Api\StockOpnameController::class, 'bulkTransaction']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
+    Route::post('/profile/update-password', [AuthController::class, 'changePassword']); // Alias for clarity
 });

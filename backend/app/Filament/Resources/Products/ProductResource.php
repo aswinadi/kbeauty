@@ -20,7 +20,7 @@ class ProductResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('messages.navigation_groups.master_data');
+        return __('messages.navigation_groups.inventory_master');
     }
 
     public static function getModelLabel(): string

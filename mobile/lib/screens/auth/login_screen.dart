@@ -16,12 +16,14 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _authService = AuthService();
   bool _isLoading = false;
+  bool _rememberMe = true;
 
   void _handleLogin() async {
     setState(() => _isLoading = true);
     final user = await _authService.login(
       _usernameController.text,
       _passwordController.text,
+      rememberMe: _rememberMe,
     );
     setState(() => _isLoading = false);
 
@@ -103,6 +105,22 @@ class _LoginScreenState extends State<LoginScreen> {
                       labelText: 'Password',
                       prefixIcon: Icon(Icons.lock_outline),
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: Checkbox(
+                          value: _rememberMe,
+                          onChanged: (val) => setState(() => _rememberMe = val ?? false),
+                          activeColor: AppTheme.accentColor,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text('Remember Me'),
+                    ],
                   ),
                   const SizedBox(height: 32),
                   ElevatedButton(

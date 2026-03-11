@@ -9,6 +9,7 @@
         "barryvdh/laravel-dompdf": "^3.1",
         "bezhansalleh/filament-language-switch": "^4.1",
         "bezhansalleh/filament-shield": "^4.1",
+        "dotswan/filament-map-picker": "^2.3",
         "filament/filament": "^5.2",
         "filament/spatie-laravel-media-library-plugin": "^5.2",
         "laravel/framework": "^11.0",
