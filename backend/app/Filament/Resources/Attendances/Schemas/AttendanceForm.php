@@ -17,7 +17,7 @@ class AttendanceForm
                 Select::make('employee_id')
                     ->label(__('messages.models.employee'))
                     ->relationship('employee', 'nik')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nik} - {$record->user->name}")
+                    ->getOptionLabelFromRecordUsing(fn ($record) => ($record->nik ? "{$record->nik} - " : "") . $record->full_name)
                     ->required()
                     ->searchable()
                     ->preload(),
