@@ -110,9 +110,9 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
               final face = faces.first;
               
               // Ensure we have landmarks (eyes and mouth) to avoid "ceiling" false positives
-              final hasEyes = face.getLandmark(FaceLandmarkType.leftEye) != null && 
-                             face.getLandmark(FaceLandmarkType.rightEye) != null;
-              final hasMouth = face.getLandmark(FaceLandmarkType.bottomMouth) != null;
+              final hasEyes = face.landmarks[FaceLandmarkType.leftEye] != null && 
+                             face.landmarks[FaceLandmarkType.rightEye] != null;
+              final hasMouth = face.landmarks[FaceLandmarkType.bottomMouth] != null;
               
               // Ensure face is upright and facing camera (Euler angles)
               // Real faces have 3D rotation; random patterns usually don't have consistent angles
