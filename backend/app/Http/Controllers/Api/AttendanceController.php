@@ -231,9 +231,9 @@ class AttendanceController extends Controller
                     $g1n = min(255, $g1 * $brightnessRatio);
                     $b1n = min(255, $b1 * $brightnessRatio);
 
-                    // Center weighting: weight is higher in the middle (where face is)
+                    // Sharp Center weighting: weight drops off quickly from the center
                     $dist = sqrt(pow($x - $center, 2) + pow($y - $center, 2));
-                    $weight = max(0.1, 1 - ($dist / ($size / 1.2))); // Drop off weight towards edges
+                    $weight = pow(max(0, 1 - ($dist / $center)), 2); 
 
                     $diff += (abs($r1n - $r2) + abs($g1n - $g2) + abs($b1n - $b2)) * $weight;
                     $totalWeight += $weight;
