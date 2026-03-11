@@ -19,6 +19,11 @@ class AttendanceRecapResource extends Resource
 {
     protected static ?string $model = AttendanceRecap::class;
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-chart-bar';
 
     public static function getNavigationGroup(): ?string
