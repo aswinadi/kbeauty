@@ -46,8 +46,6 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Widgets\AttendanceStatsOverview::class,
                 \App\Filament\Widgets\LowStockAlert::class,
                 \App\Filament\Widgets\UpcomingAbsences::class,
-                AccountWidget::class,
-                FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
