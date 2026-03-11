@@ -33,4 +33,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/inventory/bulk-transaction', [\App\Http\Controllers\Api\StockOpnameController::class, 'bulkTransaction']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
     Route::post('/profile/update-password', [AuthController::class, 'changePassword']); // Alias for clarity
+    
+    Route::post('/impersonate/{user}', [\App\Http\Controllers\Api\ImpersonateController::class, 'impersonate']);
 });

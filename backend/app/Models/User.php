@@ -62,4 +62,14 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasOne(Employee::class);
     }
+
+    public function canImpersonate(): bool
+    {
+        return $this->hasRole('Super Admin');
+    }
+
+    public function canBeImpersonated(): bool
+    {
+        return !$this->hasRole('Super Admin');
+    }
 }

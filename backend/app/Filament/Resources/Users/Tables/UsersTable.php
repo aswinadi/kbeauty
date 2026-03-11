@@ -44,6 +44,7 @@ class UsersTable
             ])
             ->recordActions([
                 EditAction::make(),
+                \STS\FilamentImpersonate\Actions\Impersonate::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
