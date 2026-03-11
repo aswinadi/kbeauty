@@ -196,6 +196,8 @@ class AttendanceController extends Controller
             $size = 64;
             $thumb1 = imagecreatetruecolor($size, $size);
             $thumb2 = imagecreatetruecolor($size, $size);
+            $w1 = imagesx($img1); $h1 = imagesy($img1);
+            $w2 = imagesx($img2); $h2 = imagesy($img2);
             imagecopyresampled($thumb1, $img1, 0, 0, 0, 0, $size, $size, $w1, $h1);
             imagecopyresampled($thumb2, $img2, 0, 0, 0, 0, $size, $size, $w2, $h2);
 
