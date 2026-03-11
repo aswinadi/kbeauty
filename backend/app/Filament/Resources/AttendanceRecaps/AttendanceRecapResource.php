@@ -60,8 +60,17 @@ class AttendanceRecapResource extends Resource
                         'early_out' => 'info',
                         'sick' => 'danger',
                         'leave' => 'info',
-                        'izin', 'sakit', 'cuti' => 'info', // Adjusting for actual values in mobile
+                        'izin', 'sakit', 'cuti' => 'info',
                         default => 'gray',
+                    })
+                    ->icon(fn (string $state): string => match ($state) {
+                        'present' => 'heroicon-m-check-circle',
+                        'late' => 'heroicon-m-clock',
+                        'early_out' => 'heroicon-m-arrow-left-on-rectangle',
+                        'sick' => 'heroicon-m-heart',
+                        'leave' => 'heroicon-m-calendar-days',
+                        'izin' => 'heroicon-m-document-text',
+                        default => 'heroicon-m-question-mark-circle',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'present' => 'Hadir',
@@ -114,9 +123,11 @@ class AttendanceRecapResource extends Resource
             ->actions([])
             ->bulkActions([])
             ->defaultSort('date', 'desc')
+            ->defaultGroup('date')
             ->groups([
                 'date',
                 'employee.full_name',
+                'office.name',
             ]);
     }
 

@@ -6,8 +6,11 @@ use App\Models\AttendanceRecap;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class AttendanceRecapExport implements FromCollection, WithHeadings, WithMapping
+class AttendanceRecapExport implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
 {
     protected $query;
 
@@ -38,12 +41,19 @@ class AttendanceRecapExport implements FromCollection, WithHeadings, WithMapping
     {
         return [
             $recap->date,
-            $recap->employee?->name,
+            $recap->employee?->full_name,
             $recap->office?->name,
             $this->formatType($recap->type),
             $recap->check_in,
             $recap->check_out,
             $recap->remark,
+        ];
+    }
+
+    public function styles(Worksheet $sheet)
+    {
+        return [
+            1 => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']], 'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4A5568']]],
         ];
     }
 

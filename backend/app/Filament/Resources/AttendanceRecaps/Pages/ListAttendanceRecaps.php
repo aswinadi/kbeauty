@@ -38,7 +38,20 @@ class ListAttendanceRecaps extends ListRecords
     public function downloadPdf()
     {
         $records = $this->getFilteredTableQuery()->get();
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.attendance-recap', ['records' => $records]);
+        
+        $filters = $this->tableFilters;
+        $period = 'Semua Waktu';
+        if (!empty($filters['date_range']['from']) || !empty($filters['date_range']['to'])) {
+            $from = $filters['date_range']['from'] ? \Carbon\Carbon::parse($filters['date_range']['from'])->format('d/m/Y') : '...';
+            $to = $filters['date_range']['to'] ? \Carbon\Carbon::parse($filters['date_range']['to'])->format('d/m/Y') : '...';
+            $period = "$from - $to";
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.attendance-recap', [
+            'records' => $records,
+            'period' => $period,
+        ]);
+        
         return response()->streamDownload(
             fn () => print($pdf->output()),
             'attendance-recap-' . now()->format('Y-m-d') . '.pdf'
