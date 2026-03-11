@@ -129,7 +129,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 mainAxisSpacing: 16,
                 childAspectRatio: Responsive.isTablet(context) ? 1.2 : 1.1,
                 children: [
-                  _buildActionCard('Absen', Icons.front_hand_outlined, () {
+                  _buildActionCard('Izin', Icons.front_hand_outlined, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const AbsentFormScreen()));
                   }),
                   _buildActionCard('Check In / Out', Icons.location_on_outlined, () {

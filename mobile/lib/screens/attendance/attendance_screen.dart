@@ -281,7 +281,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: Text(
-                    canCheckIn ? 'Check In' : (canCheckOut ? 'Check Out' : 'Sudah Absen'),
+                    canCheckIn ? 'Check In' : (canCheckOut ? 'Check Out' : 'Sudah Presensi'),
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
