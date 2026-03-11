@@ -14,6 +14,7 @@ import '../../config/app_config.dart';
 import '../../utils/responsive.dart';
 import '../attendance/attendance_screen.dart';
 import '../attendance/absent_form_screen.dart';
+import '../attendance/attendance_history_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -134,6 +135,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   }),
                   _buildActionCard('Check In / Out', Icons.location_on_outlined, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen()));
+                  }),
+                  _buildActionCard('History', Icons.history, () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceHistoryScreen()));
                   }),
                 ],
               ),

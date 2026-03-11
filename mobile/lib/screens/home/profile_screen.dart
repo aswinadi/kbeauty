@@ -4,7 +4,6 @@ import '../../models/user.dart';
 import '../../theme/app_theme.dart';
 import '../auth/login_screen.dart';
 import 'user_selection_screen.dart';
-import '../attendance/attendance_history_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -212,23 +211,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 16),
                   _buildProfileItem(Icons.badge_outlined, 'User ID', '#${_user?.id ?? '0'}'),
                   const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const AttendanceHistoryScreen()),
-                      ),
-                      icon: const Icon(Icons.history),
-                      label: const Text('Attendance History'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        backgroundColor: AppTheme.accentColor,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
                   OutlinedButton.icon(
                     onPressed: _showChangePasswordDialog,
                     icon: const Icon(Icons.lock_outline),
