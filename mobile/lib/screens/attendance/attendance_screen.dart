@@ -210,6 +210,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           );
           _loadData(); // Refresh status
         }
+        return message;
       },
     );
   }
@@ -230,6 +231,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           );
           _loadData(); // Refresh status
         }
+        return message;
       },
     );
   }

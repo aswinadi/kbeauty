@@ -88,27 +88,18 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
         final bytes = allBytes.done().buffer.asUint8List();
 
         final Size imageSize = Size(image.width.toDouble(), image.height.toDouble());
-        final InputImageRotation imageRotation = InputImageRotationValue.fromRawValue(_controller!.description.sensorOrientation) ?? InputImageRotation.rotation0;
+        final InputImageRotation imageRotation = InputImageRotationValue.fromRawValue(_controller!.description.sensorOrientation) ?? InputImageRotation.rotation0deg;
         final InputImageFormat inputImageFormat = InputImageFormatValue.fromRawValue(image.format.raw) ?? InputImageFormat.yuv420;
 
-        final planeData = image.planes.map(
-          (Plane plane) {
-            return InputImagePlaneMetadata(
-              bytesPerRow: plane.bytesPerRow,
-              height: plane.height,
-              width: plane.width,
-            );
-          },
-        ).toList();
-
-        final inputImageData = InputImageData(
-          size: imageSize,
-          imageRotation: imageRotation,
-          inputImageFormat: inputImageFormat,
-          planeData: planeData,
+        final inputImage = InputImage.fromBytes(
+          bytes: bytes,
+          metadata: InputImageMetadata(
+            size: imageSize,
+            rotation: imageRotation,
+            format: inputImageFormat,
+            bytesPerRow: image.planes[0].bytesPerRow,
+          ),
         );
-
-        final inputImage = InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
         final faces = await _faceDetector.processImage(inputImage);
 
         if (mounted) {
