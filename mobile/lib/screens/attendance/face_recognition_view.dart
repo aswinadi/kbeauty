@@ -129,8 +129,10 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
               // Hint or Error text overlay
               Positioned(
                 bottom: 20,
+                left: 24,
+                right: 24,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
                     color: (_errorMessage != null ? Colors.red : Colors.black).withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(20),
@@ -138,7 +140,11 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
                   child: Text(
                     _errorMessage ?? 'Posisikan wajah di dalam lingkaran',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                      color: Colors.white, 
+                      fontSize: 12, 
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ),
