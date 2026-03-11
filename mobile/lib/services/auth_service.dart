@@ -151,4 +151,27 @@ class AuthService {
     }
     return null;
   }
+
+  Future<List<Map<String, dynamic>>> getAttendanceHistory() async {
+    final token = await _storage.read(key: 'auth_token');
+    if (token == null) return [];
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/attendance/history'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(response.body);
+        return data.cast<Map<String, dynamic>>();
+      }
+    } catch (e) {
+      print('Get attendance history error: $e');
+    }
+    return [];
+  }
 }

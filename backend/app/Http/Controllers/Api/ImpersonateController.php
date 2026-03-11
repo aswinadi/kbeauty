@@ -14,12 +14,19 @@ class ImpersonateController extends Controller
      */
     public function index(Request $request)
     {
-        if (!$request->user()->hasRole('Super Admin')) {
+        $isAdmin = $request->user()->roles->any(function ($role) {
+            $name = strtolower($role->name);
+            return $name === 'super admin' || $name === 'super_admin';
+        });
+
+        if (!$isAdmin) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $users = User::whereDoesntHave('roles', function ($query) {
-            $query->where('name', 'Super Admin');
+            $query->where('name', 'like', 'Super Admin')
+                  ->orWhere('name', 'like', 'super_admin')
+                  ->orWhere('name', 'like', 'super-admin');
         })->get();
 
         return response()->json($users);
@@ -34,13 +41,23 @@ class ImpersonateController extends Controller
         /** @var User $currentUser */
         $currentUser = $request->user();
 
-        if (!$currentUser->hasRole('Super Admin')) {
+        $isAdmin = $currentUser->roles->any(function ($role) {
+            $name = strtolower($role->name);
+            return $name === 'super admin' || $name === 'super_admin';
+        });
+
+        if (!$isAdmin) {
             return response()->json([
                 'message' => 'Unauthorized. Only Super Admins can impersonate.'
             ], 403);
         }
 
-        if ($user->hasRole('Super Admin')) {
+        $isDestAdmin = $user->roles->any(function ($role) {
+            $name = strtolower($role->name);
+            return $name === 'super admin' || $name === 'super_admin';
+        });
+
+        if ($isDestAdmin) {
             return response()->json([
                 'message' => 'Cannot impersonate another Super Admin.'
             ], 403);

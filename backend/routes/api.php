@@ -36,4 +36,5 @@ Route::middleware('auth:sanctum')->group(function () {
     
     Route::post('/impersonate/{user}', [\App\Http\Controllers\Api\ImpersonateController::class, 'impersonate']);
     Route::get('/users', [\App\Http\Controllers\Api\ImpersonateController::class, 'index']);
+    Route::get('/attendance/history', [\App\Http\Controllers\Api\AttendanceHistoryController::class, 'index']);
 });
