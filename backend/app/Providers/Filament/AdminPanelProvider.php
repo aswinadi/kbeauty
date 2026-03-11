@@ -43,6 +43,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
+                \App\Filament\Widgets\AttendanceStatsOverview::class,
+                \App\Filament\Widgets\LowStockAlert::class,
+                \App\Filament\Widgets\UpcomingAbsences::class,
                 AccountWidget::class,
                 FilamentInfoWidget::class,
             ])

@@ -48,6 +48,11 @@ class ProductForm
                     ->default(0)
                     ->prefix('Rp')
                     ->visible(fn() => auth()->user()->hasRole('Super Admin')),
+                \Filament\Forms\Components\TextInput::make('min_stock')
+                    ->label(__('messages.fields.min_stock') ?? 'Minimum Stock')
+                    ->numeric()
+                    ->default(0)
+                    ->helperText('Alert will be shown when stock goes below this level.'),
                 \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('image')
                     ->label(__('messages.fields.image'))
                     ->collection('product_images')
