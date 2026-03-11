@@ -26,7 +26,7 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
   late List<CameraDescription> _cameras;
   final FaceDetector _faceDetector = FaceDetector(
     options: FaceDetectorOptions(
-      performanceMode: FaceDetectorMode.fast,
+      performanceMode: FaceDetectorMode.accurate,
     ),
   );
   bool _isProcessing = false;
