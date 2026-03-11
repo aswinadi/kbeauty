@@ -176,6 +176,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               ? e.toString().split('Exception: ').last 
                               : e.toString();
                         });
+                        // Resume scanning so the user can try again
+                        (faceViewKey.currentState as dynamic)?.resumeScanning();
                         // The stream is stopped in FaceRecognitionView._capture
                         // We need to trigger a rebuild or a fresh start if the user wants to try again.
                         // Actually, my fix in FaceRecognitionView._capture catch/finally should help,

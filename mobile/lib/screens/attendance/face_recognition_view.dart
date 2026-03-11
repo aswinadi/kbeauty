@@ -109,31 +109,30 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
             if (faces.isNotEmpty) {
               final face = faces.first;
               
-              // Ensure we have landmarks (eyes, nose, and mouth) to avoid "ceiling" false positives
+              // Ensure we have landmarks (eyes and mouth) to avoid "ceiling" false positives
               final hasEyes = face.landmarks[FaceLandmarkType.leftEye] != null && 
                              face.landmarks[FaceLandmarkType.rightEye] != null;
-              final hasNose = face.landmarks[FaceLandmarkType.noseBase] != null;
               final hasMouth = face.landmarks[FaceLandmarkType.bottomMouth] != null;
               
               // Ensure face is upright and facing camera (Euler angles)
-              final isFacingCamera = face.headEulerAngleX!.abs() < 15 &&
-                                   face.headEulerAngleY!.abs() < 15 && 
-                                   face.headEulerAngleZ!.abs() < 15;
+              final isFacingCamera = face.headEulerAngleX!.abs() < 20 &&
+                                   face.headEulerAngleY!.abs() < 20 && 
+                                   face.headEulerAngleZ!.abs() < 20;
 
               // Ensure face is reasonably large in frame
-              final isCloseEnough = face.boundingBox.width > (image.width * 0.3);
+              final isCloseEnough = face.boundingBox.width > (image.width * 0.25);
               
-              // Aspect ratio check: Human faces are usually taller than wide (approx 1.2 to 1.5 ratio)
+              // Aspect ratio check: Human faces are taller than wide, but let's be more flexible
               final aspectRatio = face.boundingBox.height / face.boundingBox.width;
-              final isHumanProportion = aspectRatio > 1.0 && aspectRatio < 2.0;
+              final isHumanProportion = aspectRatio > 0.8 && aspectRatio < 2.5;
 
-              // Centering: Face center should be within the middle 60% of the frame
+              // Centering: Face center should be within a reasonable middle area
               final centerX = face.boundingBox.center.dx;
               final centerY = face.boundingBox.center.dy;
-              final isCentered = centerX > (image.width * 0.25) && centerX < (image.width * 0.75) &&
-                                centerY > (image.height * 0.2) && centerY < (image.height * 0.8);
+              final isCentered = centerX > (image.width * 0.2) && centerX < (image.width * 0.8) &&
+                                centerY > (image.height * 0.1) && centerY < (image.height * 0.9);
 
-              if (hasEyes && hasNose && hasMouth && isFacingCamera && isCloseEnough && isCentered && isHumanProportion) {
+              if (hasEyes && hasMouth && isFacingCamera && isCloseEnough && isCentered && isHumanProportion) {
                 faceFound = true;
                 _internalErrorMessage = null;
               } else if (!isCloseEnough) {
@@ -174,10 +173,19 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
       }
 
       final image = await _controller!.takePicture();
-      widget.onFaceCaptured(image);
-      
-      // Note: We don't automatically restart here because the modal usually closes on success.
-      // However, if the external process fails, AttendanceScreen will still have the modal open.
+      await widget.onFaceCaptured(image);
+    } catch (e) {
+      print('Capture error: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+
+  void resumeScanning() {
+    _startImageStream();
+  }
     } catch (e) {
       print('Capture error: $e');
       if (mounted) {
