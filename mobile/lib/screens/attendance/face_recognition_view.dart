@@ -114,14 +114,29 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
                              face.getLandmark(FaceLandmarkType.rightEye) != null;
               final hasMouth = face.getLandmark(FaceLandmarkType.bottomMouth) != null;
               
-              // Ensure face is reasonably large in frame (at least 20% of image width)
-              final isCloseEnough = face.boundingBox.width > (image.width * 0.2);
+              // Ensure face is upright and facing camera (Euler angles)
+              // Real faces have 3D rotation; random patterns usually don't have consistent angles
+              final isFacingCamera = face.headEulerAngleY!.abs() < 20 && 
+                                   face.headEulerAngleZ!.abs() < 20;
+
+              // Ensure face is reasonably large in frame (at least 25% of image width)
+              final isCloseEnough = face.boundingBox.width > (image.width * 0.25);
               
-              if (hasEyes && hasMouth && isCloseEnough) {
+              // Centering: Face center should be within the middle 60% of the frame
+              final centerX = face.boundingBox.center.dx;
+              final centerY = face.boundingBox.center.dy;
+              final isCentered = centerX > (image.width * 0.2) && centerX < (image.width * 0.8) &&
+                                centerY > (image.height * 0.2) && centerY < (image.height * 0.8);
+
+              if (hasEyes && hasMouth && isFacingCamera && isCloseEnough && isCentered) {
                 faceFound = true;
                 _internalErrorMessage = null;
               } else if (!isCloseEnough) {
                 _internalErrorMessage = 'Dekatkan wajah Anda ke kamera';
+              } else if (!isCentered) {
+                _internalErrorMessage = 'Posisikan wajah di tengah lingkaran';
+              } else if (!isFacingCamera) {
+                _internalErrorMessage = 'Arahkan wajah tegak ke kamera';
               } else {
                 _internalErrorMessage = 'Pastikan wajah terlihat jelas (Mata & Mulut)';
               }
