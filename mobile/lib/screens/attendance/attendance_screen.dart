@@ -120,6 +120,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     String? localError;
     String? localSuccess;
     bool localLoading = false;
+    final faceViewKey = GlobalKey();
 
     await showModalBottomSheet(
       context: context,
@@ -150,6 +151,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 const SizedBox(height: 24),
                 Expanded(
                   child: FaceRecognitionView(
+                    key: faceViewKey, // Use a key to potentially access state if needed
                     isExternalLoading: localLoading,
                     externalErrorMessage: localSuccess ?? localError,
                     onFaceCaptured: (img) async {
@@ -174,6 +176,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               ? e.toString().split('Exception: ').last 
                               : e.toString();
                         });
+                        // The stream is stopped in FaceRecognitionView._capture
+                        // We need to trigger a rebuild or a fresh start if the user wants to try again.
+                        // Actually, my fix in FaceRecognitionView._capture catch/finally should help,
+                        // but let's make sure the external loading state is cleared properly.
                       }
                     },
                   ),

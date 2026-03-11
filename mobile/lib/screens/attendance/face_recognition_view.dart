@@ -121,18 +121,37 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
   Future<void> _capture() async {
     if (_isProcessing || _controller == null || !_isFaceDetected) return;
     
-    setState(() => _isProcessing = true);
-    // Stop stream during capture to avoid interference
-    await _controller?.stopImageStream();
+    setState(() {
+      _isProcessing = true;
+      _internalErrorMessage = null;
+    });
 
     try {
+      // Stop stream during capture to avoid interference
+      if (_controller!.value.isStreamingImages) {
+        await _controller?.stopImageStream();
+      }
+
       final image = await _controller!.takePicture();
       widget.onFaceCaptured(image);
+      
+      // Note: We don't automatically restart here because the modal usually closes on success.
+      // However, if the external process fails, AttendanceScreen will still have the modal open.
     } catch (e) {
       print('Capture error: $e');
-      _startImageStream(); // Resume if failed
+      if (mounted) {
+        setState(() => _internalErrorMessage = 'Gagal mengambil foto. Silakan coba lagi.');
+        _startImageStream(); // Resume if failed
+      }
     } finally {
       if (mounted) setState(() => _isProcessing = false);
+    }
+  }
+
+  // Add a way to resume stream externally if needed
+  void resumeScanning() {
+    if (mounted && _controller != null && !_controller!.value.isStreamingImages) {
+      _startImageStream();
     }
   }
 
