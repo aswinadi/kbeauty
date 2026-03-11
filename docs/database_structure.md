@@ -34,10 +34,17 @@ The system uses `inventory_movements` as the single source of truth for stock le
 *   **`stock_opnames`**: Represents a counting session at a specific location.
 *   **`stock_opname_items`**: Stores the physical counts entered by users. Discrepancies between this and the ledger trigger "Adjustment" movements in the `inventory_movements` table.
 
-### 6. Purchasing
-*   **`suppliers`**: Supplier contact information.
-*   **`purchases`**: Header for incoming stock orders.
 *   **`purchase_items`**: Detailed items and prices in a purchase.
+
+### 7. Human Resources & Attendance
+*   **`employees`**: Central personnel records. Links to `users` and `offices`. Stores NIK, join date, and face recognition embeddings.
+*   **`offices`**: Physical office locations with coordinates (`lat`, `lng`) and a `radius` (in meters) for attendance validation.
+*   **`attendances`**: Daily check-in/out logs.
+    *   `status`: ONTIME, LATE, EARLY_CHECKOUT.
+    *   Tracks GPS coordinates for every action to ensure geofence compliance.
+*   **`absent_attendances`**: Handles leaves of absence (Sick, Permission). Stores start/end dates and supporting photo documentation.
+*   **`shifts`**: Defines working hours and days of the week.
+*   **`holidays`**: Calendar events where attendance is not required.
 
 ---
 

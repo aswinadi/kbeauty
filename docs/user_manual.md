@@ -38,8 +38,9 @@ The web dashboard is the central hub for administrative tasks, reporting, and bu
 *   **Stock Out**: Use **Inventory Outs** to record stock reductions (e.g., sales, usage).
 *   **Stock Move**: Use **Inventory Movements** to track internal transfers between locations.
 
-### 📊 Reporting
 *   **Stock Card Report**: A detailed log of every movement for a specific item at a specific location.
+*   **Attendance Recap**: Generate monthly attendance summaries for all employees with PDF and Excel exports.
+*   **Impersonation**: Super Admins can use the "Impersonate" action in the Users table to view the system as another user for troubleshooting.
 *   **Exports**: Most tables support **PDF** and **Excel** exports for offline analysis or auditing.
 
 ---
@@ -64,13 +65,27 @@ Use the camera icon (if available) or the search bar in the Catalog to find prod
 4.  Enter the **Quantity**. You can toggle between Primary and Secondary units if a conversion ratio is defined.
 5.  Review the items and tap **Submit**.
 
-### ✅ Stock Opname (Inventory Count)
-1.  Tap **Stock Opname**.
-2.  Select the **Location** you are counting.
-3.  Select a product and enter the current physical count.
-    *   *Tip*: Use the "Dual-Unit" entry to count full boxes and individual pieces separately.
-4.  The system will automatically calculate the total base quantity and identify any discrepancies.
-5.  Submit the count to trigger an adjustment in the web dashboard.
+### 📍 Smart Attendance (Check-In / Out)
+1.  Tap **Check In / Out** from the dashboard.
+2.  The app automatically detects the nearest **Office**.
+3.  **Face Recognition**: You must scan your face to verify your identity.
+4.  **Geofencing**: You must be within the office radius (e.g., 50m) to check in or out. If you are too far, the button will be disabled and show "Terlalu Jauh".
+5.  **Status**: The app shows your current status (e.g., "Belum Check-In" or "Sudah Check-In").
+
+### 📅 Attendance History
+*   Access your personal attendance logs via the **History** button on the dashboard.
+*   Records are grouped by **Month** for easy viewing.
+*   Includes check-in/out times, absence details, and working hours.
+
+### 🤒 Leave & Permissions (Izin)
+1.  Tap **Izin** to request time off (Sick or Permission).
+2.  Select the date range and reason.
+3.  **Photos**: You can upload multiple photos (e.g., doctor's note) directly from your camera.
+
+### 👤 Impersonation (Super Admin Only)
+*   Super Admins can find the **Impersonate User** button in the **Profile** screen.
+*   This allows admins to switch to any user's account on the mobile app to verify their view and permissions.
+*   To stop impersonating, simply Log Out.
 
 ---
 
