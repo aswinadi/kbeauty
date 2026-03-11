@@ -176,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                '$_version (${AppConfig.env.toUpperCase()})',
+                                _version,
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
@@ -184,15 +184,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                             ],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Server: ${AppConfig.apiBaseUrl}',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey[400],
-                            letterSpacing: 0.5,
                           ),
                         ),
                       ],
