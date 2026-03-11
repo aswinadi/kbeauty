@@ -20,7 +20,7 @@ class LocationResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('messages.navigation_groups.inventory_master');
+        return __('messages.navigation_groups.inventory');
     }
 
     public static function getModelLabel(): string

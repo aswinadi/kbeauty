@@ -2,7 +2,8 @@
 
 return [
     'navigation_groups' => [
-        'master_data' => 'Master Data',
+        'inventory' => 'Inventory Master Data',
+        'attendance' => 'Attendance Master Data',
         'transactions' => 'Transactions',
         'reports' => 'Reports',
     ],
@@ -75,5 +76,27 @@ return [
         'inventory_movement' => 'Inventory Movement',
         'stock_card_report' => 'Stock Card Report',
         'user' => 'User',
+        'office' => 'Office',
+        'employee' => 'Employee',
+        'attendance' => 'Attendance',
+        'absent_attendance' => 'Leave/Sick/Permission',
+        'holiday' => 'Holiday',
+    ],
+    'attendance' => [
+        'type' => 'Type',
+        'reason' => 'Reason',
+        'check_in' => 'Check In',
+        'check_out' => 'Check Out',
+        'date' => 'Date',
+        'status' => 'Status',
+        'present' => 'Present',
+        'late' => 'Late',
+        'early_out' => 'Early Out',
+        'sick' => 'Sick',
+        'leave' => 'Leave',
+        'latitude' => 'Latitude',
+        'longitude' => 'Longitude',
+        'radius' => 'Radius (m)',
+        'nik' => 'NIK',
     ],
 ];

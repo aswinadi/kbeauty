@@ -27,7 +27,7 @@ class ShiftResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('messages.navigation_groups.attendance_master');
+        return __('messages.navigation_groups.attendance');
     }
 
     public static function getModelLabel(): string

@@ -2,11 +2,10 @@
 
 return [
     'navigation_groups' => [
-        'inventory_master' => 'Master Data Inventori',
-        'attendance_master' => 'Master Data Absensi',
+        'inventory' => 'Master Data Inventori',
+        'attendance' => 'Master Data Absensi',
         'transactions' => 'Transaksi',
         'reports' => 'Laporan',
-        'attendance' => 'Attendance',
     ],
     'fields' => [
         'username' => 'Nama Pengguna',
