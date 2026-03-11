@@ -5,8 +5,15 @@ import '../../theme/app_theme.dart';
 
 class FaceRecognitionView extends StatefulWidget {
   final Function(XFile image) onFaceCaptured;
+  final bool isExternalLoading;
+  final String? externalErrorMessage;
 
-  const FaceRecognitionView({super.key, required this.onFaceCaptured});
+  const FaceRecognitionView({
+    super.key, 
+    required this.onFaceCaptured,
+    this.isExternalLoading = false,
+    this.externalErrorMessage,
+  });
 
   @override
   State<FaceRecognitionView> createState() => _FaceRecognitionViewState();
@@ -23,7 +30,7 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
   );
   bool _isProcessing = false;
   bool _isCameraReady = false;
-  String? _errorMessage;
+  String? _internalErrorMessage;
 
   @override
   void initState() {
@@ -68,10 +75,10 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
 
       if (faces.isEmpty) {
         setState(() {
-          _errorMessage = 'Wajah tidak terdeteksi. Pastikan pencahayaan cukup dan wajah terlihat jelas.';
+          _internalErrorMessage = 'Wajah tidak terdeteksi. Pastikan pencahayaan cukup dan wajah terlihat jelas.';
         });
       } else {
-        setState(() => _errorMessage = null);
+        setState(() => _internalErrorMessage = null);
         widget.onFaceCaptured(image);
       }
     } catch (e) {
@@ -97,6 +104,8 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
     final size = MediaQuery.of(context).size;
     var scale = 1 / (_controller!.value.aspectRatio * size.aspectRatio);
     if (scale < 1) scale = 1 / scale;
+
+    final String? displayError = widget.externalErrorMessage ?? _internalErrorMessage;
 
     return Column(
       children: [
@@ -134,11 +143,11 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: (_errorMessage != null ? Colors.red : Colors.black).withValues(alpha: 0.6),
+                    color: (displayError != null ? Colors.red : Colors.black).withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    _errorMessage ?? 'Posisikan wajah di dalam lingkaran',
+                    displayError ?? 'Posisikan wajah di dalam lingkaran',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white, 
@@ -148,18 +157,31 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
                   ),
                 ),
               ),
+              // Loading Overlay
+              if (widget.isExternalLoading)
+                Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  ),
+                ),
             ],
           ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 24.0),
           child: IconButton.filled(
-            onPressed: _isProcessing ? null : _capture,
+            onPressed: (_isProcessing || widget.isExternalLoading) ? null : _capture,
             iconSize: 64,
             style: IconButton.styleFrom(
               backgroundColor: AppTheme.accentColor,
             ),
-            icon: _isProcessing 
+            icon: (_isProcessing || widget.isExternalLoading)
               ? const SizedBox(width: 32, height: 32, child: CircularProgressIndicator(color: Colors.white))
               : const Icon(Icons.camera_front),
           ),

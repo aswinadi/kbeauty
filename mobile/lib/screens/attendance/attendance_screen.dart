@@ -114,35 +114,66 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     });
   }
 
-  Future<XFile?> _showFaceRecognitionModal() async {
-    return await showModalBottomSheet<XFile>(
+  Future<void> _showFaceRecognitionDialog({
+    required Future<void> Function(XFile) onCaptured,
+  }) async {
+    String? localError;
+    bool localLoading = false;
+
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        height: MediaQuery.of(context).size.height * 0.8,
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return Container(
+            padding: const EdgeInsets.all(24),
+            height: MediaQuery.of(context).size.height * 0.8,
+            child: Column(
               children: [
-                const Text('Verifikasi Wajah', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Verifikasi Wajah', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Silakan ambil foto wajah untuk verifikasi',
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                ),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: FaceRecognitionView(
+                    isExternalLoading: localLoading,
+                    externalErrorMessage: localError,
+                    onFaceCaptured: (img) async {
+                      setModalState(() {
+                        localLoading = true;
+                        localError = null;
+                      });
+                      try {
+                        await onCaptured(img);
+                        if (context.mounted) Navigator.pop(context);
+                      } catch (e) {
+                        setModalState(() {
+                          localLoading = false;
+                          localError = e.toString().contains('Exception: ') 
+                              ? e.toString().split('Exception: ').last 
+                              : e.toString();
+                        });
+                      }
+                    },
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Silakan ambil foto wajah untuk verifikasi',
-              style: TextStyle(color: Colors.grey, fontSize: 14),
-            ),
-            const SizedBox(height: 24),
-            Expanded(child: FaceRecognitionView(onFaceCaptured: (img) => Navigator.pop(context, img))),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -157,56 +188,42 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       return;
     }
 
-    // Show Face Recognition Dialog
-    final XFile? capturedFace = await _showFaceRecognitionModal();
-    if (capturedFace == null) return;
-
-    setState(() => _isLoading = true);
-    try {
-      await _attendanceService.checkIn(
-        officeId: _selectedOffice!.id,
-        latitude: _currentPosition!.latitude,
-        longitude: _currentPosition!.longitude,
-        faceImage: File(capturedFace.path),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Check-in berhasil')),
-      );
-      _loadData(); // Refresh status
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Check-in gagal: $e')),
-      );
-    } finally {
-      setState(() => _isLoading = false);
-    }
+    await _showFaceRecognitionDialog(
+      onCaptured: (capturedFace) async {
+        await _attendanceService.checkIn(
+          officeId: _selectedOffice!.id,
+          latitude: _currentPosition!.latitude,
+          longitude: _currentPosition!.longitude,
+          faceImage: File(capturedFace.path),
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Check-in berhasil')),
+          );
+          _loadData(); // Refresh status
+        }
+      },
+    );
   }
 
   Future<void> _handleCheckOut() async {
     if (_currentPosition == null) return;
 
-    // Show Face Recognition Dialog for Check Out as well
-    final XFile? capturedFace = await _showFaceRecognitionModal();
-    if (capturedFace == null) return;
-
-    setState(() => _isLoading = true);
-    try {
-      await _attendanceService.checkOut(
-        latitude: _currentPosition!.latitude,
-        longitude: _currentPosition!.longitude,
-        faceImage: File(capturedFace.path),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Check-out berhasil')),
-      );
-      _loadData(); // Refresh status
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Check-out gagal: $e')),
-      );
-    } finally {
-      setState(() => _isLoading = false);
-    }
+    await _showFaceRecognitionDialog(
+      onCaptured: (capturedFace) async {
+        await _attendanceService.checkOut(
+          latitude: _currentPosition!.latitude,
+          longitude: _currentPosition!.longitude,
+          faceImage: File(capturedFace.path),
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Check-out berhasil')),
+          );
+          _loadData(); // Refresh status
+        }
+      },
+    );
   }
 
   @override
