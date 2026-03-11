@@ -73,7 +73,7 @@ class AttendanceService {
     }
   }
 
-  Future<bool> checkIn({
+  Future<String> checkIn({
     required int officeId,
     required double latitude,
     required double longitude,
@@ -101,12 +101,12 @@ class AttendanceService {
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
+      final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        return true;
+        return data['message'] ?? 'Check-in berhasil';
       } else {
-        final error = jsonDecode(response.body);
-        throw Exception(error['message'] ?? 'Check-in failed');
+        throw Exception(data['message'] ?? 'Check-in failed');
       }
     } catch (e) {
       print('Check-in error: $e');
@@ -114,7 +114,7 @@ class AttendanceService {
     }
   }
 
-  Future<bool> checkOut({
+  Future<String> checkOut({
     required double latitude,
     required double longitude,
     required File faceImage,
@@ -140,12 +140,12 @@ class AttendanceService {
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
+      final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        return true;
+        return data['message'] ?? 'Check-out berhasil';
       } else {
-        final error = jsonDecode(response.body);
-        throw Exception(error['message'] ?? 'Check-out failed');
+        throw Exception(data['message'] ?? 'Check-out failed');
       }
     } catch (e) {
       print('Check-out error: $e');

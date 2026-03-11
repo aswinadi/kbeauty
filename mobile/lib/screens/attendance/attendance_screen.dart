@@ -115,9 +115,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   Future<void> _showFaceRecognitionDialog({
-    required Future<void> Function(XFile) onCaptured,
+    required Future<String> Function(XFile) onCaptured,
   }) async {
     String? localError;
+    String? localSuccess;
     bool localLoading = false;
 
     await showModalBottomSheet(
@@ -150,14 +151,21 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 Expanded(
                   child: FaceRecognitionView(
                     isExternalLoading: localLoading,
-                    externalErrorMessage: localError,
+                    externalErrorMessage: localSuccess ?? localError,
                     onFaceCaptured: (img) async {
                       setModalState(() {
                         localLoading = true;
                         localError = null;
+                        localSuccess = null;
                       });
                       try {
-                        await onCaptured(img);
+                        final message = await onCaptured(img);
+                        setModalState(() {
+                          localLoading = false;
+                          localSuccess = message;
+                        });
+                        // Wait a moment so the user can see the 100% or success percentage
+                        await Future.delayed(const Duration(seconds: 1));
                         if (context.mounted) Navigator.pop(context);
                       } catch (e) {
                         setModalState(() {
@@ -190,7 +198,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
     await _showFaceRecognitionDialog(
       onCaptured: (capturedFace) async {
-        await _attendanceService.checkIn(
+        final message = await _attendanceService.checkIn(
           officeId: _selectedOffice!.id,
           latitude: _currentPosition!.latitude,
           longitude: _currentPosition!.longitude,
@@ -198,7 +206,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Check-in berhasil')),
+            SnackBar(content: Text(message)),
           );
           _loadData(); // Refresh status
         }
@@ -211,14 +219,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
     await _showFaceRecognitionDialog(
       onCaptured: (capturedFace) async {
-        await _attendanceService.checkOut(
+        final message = await _attendanceService.checkOut(
           latitude: _currentPosition!.latitude,
           longitude: _currentPosition!.longitude,
           faceImage: File(capturedFace.path),
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Check-out berhasil')),
+            SnackBar(content: Text(message)),
           );
           _loadData(); // Refresh status
         }
