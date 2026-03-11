@@ -27,6 +27,7 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
   final FaceDetector _faceDetector = FaceDetector(
     options: FaceDetectorOptions(
       performanceMode: FaceDetectorMode.accurate,
+      enableLandmarks: true,
     ),
   );
   bool _isProcessing = false;
@@ -104,12 +105,31 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
 
         if (mounted) {
           setState(() {
-            _isFaceDetected = faces.isNotEmpty;
-            if (_isFaceDetected) {
-              _internalErrorMessage = null;
+            bool faceFound = false;
+            if (faces.isNotEmpty) {
+              final face = faces.first;
+              
+              // Ensure we have landmarks (eyes and mouth) to avoid "ceiling" false positives
+              final hasEyes = face.getLandmark(FaceLandmarkType.leftEye) != null && 
+                             face.getLandmark(FaceLandmarkType.rightEye) != null;
+              final hasMouth = face.getLandmark(FaceLandmarkType.bottomMouth) != null;
+              
+              // Ensure face is reasonably large in frame (at least 20% of image width)
+              final isCloseEnough = face.boundingBox.width > (image.width * 0.2);
+              
+              if (hasEyes && hasMouth && isCloseEnough) {
+                faceFound = true;
+                _internalErrorMessage = null;
+              } else if (!isCloseEnough) {
+                _internalErrorMessage = 'Dekatkan wajah Anda ke kamera';
+              } else {
+                _internalErrorMessage = 'Pastikan wajah terlihat jelas (Mata & Mulut)';
+              }
             } else {
-              _internalErrorMessage = 'Wajah tidak terdeteksi. Posisikan wajah di dalam lingkaran.';
+              _internalErrorMessage = 'Posisikan wajah di dalam lingkaran';
             }
+            
+            _isFaceDetected = faceFound;
           });
         }
       } catch (e) {
