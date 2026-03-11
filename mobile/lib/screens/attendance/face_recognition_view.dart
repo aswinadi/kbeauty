@@ -176,24 +176,14 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
       await widget.onFaceCaptured(image);
     } catch (e) {
       print('Capture error: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isProcessing = false);
-      }
-    }
-  }
-
-  void resumeScanning() {
-    _startImageStream();
-  }
-    } catch (e) {
-      print('Capture error: $e');
       if (mounted) {
         setState(() => _internalErrorMessage = 'Gagal mengambil foto. Silakan coba lagi.');
         _startImageStream(); // Resume if failed
       }
     } finally {
-      if (mounted) setState(() => _isProcessing = false);
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
     }
   }
 
