@@ -3,6 +3,8 @@ import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 import '../home/dashboard_screen.dart';
 import '../../utils/responsive.dart';
+import '../../config/app_config.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,6 +20,20 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _rememberMe = true;
   bool _obscurePassword = true;
+  String _version = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    setState(() {
+      _version = 'v${info.version}+${info.buildNumber}';
+    });
+  }
 
   void _handleLogin() async {
     setState(() => _isLoading = true);
@@ -138,6 +154,50 @@ class _LoginScreenState extends State<LoginScreen> {
                         : const Text('SIGN IN'),
                   ),
                   const SizedBox(height: 24),
+                  Center(
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: (AppConfig.isProduction ? Colors.green : Colors.orange).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: (AppConfig.isProduction ? Colors.green : Colors.orange).withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                AppConfig.isProduction ? Icons.cloud_done : Icons.developer_mode,
+                                size: 14,
+                                color: AppConfig.isProduction ? Colors.green : Colors.orange,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '$_version (${AppConfig.env.toUpperCase()})',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppConfig.isProduction ? Colors.green : Colors.orange,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Server: ${AppConfig.apiBaseUrl}',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey[400],
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
