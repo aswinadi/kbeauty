@@ -77,22 +77,30 @@ class AttendanceService {
     required int officeId,
     required double latitude,
     required double longitude,
+    required File faceImage,
   }) async {
     try {
       final token = await _authService.getToken();
-      final response = await http.post(
+      final request = http.MultipartRequest(
+        'POST',
         Uri.parse('$baseUrl/attendance/check-in'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode({
-          'office_id': officeId,
-          'latitude': latitude,
-          'longitude': longitude,
-        }),
       );
+
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      });
+
+      request.fields['office_id'] = officeId.toString();
+      request.fields['latitude'] = latitude.toString();
+      request.fields['longitude'] = longitude.toString();
+      
+      request.files.add(
+        await http.MultipartFile.fromPath('face_image', faceImage.path),
+      );
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
         return true;
@@ -109,21 +117,29 @@ class AttendanceService {
   Future<bool> checkOut({
     required double latitude,
     required double longitude,
+    required File faceImage,
   }) async {
     try {
       final token = await _authService.getToken();
-      final response = await http.post(
+      final request = http.MultipartRequest(
+        'POST',
         Uri.parse('$baseUrl/attendance/check-out'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode({
-          'latitude': latitude,
-          'longitude': longitude,
-        }),
       );
+
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      });
+
+      request.fields['latitude'] = latitude.toString();
+      request.fields['longitude'] = longitude.toString();
+      
+      request.files.add(
+        await http.MultipartFile.fromPath('face_image', faceImage.path),
+      );
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
         return true;

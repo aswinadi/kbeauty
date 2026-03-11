@@ -6,6 +6,7 @@ import '../../models/office.dart';
 import '../../theme/app_theme.dart';
 import 'face_recognition_view.dart';
 import 'dart:async';
+import 'dart:io';
 
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
@@ -166,6 +167,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         officeId: _selectedOffice!.id,
         latitude: _currentPosition!.latitude,
         longitude: _currentPosition!.longitude,
+        faceImage: File(capturedFace.path),
       );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Check-in berhasil')),
@@ -192,6 +194,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       await _attendanceService.checkOut(
         latitude: _currentPosition!.latitude,
         longitude: _currentPosition!.longitude,
+        faceImage: File(capturedFace.path),
       );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Check-out berhasil')),
