@@ -67,6 +67,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final confirmController = TextEditingController();
     final formKey = GlobalKey<FormState>();
     bool isLoading = false;
+    bool obscureCurrent = true;
+    bool obscureNew = true;
+    bool obscureConfirm = true;
 
     showDialog(
       context: context,
@@ -75,32 +78,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
           title: const Text('Change Password'),
           content: Form(
             key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: currentController,
-                  obscureText: true,
-                  decoration: const InputDecoration(labelText: 'Current Password'),
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
-                ),
-                TextFormField(
-                  controller: newController,
-                  obscureText: true,
-                  decoration: const InputDecoration(labelText: 'New Password'),
-                  validator: (v) => v!.length < 8 ? 'Min 8 chars' : null,
-                ),
-                TextFormField(
-                  controller: confirmController,
-                  obscureText: true,
-                  decoration: const InputDecoration(labelText: 'Confirm Password'),
-                  validator: (v) => v != newController.text ? 'Mismatch' : null,
-                ),
-                if (isLoading) const Padding(
-                  padding: EdgeInsets.only(top: 16.0),
-                  child: CircularProgressIndicator(),
-                ),
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: currentController,
+                    obscureText: obscureCurrent,
+                    decoration: InputDecoration(
+                      labelText: 'Current Password',
+                      suffixIcon: IconButton(
+                        icon: Icon(obscureCurrent ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                        onPressed: () => setState(() => obscureCurrent = !obscureCurrent),
+                      ),
+                    ),
+                    validator: (v) => v!.isEmpty ? 'Required' : null,
+                  ),
+                  TextFormField(
+                    controller: newController,
+                    obscureText: obscureNew,
+                    decoration: InputDecoration(
+                      labelText: 'New Password',
+                      suffixIcon: IconButton(
+                        icon: Icon(obscureNew ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                        onPressed: () => setState(() => obscureNew = !obscureNew),
+                      ),
+                    ),
+                    validator: (v) => v!.length < 8 ? 'Min 8 chars' : null,
+                  ),
+                  TextFormField(
+                    controller: confirmController,
+                    obscureText: obscureConfirm,
+                    decoration: InputDecoration(
+                      labelText: 'Confirm Password',
+                      suffixIcon: IconButton(
+                        icon: Icon(obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                        onPressed: () => setState(() => obscureConfirm = !obscureConfirm),
+                      ),
+                    ),
+                    validator: (v) => v != newController.text ? 'Mismatch' : null,
+                  ),
+                  if (isLoading) const Padding(
+                    padding: EdgeInsets.only(top: 16.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [

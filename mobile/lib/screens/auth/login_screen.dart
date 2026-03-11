@@ -17,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authService = AuthService();
   bool _isLoading = false;
   bool _rememberMe = true;
+  bool _obscurePassword = true;
 
   void _handleLogin() async {
     setState(() => _isLoading = true);
@@ -100,10 +101,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
+                    obscureText: _obscurePassword,
+                    decoration: InputDecoration(
                       labelText: 'Password',
-                      prefixIcon: Icon(Icons.lock_outline),
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
