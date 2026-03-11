@@ -22,7 +22,7 @@ class AbsentAttendanceResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('messages.navigation_groups.attendance');
+        return __('messages.navigation_groups.attendance_transactions');
     }
 
     public static function getModelLabel(): string

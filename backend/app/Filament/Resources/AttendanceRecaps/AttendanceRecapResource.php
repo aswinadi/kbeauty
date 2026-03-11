@@ -23,7 +23,7 @@ class AttendanceRecapResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('messages.navigation_groups.attendance');
+        return __('messages.navigation_groups.reports');
     }
 
     public static function getModelLabel(): string

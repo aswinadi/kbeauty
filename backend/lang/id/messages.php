@@ -4,6 +4,7 @@ return [
     'navigation_groups' => [
         'inventory' => 'Master Data Inventori',
         'attendance' => 'Master Data Absensi',
+        'attendance_transactions' => 'Attendance',
         'transactions' => 'Transaksi',
         'reports' => 'Laporan',
     ],
