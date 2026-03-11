@@ -57,3 +57,21 @@ Modernized the report generator to use native Filament components for a "premium
 - Added "All Products" filter support by conditionally applying product scoping to inventory movement queries.
 - Integrated `maatwebsite/excel` for .xlsx exports.
 - Integrated `barryvdh/laravel-dompdf` for PDF generation using custom Blade templates.
+
+## 4. Advanced Face Verification
+
+A high-security attendance verification system using a hybrid of client-side computer vision and server-side image comparison.
+
+### Mobile "Humanity" Checks
+Implemented in `FaceRecognitionView.dart` using Google ML Kit:
+- **Landmark Lock**: Requires detection of Left Eye, Right Eye, and Mouth.
+- **Orientation Control**: Head rotation must be within ±20° (Euler X, Y, Z).
+- **Aspect Ratio Validation**: Validates that the detected region has human-like proportions (0.8 < Ratio < 2.5) to filter out background objects.
+- **Proximity**: Ensures the face occupies at least 25% of the frame.
+
+### Backend Verification Engine
+Implemented in `AttendanceController.php`:
+- **RGB Comparison**: Uses pixel-by-pixel RGB difference (Manhattan distance) for lightning-fast, zero-cloud-cost verification.
+- **Sharp Center-Weighting**: Applies a non-linear weight to the center of the image (multiplied by a Gaussian curve), effectively making background pixels irrelevant to the final score.
+- **Similarity Threshold**: Scaled result (0-100%) where **80%** is the passing criteria.
+- **Safety**: Automatically returns 0% if the employee has no registered profile photo, preventing empty-state bypasses.

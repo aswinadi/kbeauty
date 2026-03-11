@@ -10,10 +10,11 @@ A comprehensive inventory management system with a Laravel/Filament backend and 
 - **Multi-UOM Support**: Configure Primary (Smallest) and Secondary (Larger) units of measure (e.g., Pcs and Box).
 - **Automated SKU**: Standardized SKU generation for new products.
 
-### 🔄 Inventory Tracking
+### 🔄 Inventory Tracking & Attendance
 - **Stock Opname**: Mobile-first stock counting with support for dual-unit entry. Automatically calculates totals based on conversion ratios.
 - **Stock Balance**: Real-time stock visibility per location with intuitive unit breakdowns (e.g., "1 Box 5 Pcs").
 - **Movement Tracking**: Logging of stock-in, stock-out, and internal movements (Card Report).
+- **Secure Attendance**: Geofenced check-in/out with **Advanced Face Recognition** (Triple-lock landmark detection + RGB similarity scoring).
 
 ### 📊 Reporting & Exports
 - **Stock Card Report**: Detailed table view with location-based filtering.

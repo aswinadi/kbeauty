@@ -68,9 +68,12 @@ Use the camera icon (if available) or the search bar in the Catalog to find prod
 ### 📍 Smart Attendance (Check-In / Out)
 1.  Tap **Check In / Out** from the dashboard.
 2.  The app automatically detects the nearest **Office**.
-3.  **Face Recognition**: You must scan your face to verify your identity.
-4.  **Geofencing**: You must be within the office radius (e.g., 50m) to check in or out. If you are too far, the button will be disabled and show "Terlalu Jauh".
-5.  **Status**: The app shows your current status (e.g., "Belum Check-In" or "Sudah Check-In").
+3.  **Advanced Face Verification**:
+    *   The camera will **only turn green** when a real human face is detected.
+    *   **Requirements**: You must face the camera directly (upright), eyes and mouth must be visible, and you must be close enough (approx. 30cm - 50cm).
+    *   **Anti-Friction**: The system automatically ignores non-human patterns like ceiling tiles or square lights using built-in "Humanity Checks".
+4.  **Geofencing**: You must be within the office radius (e.g., 50m) to check in or out.
+5.  **Instant Feedback**: After capture, the system shows your similarity percentage. Success requires at least **80%** match.
 
 ### 📅 Attendance History
 *   Access your personal attendance logs via the **History** button on the dashboard.

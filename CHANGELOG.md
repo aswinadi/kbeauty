@@ -1,5 +1,23 @@
 # Project Changelog
 
+## [1.4.0] - 2026-03-11
+
+### Added
+- **Advanced Face Verification Security**: 
+  - **Triple-Lock Detection**: Mobile app now requires eyes, nose, and mouth detection to proceed.
+  - **Humanity Checks**: Added aspect ratio and head orientation (Euler angles) validation to block 2D background patterns (like ceilings).
+  - **Smart Center-Weighting**: Backend algorithm now focuses significantly more on the center of the frame (the face) during comparison.
+  - **Dynamic State Management**: Instant reset of detection state after capture to prevent "stuck" UI.
+- **Mobile Versioning**: Bumped app version to **v1.1.0+2** for consistent tracking.
+
+### Changed
+- **Similarity Threshold**: Adjusted to a rock-solid **80%** (validated via RGB comparison) for the perfect balance of security and speed.
+
+### Fixed
+- **Mobile Build**: Resolved `google_mlkit_face_detection` (v0.11.1) compatibility issues with `getLandmark`.
+- **UI Stability**: Fixed detection "hang" occurring after failed check-in attempts.
+
+
 ## [1.3.0] - 2026-03-11
 
 ### Added
