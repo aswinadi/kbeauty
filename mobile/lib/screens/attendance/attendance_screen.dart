@@ -164,8 +164,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           localLoading = false;
                           localSuccess = message;
                         });
-                        // Wait a moment so the user can see the 100% or success percentage
-                        await Future.delayed(const Duration(seconds: 1));
+                        // Wait a moment so the user can see the score
+                        await Future.delayed(const Duration(seconds: 2));
                         if (context.mounted) Navigator.pop(context);
                       } catch (e) {
                         setModalState(() {
