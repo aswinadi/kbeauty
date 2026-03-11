@@ -210,21 +210,22 @@ class AttendanceController extends Controller
                     $color1 = imagecolorat($thumb1, $x, $y);
                     $color2 = imagecolorat($thumb2, $x, $y);
 
-                    $gray1 = $color1 & 0xFF;
-                    $gray2 = $color2 & 0xFF;
+                    $r1 = ($color1 >> 16) & 0xFF; $g1 = ($color1 >> 8) & 0xFF; $b1 = $color1 & 0xFF;
+                    $r2 = ($color2 >> 16) & 0xFF; $g2 = ($color2 >> 8) & 0xFF; $b2 = $color2 & 0xFF;
 
-                    $diff += abs($gray1 - $gray2);
+                    $diff += abs($r1 - $r2) + abs($g1 - $g2) + abs($b1 - $b2);
                 }
             }
 
             imagedestroy($img1); imagedestroy($img2);
             imagedestroy($thumb1); imagedestroy($thumb2);
 
-            // Max diff for grayscale is size * size * 255
-            $maxDiff = $size * $size * 255;
+            // Max diff for RGB is size * size * 3 * 255
+            $maxDiff = $size * $size * 3 * 255;
             $similarity = (1 - ($diff / $maxDiff)) * 100;
 
-            \Log::info("Face Verification similarity for employee " . $employee->id . ": " . $similarity . "%");
+            \Log::info("Face Verification raw diff for employee {$employee->id}: {$diff} / {$maxDiff}");
+            \Log::info("Face Verification similarity for employee {$employee->id}: " . round($similarity, 2) . "%");
 
             return $similarity;
         } catch (\Exception $e) {

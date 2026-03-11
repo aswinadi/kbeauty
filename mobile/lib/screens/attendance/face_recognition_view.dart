@@ -106,6 +106,7 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
     if (scale < 1) scale = 1 / scale;
 
     final String? displayError = widget.externalErrorMessage ?? _internalErrorMessage;
+    final bool isSuccess = widget.externalErrorMessage?.toLowerCase().contains('berhasil') ?? false;
 
     return Column(
       children: [
@@ -143,7 +144,9 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: (displayError != null ? Colors.red : Colors.black).withValues(alpha: 0.6),
+                    color: (displayError != null 
+                        ? (isSuccess ? Colors.green : Colors.red) 
+                        : Colors.black).withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
