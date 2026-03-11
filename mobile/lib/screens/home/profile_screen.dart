@@ -3,6 +3,7 @@ import '../../services/auth_service.dart';
 import '../../models/user.dart';
 import '../../theme/app_theme.dart';
 import '../auth/login_screen.dart';
+import 'user_selection_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -178,6 +179,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     ),
                   ),
+                  if (_user?.roles.contains('Super Admin') ?? false) ...[
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const UserSelectionScreen()),
+                        ),
+                        icon: const Icon(Icons.people_outline, color: AppTheme.accentColor),
+                        label: const Text('Impersonate User', style: TextStyle(color: AppTheme.accentColor)),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: const BorderSide(color: AppTheme.accentColor),
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 48),
                   SizedBox(
                     width: double.infinity,

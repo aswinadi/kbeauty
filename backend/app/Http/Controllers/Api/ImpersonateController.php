@@ -10,6 +10,22 @@ use Illuminate\Support\Facades\Auth;
 class ImpersonateController extends Controller
 {
     /**
+     * List users who can be impersonated.
+     */
+    public function index(Request $request)
+    {
+        if (!$request->user()->hasRole('Super Admin')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $users = User::whereDoesntHave('roles', function ($query) {
+            $query->where('name', 'Super Admin');
+        })->get();
+
+        return response()->json($users);
+    }
+
+    /**
      * Impersonate a user and return a Sanctum token.
      * Only available for Super Admins.
      */

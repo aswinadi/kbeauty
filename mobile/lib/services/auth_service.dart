@@ -99,4 +99,56 @@ class AuthService {
       return false;
     }
   }
+
+  Future<List<User>> getUsers() async {
+    final token = await _storage.read(key: 'auth_token');
+    if (token == null) return [];
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/users'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(response.body);
+        return data.map((u) => User.fromJson(u)).toList();
+      }
+    } catch (e) {
+      print('Get users error: $e');
+    }
+    return [];
+  }
+
+  Future<User?> impersonate(int userId) async {
+    final token = await _storage.read(key: 'auth_token');
+    if (token == null) return null;
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/impersonate/$userId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final user = User.fromJson(data['user'], token: data['token']);
+        
+        // Switch to impersonated user
+        await _storage.write(key: 'auth_token', value: user.token);
+        await _storage.write(key: 'user_data', value: jsonEncode(user.toJson()));
+        
+        return user;
+      }
+    } catch (e) {
+      print('Impersonate error: $e');
+    }
+    return null;
+  }
 }

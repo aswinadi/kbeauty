@@ -35,4 +35,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/profile/update-password', [AuthController::class, 'changePassword']); // Alias for clarity
     
     Route::post('/impersonate/{user}', [\App\Http\Controllers\Api\ImpersonateController::class, 'impersonate']);
+    Route::get('/users', [\App\Http\Controllers\Api\ImpersonateController::class, 'index']);
 });
