@@ -3,6 +3,7 @@ import 'office.dart';
 class Employee {
   final int id;
   final int officeId;
+  final String? fullName;
   final String nik;
   final String? phone;
   final Office? office;
@@ -11,6 +12,7 @@ class Employee {
   Employee({
     required this.id,
     required this.officeId,
+    this.fullName,
     required this.nik,
     this.phone,
     this.office,
@@ -21,6 +23,7 @@ class Employee {
     return Employee(
       id: json['id'],
       officeId: json['office_id'],
+      fullName: json['full_name'],
       nik: json['nik'],
       phone: json['phone'],
       office: json['office'] != null ? Office.fromJson(json['office']) : null,
@@ -32,6 +35,7 @@ class Employee {
     return {
       'id': id,
       'office_id': officeId,
+      'full_name': fullName,
       'nik': nik,
       'phone': phone,
       'office': office?.toJson(),

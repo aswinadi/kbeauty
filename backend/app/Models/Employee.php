@@ -26,6 +26,15 @@ class Employee extends Model implements HasMedia
         'face_embedding' => 'array',
     ];
 
+    protected $appends = [
+        'photo_url',
+    ];
+
+    public function getPhotoUrlAttribute()
+    {
+        return $this->getFirstMediaUrl('photo');
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
