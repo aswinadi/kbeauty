@@ -105,17 +105,6 @@ class _AbsentFormScreenState extends State<AbsentFormScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            DropdownButtonFormField<Office>(
-              value: _selectedOffice,
-              decoration: const InputDecoration(labelText: 'Pilih Kantor'),
-              items: _offices.map((office) {
-                return DropdownMenuItem(
-                  value: office,
-                  child: Text(office.name),
-                );
-              }).toList(),
-              onChanged: (val) => setState(() => _selectedOffice = val),
-            ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               value: _selectedType,

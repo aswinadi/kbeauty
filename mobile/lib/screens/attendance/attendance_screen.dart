@@ -246,29 +246,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             ),
             const SizedBox(height: 24),
             if (!_isCheckedOut) ...[
-              DropdownButtonFormField<Office>(
-                value: _selectedOffice,
-                decoration: const InputDecoration(labelText: 'Pilih Kantor'),
-                items: _offices.map((office) {
-                  return DropdownMenuItem(
-                    value: office,
-                    child: Text(office.name),
-                  );
-                }).toList(),
-                onChanged: (val) {
-                  setState(() {
-                    _selectedOffice = val;
-                    if (_currentPosition != null && val != null) {
-                      _distanceInMeters = Geolocator.distanceBetween(
-                        _currentPosition!.latitude,
-                        _currentPosition!.longitude,
-                        val.latitude,
-                        val.longitude,
-                      );
-                    }
-                  });
-                },
-              ),
               const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
