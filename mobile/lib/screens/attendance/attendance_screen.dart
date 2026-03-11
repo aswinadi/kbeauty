@@ -113,20 +113,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     });
   }
 
-  Future<void> _handleCheckIn() async {
-    if (_selectedOffice == null || _currentPosition == null) return;
-
-    if (_distanceInMeters != null && _distanceInMeters! > _selectedOffice!.radius) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Anda berada di luar radius kantor (${_distanceInMeters!.round()}m)')),
-      );
-      return;
-    }
-
-    // Show Face Recognition Dialog
-    final XFile? capturedFace = await showModalBottomSheet<XFile>(
+  Future<XFile?> _showFaceRecognitionModal() async {
+    return await showModalBottomSheet<XFile>(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (context) => Container(
         padding: const EdgeInsets.all(24),
         height: MediaQuery.of(context).size.height * 0.8,
@@ -140,12 +134,30 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               ],
             ),
             const SizedBox(height: 16),
+            const Text(
+              'Silakan ambil foto wajah untuk verifikasi',
+              style: TextStyle(color: Colors.grey, fontSize: 14),
+            ),
+            const SizedBox(height: 24),
             Expanded(child: FaceRecognitionView(onFaceCaptured: (img) => Navigator.pop(context, img))),
           ],
         ),
       ),
     );
+  }
 
+  Future<void> _handleCheckIn() async {
+    if (_selectedOffice == null || _currentPosition == null) return;
+
+    if (_distanceInMeters != null && _distanceInMeters! > _selectedOffice!.radius) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Anda berada di luar radius kantor (${_distanceInMeters!.round()}m)')),
+      );
+      return;
+    }
+
+    // Show Face Recognition Dialog
+    final XFile? capturedFace = await _showFaceRecognitionModal();
     if (capturedFace == null) return;
 
     setState(() => _isLoading = true);
@@ -170,6 +182,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   Future<void> _handleCheckOut() async {
     if (_currentPosition == null) return;
+
+    // Show Face Recognition Dialog for Check Out as well
+    final XFile? capturedFace = await _showFaceRecognitionModal();
+    if (capturedFace == null) return;
 
     setState(() => _isLoading = true);
     try {
