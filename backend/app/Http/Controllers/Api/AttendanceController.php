@@ -76,7 +76,7 @@ class AttendanceController extends Controller
 
         // Face Verification
         $similarity = $this->verifyFaceSimilarity($employee, $request->file('face_image'));
-        if ($similarity < 60) {
+        if ($similarity < 80) {
             return response()->json([
                 'message' => 'Wajah tidak cocok (Kemiripan: ' . round($similarity, 2) . '%). Pastikan wajah terlihat jelas dan sesuai dengan foto profil.',
             ], 422);

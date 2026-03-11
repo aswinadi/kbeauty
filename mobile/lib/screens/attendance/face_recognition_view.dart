@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
@@ -24,13 +26,14 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
   late List<CameraDescription> _cameras;
   final FaceDetector _faceDetector = FaceDetector(
     options: FaceDetectorOptions(
-      enableContours: true,
-      enableClassification: true,
+      performanceMode: FaceDetectorMode.fast,
     ),
   );
   bool _isProcessing = false;
   bool _isCameraReady = false;
+  bool _isFaceDetected = false;
   String? _internalErrorMessage;
+  DateTime? _lastDetectionTime;
 
   @override
   void initState() {
@@ -41,7 +44,6 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
   Future<void> _initCamera() async {
     _cameras = await availableCameras();
     
-    // Find front camera
     CameraDescription? frontCamera;
     for (var cam in _cameras) {
       if (cam.lensDirection == CameraLensDirection.front) {
@@ -54,35 +56,90 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
       frontCamera ?? _cameras[0],
       ResolutionPreset.medium,
       enableAudio: false,
+      imageFormatGroup: Platform.isAndroid ? ImageFormatGroup.nv21 : ImageFormatGroup.bgra8888,
     );
 
-    await _controller!.initialize();
-    if (mounted) {
-      setState(() => _isCameraReady = true);
+    try {
+      await _controller!.initialize();
+      if (mounted) {
+        setState(() => _isCameraReady = true);
+        _startImageStream();
+      }
+    } catch (e) {
+      print('Camera Error: $e');
     }
   }
 
+  void _startImageStream() {
+    _controller?.startImageStream((CameraImage image) async {
+      if (_isProcessing || !mounted) return;
+      
+      final now = DateTime.now();
+      if (_lastDetectionTime != null && now.difference(_lastDetectionTime!).inMilliseconds < 500) {
+        return;
+      }
+      _lastDetectionTime = now;
+
+      try {
+        final WriteBuffer allBytes = WriteBuffer();
+        for (final Plane plane in image.planes) {
+          allBytes.putUint8List(plane.bytes);
+        }
+        final bytes = allBytes.done().buffer.asUint8List();
+
+        final Size imageSize = Size(image.width.toDouble(), image.height.toDouble());
+        final InputImageRotation imageRotation = InputImageRotationValue.fromRawValue(_controller!.description.sensorOrientation) ?? InputImageRotation.rotation0;
+        final InputImageFormat inputImageFormat = InputImageFormatValue.fromRawValue(image.format.raw) ?? InputImageFormat.yuv420;
+
+        final planeData = image.planes.map(
+          (Plane plane) {
+            return InputImagePlaneMetadata(
+              bytesPerRow: plane.bytesPerRow,
+              height: plane.height,
+              width: plane.width,
+            );
+          },
+        ).toList();
+
+        final inputImageData = InputImageData(
+          size: imageSize,
+          imageRotation: imageRotation,
+          inputImageFormat: inputImageFormat,
+          planeData: planeData,
+        );
+
+        final inputImage = InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
+        final faces = await _faceDetector.processImage(inputImage);
+
+        if (mounted) {
+          setState(() {
+            _isFaceDetected = faces.isNotEmpty;
+            if (_isFaceDetected) {
+              _internalErrorMessage = null;
+            } else {
+              _internalErrorMessage = 'Wajah tidak terdeteksi. Posisikan wajah di dalam lingkaran.';
+            }
+          });
+        }
+      } catch (e) {
+        print('In-stream detection error: $e');
+      }
+    });
+  }
+
   Future<void> _capture() async {
-    if (_isProcessing || _controller == null) return;
+    if (_isProcessing || _controller == null || !_isFaceDetected) return;
+    
     setState(() => _isProcessing = true);
+    // Stop stream during capture to avoid interference
+    await _controller?.stopImageStream();
 
     try {
       final image = await _controller!.takePicture();
-      
-      // Validate face existence
-      final inputImage = InputImage.fromFilePath(image.path);
-      final faces = await _faceDetector.processImage(inputImage);
-
-      if (faces.isEmpty) {
-        setState(() {
-          _internalErrorMessage = 'Wajah tidak terdeteksi. Pastikan pencahayaan cukup dan wajah terlihat jelas.';
-        });
-      } else {
-        setState(() => _internalErrorMessage = null);
-        widget.onFaceCaptured(image);
-      }
+      widget.onFaceCaptured(image);
     } catch (e) {
       print('Capture error: $e');
+      _startImageStream(); // Resume if failed
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
@@ -128,8 +185,8 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
                 decoration: ShapeDecoration(
                   shape: CircleBorder(
                     side: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      width: 2,
+                      color: _isFaceDetected ? Colors.green.withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.5),
+                      width: 3,
                     ),
                   ),
                 ),
@@ -142,7 +199,7 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
                 left: 24,
                 right: 24,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: (displayError != null 
                         ? (isSuccess ? Colors.green : Colors.red) 
@@ -150,12 +207,12 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    displayError ?? 'Posisikan wajah di dalam lingkaran',
+                    displayError ?? (_isFaceDetected ? 'Wajah terdeteksi! Klik tombol di bawah' : 'Posisikan wajah di dalam lingkaran'),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white, 
-                      fontSize: 12, 
-                      fontWeight: FontWeight.w500,
+                      fontSize: 13, 
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
@@ -179,14 +236,14 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 24.0),
           child: IconButton.filled(
-            onPressed: (_isProcessing || widget.isExternalLoading) ? null : _capture,
+            onPressed: (_isProcessing || widget.isExternalLoading || !_isFaceDetected) ? null : _capture,
             iconSize: 64,
             style: IconButton.styleFrom(
-              backgroundColor: AppTheme.accentColor,
+              backgroundColor: _isFaceDetected ? AppTheme.accentColor : Colors.grey,
             ),
             icon: (_isProcessing || widget.isExternalLoading)
               ? const SizedBox(width: 32, height: 32, child: CircularProgressIndicator(color: Colors.white))
-              : const Icon(Icons.camera_front),
+              : Icon(Icons.camera_front, color: _isFaceDetected ? Colors.white : Colors.white54),
           ),
         ),
       ],
