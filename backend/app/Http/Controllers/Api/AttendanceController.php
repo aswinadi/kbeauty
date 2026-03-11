@@ -176,27 +176,33 @@ class AttendanceController extends Controller
     private function verifyFaceSimilarity($employee, $uploadedFile)
     {
         $storedPhotoPath = $employee->getFirstMediaPath('photo');
+        \Log::info("Face Verification path: " . ($storedPhotoPath ?: 'NULL'));
+
         if (!$storedPhotoPath || !file_exists($storedPhotoPath)) {
-            // If no photo to compare, we allow it but log a warning? 
-            // Better to return 100 or 0 depending on policy.
-            // User said "use that photo", implying it should exist.
-            return 100; // Assume match if no benchmark exists yet, or change to 0 to enforce enrollment
+            \Log::warning("Face Verification skipped: No stored photo found for employee " . $employee->id);
+            // If no photo to compare, we return 0 to enforce enrollment/photo upload
+            return 0; 
         }
 
         try {
-            // Basic pixel-based similarity using GD
-            // We'll resize both to 16x16 and compare the average color/luminance
             $img1 = $this->createImageFromFile($storedPhotoPath);
             $img2 = $this->createImageFromFile($uploadedFile->getPathname());
 
-            if (!$img1 || !$img2) return 0;
+            if (!$img1 || !$img2) {
+                \Log::error("Face Verification failed: Could not create images from files");
+                return 0;
+            }
 
-            $size = 32;
+            $size = 64;
             $thumb1 = imagecreatetruecolor($size, $size);
             $thumb2 = imagecreatetruecolor($size, $size);
 
             imagecopyresampled($thumb1, $img1, 0, 0, 0, 0, $size, $size, imagesx($img1), imagesy($img1));
             imagecopyresampled($thumb2, $img2, 0, 0, 0, 0, $size, $size, imagesx($img2), imagesy($img2));
+
+            // Convert to grayscale for more robust comparison
+            imagefilter($thumb1, IMG_FILTER_GRAYSCALE);
+            imagefilter($thumb2, IMG_FILTER_GRAYSCALE);
 
             $diff = 0;
             for ($x = 0; $x < $size; $x++) {
@@ -204,23 +210,25 @@ class AttendanceController extends Controller
                     $color1 = imagecolorat($thumb1, $x, $y);
                     $color2 = imagecolorat($thumb2, $x, $y);
 
-                    $r1 = ($color1 >> 16) & 0xFF; $g1 = ($color1 >> 8) & 0xFF; $b1 = $color1 & 0xFF;
-                    $r2 = ($color2 >> 16) & 0xFF; $g2 = ($color2 >> 8) & 0xFF; $b2 = $color2 & 0xFF;
+                    $gray1 = $color1 & 0xFF;
+                    $gray2 = $color2 & 0xFF;
 
-                    $diff += abs($r1 - $r2) + abs($g1 - $g2) + abs($b1 - $b2);
+                    $diff += abs($gray1 - $gray2);
                 }
             }
 
             imagedestroy($img1); imagedestroy($img2);
             imagedestroy($thumb1); imagedestroy($thumb2);
 
-            $maxDiff = $size * $size * 3 * 255;
+            // Max diff for grayscale is size * size * 255
+            $maxDiff = $size * $size * 255;
             $similarity = (1 - ($diff / $maxDiff)) * 100;
 
-            // Adjust threshold: since colors can vary greatly, we might want to be more lenient 
-            // or use grayscale comparison. Let's stick to this for now.
+            \Log::info("Face Verification similarity for employee " . $employee->id . ": " . $similarity . "%");
+
             return $similarity;
         } catch (\Exception $e) {
+            \Log::error("Face Verification exception: " . $e->getMessage());
             return 0;
         }
     }
