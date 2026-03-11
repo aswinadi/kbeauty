@@ -23,6 +23,7 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
   );
   bool _isProcessing = false;
   bool _isCameraReady = false;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -66,12 +67,11 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
       final faces = await _faceDetector.processImage(inputImage);
 
       if (faces.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Wajah tidak terdeteksi, coba lagi')),
-          );
-        }
+        setState(() {
+          _errorMessage = 'Wajah tidak terdeteksi. Pastikan pencahayaan cukup dan wajah terlihat jelas.';
+        });
       } else {
+        setState(() => _errorMessage = null);
         widget.onFaceCaptured(image);
       }
     } catch (e) {
@@ -126,18 +126,19 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
                 width: 250,
                 height: 250,
               ),
-              // Hint text overlay
+              // Hint or Error text overlay
               Positioned(
                 bottom: 20,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: (_errorMessage != null ? Colors.red : Colors.black).withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text(
-                    'Posisikan wajah di dalam lingkaran',
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  child: Text(
+                    _errorMessage ?? 'Posisikan wajah di dalam lingkaran',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
                   ),
                 ),
               ),
