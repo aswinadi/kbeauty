@@ -109,36 +109,41 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
             if (faces.isNotEmpty) {
               final face = faces.first;
               
-              // Ensure we have landmarks (eyes and mouth) to avoid "ceiling" false positives
+              // Ensure we have landmarks (eyes, nose, and mouth) to avoid "ceiling" false positives
               final hasEyes = face.landmarks[FaceLandmarkType.leftEye] != null && 
                              face.landmarks[FaceLandmarkType.rightEye] != null;
+              final hasNose = face.landmarks[FaceLandmarkType.noseBase] != null;
               final hasMouth = face.landmarks[FaceLandmarkType.bottomMouth] != null;
               
               // Ensure face is upright and facing camera (Euler angles)
-              // Real faces have 3D rotation; random patterns usually don't have consistent angles
-              final isFacingCamera = face.headEulerAngleY!.abs() < 20 && 
-                                   face.headEulerAngleZ!.abs() < 20;
+              final isFacingCamera = face.headEulerAngleX!.abs() < 15 &&
+                                   face.headEulerAngleY!.abs() < 15 && 
+                                   face.headEulerAngleZ!.abs() < 15;
 
-              // Ensure face is reasonably large in frame (at least 25% of image width)
-              final isCloseEnough = face.boundingBox.width > (image.width * 0.25);
+              // Ensure face is reasonably large in frame
+              final isCloseEnough = face.boundingBox.width > (image.width * 0.3);
               
+              // Aspect ratio check: Human faces are usually taller than wide (approx 1.2 to 1.5 ratio)
+              final aspectRatio = face.boundingBox.height / face.boundingBox.width;
+              final isHumanProportion = aspectRatio > 1.0 && aspectRatio < 2.0;
+
               // Centering: Face center should be within the middle 60% of the frame
               final centerX = face.boundingBox.center.dx;
               final centerY = face.boundingBox.center.dy;
-              final isCentered = centerX > (image.width * 0.2) && centerX < (image.width * 0.8) &&
+              final isCentered = centerX > (image.width * 0.25) && centerX < (image.width * 0.75) &&
                                 centerY > (image.height * 0.2) && centerY < (image.height * 0.8);
 
-              if (hasEyes && hasMouth && isFacingCamera && isCloseEnough && isCentered) {
+              if (hasEyes && hasNose && hasMouth && isFacingCamera && isCloseEnough && isCentered && isHumanProportion) {
                 faceFound = true;
                 _internalErrorMessage = null;
               } else if (!isCloseEnough) {
                 _internalErrorMessage = 'Dekatkan wajah Anda ke kamera';
               } else if (!isCentered) {
                 _internalErrorMessage = 'Posisikan wajah di tengah lingkaran';
-              } else if (!isFacingCamera) {
+              } else if (!isHumanProportion || !isFacingCamera) {
                 _internalErrorMessage = 'Arahkan wajah tegak ke kamera';
               } else {
-                _internalErrorMessage = 'Pastikan wajah terlihat jelas (Mata & Mulut)';
+                _internalErrorMessage = 'Pastikan wajah terlihat jelas (Mata, Hidung, Mulut)';
               }
             } else {
               _internalErrorMessage = 'Posisikan wajah di dalam lingkaran';
@@ -158,6 +163,7 @@ class _FaceRecognitionViewState extends State<FaceRecognitionView> {
     
     setState(() {
       _isProcessing = true;
+      _isFaceDetected = false; // Reset immediately so it's not "stuck" green
       _internalErrorMessage = null;
     });
 
