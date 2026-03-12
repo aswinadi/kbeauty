@@ -3,11 +3,11 @@
 namespace App\Filament\Pages;
 
 use App\Models\GeneralSetting;
-use Filament\Forms\Components\Section;
+use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Actions\Action;
@@ -33,7 +33,7 @@ class ManageGeneralSettings extends Page implements HasForms
         $this->form->fill($settings->toArray());
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $form): Schema
     {
         return $form
             ->schema([
