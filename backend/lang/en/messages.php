@@ -53,6 +53,7 @@ return [
         'to_location' => 'To Location',
         'reference' => 'Reference',
         'uom' => 'UOM',
+        'min_stock' => 'Minimum Stock',
     ],
     'status' => [
         'pending' => 'Pending',

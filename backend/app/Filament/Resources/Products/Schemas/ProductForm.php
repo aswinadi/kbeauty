@@ -49,7 +49,7 @@ class ProductForm
                     ->prefix('Rp')
                     ->visible(fn() => auth()->user()->hasRole('Super Admin')),
                 \Filament\Forms\Components\TextInput::make('min_stock')
-                    ->label(__('messages.fields.min_stock') ?? 'Minimum Stock')
+                    ->label(__('messages.fields.min_stock'))
                     ->numeric()
                     ->default(0)
                     ->helperText('Alert will be shown when stock goes below this level.'),

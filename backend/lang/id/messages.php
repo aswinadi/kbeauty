@@ -53,6 +53,7 @@ return [
         'to_location' => 'Ke Lokasi',
         'reference' => 'Referensi',
         'uom' => 'UOM',
+        'min_stock' => 'Stok Minimum',
     ],
     'status' => [
         'pending' => 'Tertunda',
