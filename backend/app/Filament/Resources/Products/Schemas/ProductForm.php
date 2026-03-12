@@ -58,7 +58,6 @@ class ProductForm
                     ->collection('product_images')
                     ->image()
                     ->imageEditor()
-                    ->imageQuality(70)
                     ->extraInputAttributes(['capture' => 'camera'])
                     ->columnSpanFull(),
             ]);
