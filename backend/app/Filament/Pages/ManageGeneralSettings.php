@@ -7,7 +7,11 @@ use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\EmbeddedSchema;
+use Filament\Schemas\Components\Form as SchemaForm;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Alignment;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Actions\Action;
@@ -22,8 +26,6 @@ class ManageGeneralSettings extends Page implements HasForms
     protected static ?string $title = 'General Settings';
 
     protected static ?int $navigationSort = 100;
-
-    protected string $view = 'filament.pages.manage-general-settings';
 
     public ?array $data = [];
 
@@ -50,6 +52,19 @@ class ManageGeneralSettings extends Page implements HasForms
                     ])
             ])
             ->statePath('data');
+    }
+
+    public function content(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                SchemaForm::make([EmbeddedSchema::make('form')])
+                    ->livewireSubmitHandler('save')
+                    ->footer([
+                        Actions::make($this->getFormActions())
+                            ->alignment(Alignment::Start),
+                    ]),
+            ]);
     }
 
     protected function getFormActions(): array
