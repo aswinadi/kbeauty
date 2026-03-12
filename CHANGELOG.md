@@ -1,5 +1,11 @@
 # Project Changelog
 
+## [1.5.0] - 2026-03-12
+
+### Fixed
+- **Product Image Visibility**: Aligned media collection naming (`product_images`) between backend and mobile API, ensuring images uploaded via web are correctly displayed in the app.
+- **Mobile UI Truncation**: Implemented `SafeArea` across all critical screens to prevent bottom buttons and other components from being truncated by system navigation bars or notches.
+
 ## [1.4.0] - 2026-03-11
 
 ### Added

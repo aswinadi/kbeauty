@@ -15,6 +15,7 @@ A comprehensive inventory management system with a Laravel/Filament backend and 
 - **Stock Balance**: Real-time stock visibility per location with intuitive unit breakdowns (e.g., "1 Box 5 Pcs").
 - **Movement Tracking**: Logging of stock-in, stock-out, and internal movements (Card Report).
 - **Secure Attendance**: Geofenced check-in/out with **Advanced Face Recognition** (Triple-lock landmark detection + RGB similarity scoring).
+- **Responsive Layouts**: Mobile app is optimized with `SafeArea` to ensure full visibility on all device types (notches, guesture bars, etc.).
 
 ### 📊 Reporting & Exports
 - **Stock Card Report**: Detailed table view with location-based filtering.

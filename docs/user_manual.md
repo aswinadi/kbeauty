@@ -50,7 +50,7 @@ The web dashboard is the central hub for administrative tasks, reporting, and bu
 The mobile app is optimized for fast, on-the-floor operations like scanning and quick stock updates.
 
 ### 📱 Dashboard & Navigation
-The dashboard provides a quick overview of total products and movements. Large action buttons allow you to jump directly into common tasks:
+The dashboard provides a quick overview of total products and movements. Large action buttons allow you to jump directly into common tasks. The interface is optimized to respect your device's **Safe Area** (notches and navigation bars), ensuring all buttons are always visible and clickable.
 *   **Catalog**: Browse products and view detailed information.
 *   **Stock In / Out**: Quickly record transactions while physically handling items.
 *   **Stock Opname**: The primary tool for periodic stock counts.

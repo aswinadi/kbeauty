@@ -1,16 +1,15 @@
-# mobile
+# KBeauty Mobile Application
 
-A new Flutter project.
+This is the Flutter mobile application for the KBeauty Inventory System.
+
+## Key Features
+- **Catalog**: Browse and search products.
+- **Transactions**: Record Stock In, Stock Out, and Stock Movement.
+- **Stock Opname**: Periodic stock counting with dual-unit support.
+- **Attendance**: Geofenced check-in/out with face verification.
+- **Optimized UI**: Responsive layout using `SafeArea` for maximum compatibility with all Android device form factors.
 
 ## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1. Ensure you have Flutter installed.
+2. Run `flutter pub get` to install dependencies.
+3. Use the commands in [deployment_guide.md](../deployment_guide.md) to build or run the app.
