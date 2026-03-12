@@ -100,91 +100,93 @@ class _AbsentFormScreenState extends State<AbsentFormScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Form Izin / Sakit')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _selectedType,
-              decoration: const InputDecoration(labelText: 'Tipe Izin'),
-              items: _types.entries.map((e) {
-                return DropdownMenuItem(value: e.key, child: Text(e.value));
-              }).toList(),
-              onChanged: (val) => setState(() => _selectedType = val!),
-            ),
-            const SizedBox(height: 16),
-            InkWell(
-              onTap: () async {
-                final date = await showDatePicker(
-                  context: context,
-                  initialDate: _selectedDate,
-                  firstDate: DateTime.now().subtract(const Duration(days: 7)),
-                  lastDate: DateTime.now().add(const Duration(days: 30)),
-                );
-                if (date != null) setState(() => _selectedDate = date);
-              },
-              child: InputDecorator(
-                decoration: const InputDecoration(labelText: 'Tanggal'),
-                child: Text(DateFormat('dd MMMM yyyy').format(_selectedDate)),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _selectedType,
+                decoration: const InputDecoration(labelText: 'Tipe Izin'),
+                items: _types.entries.map((e) {
+                  return DropdownMenuItem(value: e.key, child: Text(e.value));
+                }).toList(),
+                onChanged: (val) => setState(() => _selectedType = val!),
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _reasonController,
-              decoration: const InputDecoration(labelText: 'Alasan / Catatan'),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 24),
-            Text('Lampiran Foto (${_images.length})', style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 100,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  ..._images.map((file) => Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      image: DecorationImage(image: FileImage(file), fit: BoxFit.cover),
-                    ),
-                    child: Align(
-                      alignment: Alignment.topRight,
-                      child: IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white),
-                        onPressed: () => setState(() => _images.remove(file)),
-                      ),
-                    ),
-                  )),
-                  InkWell(
-                    onTap: _pickImage,
-                    child: Container(
+              const SizedBox(height: 16),
+              InkWell(
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: _selectedDate,
+                    firstDate: DateTime.now().subtract(const Duration(days: 7)),
+                    lastDate: DateTime.now().add(const Duration(days: 30)),
+                  );
+                  if (date != null) setState(() => _selectedDate = date);
+                },
+                child: InputDecorator(
+                  decoration: const InputDecoration(labelText: 'Tanggal'),
+                  child: Text(DateFormat('dd MMMM yyyy').format(_selectedDate)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _reasonController,
+                decoration: const InputDecoration(labelText: 'Alasan / Catatan'),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 24),
+              Text('Lampiran Foto (${_images.length})', style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 100,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    ..._images.map((file) => Container(
+                      margin: const EdgeInsets.only(right: 8),
                       width: 100,
                       height: 100,
-                      decoration: BoxDecoration(border: Border.all(color: Colors.grey[300]!)),
-                      child: const Icon(Icons.add_a_photo, color: Colors.grey),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        image: DecorationImage(image: FileImage(file), fit: BoxFit.cover),
+                      ),
+                      child: Align(
+                        alignment: Alignment.topRight,
+                        child: IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white),
+                          onPressed: () => setState(() => _images.remove(file)),
+                        ),
+                      ),
+                    )),
+                    InkWell(
+                      onTap: _pickImage,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(border: Border.all(color: Colors.grey[300]!)),
+                        child: const Icon(Icons.add_a_photo, color: Colors.grey),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  ],
                 ),
-                child: const Text('Kirim Permohonan'),
               ),
-            ),
-          ],
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryColor,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text('Kirim Permohonan'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

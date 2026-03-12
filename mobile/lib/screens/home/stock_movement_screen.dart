@@ -93,50 +93,52 @@ class _StockMovementScreenState extends State<StockMovementScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  DropdownButtonFormField<int>(
-                    decoration: const InputDecoration(labelText: 'From Location'),
-                    initialValue: _fromLocationId,
-                    items: _locations.map((l) => DropdownMenuItem(value: l.id, child: Text(l.name))).toList(),
-                    onChanged: (id) => setState(() => _fromLocationId = id),
-                  ),
-                  const SizedBox(height: 24),
-                  DropdownButtonFormField<int>(
-                    decoration: const InputDecoration(labelText: 'To Location'),
-                    initialValue: _toLocationId,
-                    items: _locations.map((l) => DropdownMenuItem(value: l.id, child: Text(l.name))).toList(),
-                    onChanged: (id) => setState(() => _toLocationId = id),
-                  ),
-                  const SizedBox(height: 32),
-                  const Divider(),
-                  const SizedBox(height: 32),
-                  const SizedBox(height: 32),
-                  const Divider(),
-                  const SizedBox(height: 32),
-                  ProductSelector(
-                    products: _products,
-                    selectedProduct: _selectedProduct,
-                    onChanged: (p) => setState(() => _selectedProduct = p),
-                  ),
-                  const SizedBox(height: 24),
-                  TextField(
-                    controller: _qtyController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Quantity',
-                      suffixText: _selectedProduct?.unit ?? '',
+          : SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    DropdownButtonFormField<int>(
+                      decoration: const InputDecoration(labelText: 'From Location'),
+                      initialValue: _fromLocationId,
+                      items: _locations.map((l) => DropdownMenuItem(value: l.id, child: Text(l.name))).toList(),
+                      onChanged: (id) => setState(() => _fromLocationId = id),
                     ),
-                  ),
-                  const SizedBox(height: 48),
-                  ElevatedButton(
-                    onPressed: _submit,
-                    child: const Text('CONFIRM TRANSFER'),
-                  ),
-                ],
+                    const SizedBox(height: 24),
+                    DropdownButtonFormField<int>(
+                      decoration: const InputDecoration(labelText: 'To Location'),
+                      initialValue: _toLocationId,
+                      items: _locations.map((l) => DropdownMenuItem(value: l.id, child: Text(l.name))).toList(),
+                      onChanged: (id) => setState(() => _toLocationId = id),
+                    ),
+                    const SizedBox(height: 32),
+                    const Divider(),
+                    const SizedBox(height: 32),
+                    const SizedBox(height: 32),
+                    const Divider(),
+                    const SizedBox(height: 32),
+                    ProductSelector(
+                      products: _products,
+                      selectedProduct: _selectedProduct,
+                      onChanged: (p) => setState(() => _selectedProduct = p),
+                    ),
+                    const SizedBox(height: 24),
+                    TextField(
+                      controller: _qtyController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Quantity',
+                        suffixText: _selectedProduct?.unit ?? '',
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+                    ElevatedButton(
+                      onPressed: _submit,
+                      child: const Text('CONFIRM TRANSFER'),
+                    ),
+                  ],
+                ),
               ),
             ),
     );

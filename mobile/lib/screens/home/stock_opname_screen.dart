@@ -204,117 +204,119 @@ class _StockOpnameScreenState extends State<StockOpnameScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16.0),
-                  color: Colors.white,
-                  child: Column(
-                    children: [
-                      DropdownButtonFormField<int>(
-                        decoration: const InputDecoration(
-                          labelText: 'Location',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                        ),
-                        initialValue: _selectedLocationId,
-                        items: _locations.map((l) {
-                          return DropdownMenuItem(value: l.id, child: Text(l.name));
-                        }).toList(),
-                        onChanged: (id) {
-                          setState(() {
-                            _selectedLocationId = id;
-                            _actualQuantities.clear();
-                            _checkedItems.clear();
-                          });
-                          _loadSavedState(); 
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: _searchController,
-                        onChanged: _filterProducts,
-                        decoration: InputDecoration(
-                          hintText: 'Search products by Name or SKU...',
-                          prefixIcon: const Icon(Icons.search),
-                          suffixIcon: _searchController.text.isNotEmpty 
-                            ? IconButton(
-                                icon: const Icon(Icons.clear, size: 20),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  _filterProducts('');
-                                },
-                              )
-                            : null,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey[300]!),
+          : SafeArea(
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16.0),
+                    color: Colors.white,
+                    child: Column(
+                      children: [
+                        DropdownButtonFormField<int>(
+                          decoration: const InputDecoration(
+                            labelText: 'Location',
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                           ),
-                          filled: true,
-                          fillColor: Colors.grey[50],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Divider(height: 1),
-                Expanded(
-                  child: _selectedLocationId == null
-                      ? const Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.location_on_outlined, size: 64, color: Colors.grey),
-                              SizedBox(height: 16),
-                              Text(
-                                'Please select a location to start',
-                                style: TextStyle(fontSize: 16, color: Colors.grey),
-                              ),
-                            ],
-                          ),
-                        )
-                      : ListView.separated(
-                          itemCount: _filteredProducts.length,
-                          separatorBuilder: (context, index) => const Divider(height: 1),
-                          itemBuilder: (context, index) {
-                            final product = _filteredProducts[index];
-                            final isChecked = _checkedItems.contains(product.id);
-                            final qty = _actualQuantities[product.id];
-                            
-                            return StockOpnameTile(
-                              key: ValueKey(product.id),
-                              product: product,
-                              isChecked: isChecked,
-                              initialQty: qty,
-                              onCheckChanged: (val) {
-                                setState(() {
-                                  if (val == true) {
-                                    _checkedItems.add(product.id);
-                                  } else {
-                                    _checkedItems.remove(product.id);
-                                  }
-                                });
-                                _triggerSave();
-                              },
-                              onQtyChanged: (val) {
-                                setState(() {
-                                  if (val == null) {
-                                    _actualQuantities.remove(product.id);
-                                  } else {
-                                    _actualQuantities[product.id] = val;
-                                    if (val > 0) {
-                                      _checkedItems.add(product.id);
-                                    }
-                                  }
-                                });
-                                _triggerSave();
-                              },
-                            );
+                          initialValue: _selectedLocationId,
+                          items: _locations.map((l) {
+                            return DropdownMenuItem(value: l.id, child: Text(l.name));
+                          }).toList(),
+                          onChanged: (id) {
+                            setState(() {
+                              _selectedLocationId = id;
+                              _actualQuantities.clear();
+                              _checkedItems.clear();
+                            });
+                            _loadSavedState(); 
                           },
                         ),
-                ),
-              ],
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _searchController,
+                          onChanged: _filterProducts,
+                          decoration: InputDecoration(
+                            hintText: 'Search products by Name or SKU...',
+                            prefixIcon: const Icon(Icons.search),
+                            suffixIcon: _searchController.text.isNotEmpty 
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear, size: 20),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    _filterProducts('');
+                                  },
+                                )
+                              : null,
+                            contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.grey[300]!),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: _selectedLocationId == null
+                        ? const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.location_on_outlined, size: 64, color: Colors.grey),
+                                SizedBox(height: 16),
+                                Text(
+                                  'Please select a location to start',
+                                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.separated(
+                            itemCount: _filteredProducts.length,
+                            separatorBuilder: (context, index) => const Divider(height: 1),
+                            itemBuilder: (context, index) {
+                              final product = _filteredProducts[index];
+                              final isChecked = _checkedItems.contains(product.id);
+                              final qty = _actualQuantities[product.id];
+                              
+                              return StockOpnameTile(
+                                key: ValueKey(product.id),
+                                product: product,
+                                isChecked: isChecked,
+                                initialQty: qty,
+                                onCheckChanged: (val) {
+                                  setState(() {
+                                    if (val == true) {
+                                      _checkedItems.add(product.id);
+                                    } else {
+                                      _checkedItems.remove(product.id);
+                                    }
+                                  });
+                                  _triggerSave();
+                                },
+                                onQtyChanged: (val) {
+                                  setState(() {
+                                    if (val == null) {
+                                      _actualQuantities.remove(product.id);
+                                    } else {
+                                      _actualQuantities[product.id] = val;
+                                      if (val > 0) {
+                                        _checkedItems.add(product.id);
+                                      }
+                                    }
+                                  });
+                                  _triggerSave();
+                                },
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
             ),
     );
   }

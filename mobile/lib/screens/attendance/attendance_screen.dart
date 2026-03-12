@@ -258,80 +258,82 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       appBar: AppBar(title: const Text('Presensi')),
       body: RefreshIndicator(
         onRefresh: _loadData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Icon(
-                        _isCheckedOut ? Icons.check_circle : Icons.location_on, 
-                        size: 48, 
-                        color: _isCheckedOut ? Colors.green : AppTheme.accentColor
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _isCheckedOut ? 'Sudah Selesai Kerja' : (_isCheckedIn ? 'Sedang Bekerja' : _status), 
-                        style: const TextStyle(fontWeight: FontWeight.bold)
-                      ),
-                      if (_currentPosition != null && !_isCheckedOut) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          '${_currentPosition!.latitude.toStringAsFixed(6)}, ${_currentPosition!.longitude.toStringAsFixed(6)}',
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        Icon(
+                          _isCheckedOut ? Icons.check_circle : Icons.location_on, 
+                          size: 48, 
+                          color: _isCheckedOut ? Colors.green : AppTheme.accentColor
                         ),
-                        if (_distanceInMeters != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              'Jarak ke kantor: ${_distanceInMeters!.round()} meter',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: _distanceInMeters! <= (_selectedOffice?.radius ?? 0) ? Colors.green : Colors.red
+                        const SizedBox(height: 8),
+                        Text(
+                          _isCheckedOut ? 'Sudah Selesai Kerja' : (_isCheckedIn ? 'Sedang Bekerja' : _status), 
+                          style: const TextStyle(fontWeight: FontWeight.bold)
+                        ),
+                        if (_currentPosition != null && !_isCheckedOut) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            '${_currentPosition!.latitude.toStringAsFixed(6)}, ${_currentPosition!.longitude.toStringAsFixed(6)}',
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          ),
+                          if (_distanceInMeters != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Text(
+                                'Jarak ke kantor: ${_distanceInMeters!.round()} meter',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: _distanceInMeters! <= (_selectedOffice?.radius ?? 0) ? Colors.green : Colors.red
+                                ),
                               ),
                             ),
-                          ),
+                        ],
                       ],
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              if (!_isCheckedOut) ...[
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: canCheckIn ? _handleCheckIn : (canCheckOut ? _handleCheckOut : null),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: canCheckIn ? Colors.green : (canCheckOut ? Colors.orange : Colors.grey),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: Text(
-                      canCheckIn ? 'Check In' : (canCheckOut ? 'Check Out' : (isWithinRadius ? 'Sudah Presensi' : 'Terlalu Jauh')),
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
-              ] else 
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 32.0),
-                    child: Text(
-                      'Terima kasih telah bekerja hari ini!',
-                      style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic, color: Colors.grey),
+                const SizedBox(height: 24),
+                if (!_isCheckedOut) ...[
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: canCheckIn ? _handleCheckIn : (canCheckOut ? _handleCheckOut : null),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: canCheckIn ? Colors.green : (canCheckOut ? Colors.orange : Colors.grey),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        canCheckIn ? 'Check In' : (canCheckOut ? 'Check Out' : (isWithinRadius ? 'Sudah Presensi' : 'Terlalu Jauh')),
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
-                ),
-            ],
+                ] else 
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 32.0),
+                      child: Text(
+                        'Terima kasih telah bekerja hari ini!',
+                        style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic, color: Colors.grey),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
