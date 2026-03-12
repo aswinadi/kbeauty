@@ -12,15 +12,15 @@ use Filament\Actions\Action;
 
 class ManageGeneralSettings extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static string $view = 'filament.pages.manage-general-settings';
+    protected static $view = 'filament.pages.manage-general-settings';
 
-    protected static ?string $navigationLabel = 'General Settings';
+    protected static $navigationLabel = 'General Settings';
 
-    protected static ?string $title = 'General Settings';
+    protected static $title = 'General Settings';
 
-    protected static ?int $navigationSort = 100;
+    protected static $navigationSort = 100;
 
     public ?array $data = [];
 
