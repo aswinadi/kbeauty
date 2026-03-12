@@ -1,3 +1,7 @@
+<?php
+
+namespace App\Filament\Pages;
+
 use App\Models\GeneralSetting;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
