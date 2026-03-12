@@ -40,7 +40,7 @@ class ProductController extends Controller
                 'conversion_ratio' => $product->conversion_ratio,
                 'category_id' => $product->category_id,
                 'category_name' => $product->category?->name,
-                'image_url' => $product->getFirstMediaUrl('products') ?: null,
+                'image_url' => $product->getFirstMediaUrl('product_images') ?: null,
             ];
         });
 
@@ -70,7 +70,7 @@ class ProductController extends Controller
         ]));
 
         if ($request->hasFile('image')) {
-            $product->addMediaFromRequest('image')->toMediaCollection('products');
+            $product->addMediaFromRequest('image')->toMediaCollection('product_images');
         }
 
         $isSuperAdmin = auth()->user()?->hasRole('Super Admin');
@@ -89,7 +89,7 @@ class ProductController extends Controller
                 'conversion_ratio' => $product->conversion_ratio,
                 'category_id' => $product->category_id,
                 'category_name' => $product->category?->name,
-                'image_url' => $product->getFirstMediaUrl('products') ?: null,
+                'image_url' => $product->getFirstMediaUrl('product_images') ?: null,
             ],
         ], 201);
     }
@@ -119,8 +119,8 @@ class ProductController extends Controller
         ]));
 
         if ($request->hasFile('image')) {
-            $product->clearMediaCollection('products');
-            $product->addMediaFromRequest('image')->toMediaCollection('products');
+            $product->clearMediaCollection('product_images');
+            $product->addMediaFromRequest('image')->toMediaCollection('product_images');
         }
 
         $isSuperAdmin = auth()->user()?->hasRole('Super Admin');
@@ -139,7 +139,7 @@ class ProductController extends Controller
                 'conversion_ratio' => $product->conversion_ratio,
                 'category_id' => $product->category_id,
                 'category_name' => $product->category?->name,
-                'image_url' => $product->getFirstMediaUrl('products') ?: null,
+                'image_url' => $product->getFirstMediaUrl('product_images') ?: null,
             ],
         ]);
     }
