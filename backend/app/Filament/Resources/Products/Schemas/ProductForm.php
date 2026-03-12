@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Products\Schemas;
 
 use Filament\Schemas\Schema;
+use Filament\Forms\Get;
+use App\Models\Unit;
 
 class ProductForm
 {
@@ -31,6 +33,7 @@ class ProductForm
                     ->helperText(__('messages.fields.primary_unit_helper'))
                     ->relationship('unit', 'name')
                     ->required()
+                    ->live()
                     ->searchable()
                     ->preload(),
                 \Filament\Forms\Components\Select::make('secondary_unit_id')
@@ -52,6 +55,7 @@ class ProductForm
                     ->label(__('messages.fields.min_stock'))
                     ->numeric()
                     ->default(0)
+                    ->suffix(fn (Get $get) => ($unit = Unit::find($get('unit_id'))) ? ($unit->short_name ?: $unit->name) : null)
                     ->helperText('Alert will be shown when stock goes below this level.'),
                 \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('image')
                     ->label(__('messages.fields.image'))
