@@ -7,6 +7,7 @@ use App\Models\Attendance;
 use App\Models\AbsentAttendance;
 use App\Models\Office;
 use App\Models\Employee;
+use App\Models\GeneralSetting;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -75,10 +76,11 @@ class AttendanceController extends Controller
         }
 
         // Face Verification
+        $threshold = GeneralSetting::first()->face_similarity_threshold ?? 80;
         $similarity = $this->verifyFaceSimilarity($employee, $request->file('face_image'));
-        if ($similarity < 80) {
+        if ($similarity < $threshold) {
             return response()->json([
-                'message' => 'Wajah tidak cocok (Kemiripan: ' . round($similarity, 2) . '%). Pastikan wajah terlihat jelas dan sesuai dengan foto profil.',
+                'message' => 'Wajah tidak cocok (Kemiripan: ' . round($similarity, 2) . '%). Dibutuhkan minimal: ' . $threshold . '%. Pastikan wajah terlihat jelas dan sesuai dengan foto profil.',
             ], 422);
         }
 
@@ -130,10 +132,11 @@ class AttendanceController extends Controller
         }
 
         // Face Verification
+        $threshold = GeneralSetting::first()->face_similarity_threshold ?? 80;
         $similarity = $this->verifyFaceSimilarity($employee, $request->file('face_image'));
-        if ($similarity < 80) {
+        if ($similarity < $threshold) {
             return response()->json([
-                'message' => 'Wajah tidak cocok (Kemiripan: ' . round($similarity, 2) . '%). Pastikan wajah terlihat jelas dan sesuai dengan foto profil.',
+                'message' => 'Wajah tidak cocok (Kemiripan: ' . round($similarity, 2) . '%). Dibutuhkan minimal: ' . $threshold . '%. Pastikan wajah terlihat jelas dan sesuai dengan foto profil.',
             ], 422);
         }
 
