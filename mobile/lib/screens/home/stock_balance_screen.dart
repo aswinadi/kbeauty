@@ -75,75 +75,77 @@ class _StockBalanceScreenState extends State<StockBalanceScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Select Product',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  ProductSelector(
-                    products: _products,
-                    selectedProduct: _selectedProduct,
-                    onChanged: (p) {
-                      setState(() {
-                        _selectedProduct = p;
-                        _balanceData = null;
-                        _errorMessage = null;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: (_selectedProduct == null || _isFetchingBalance) 
-                          ? null 
-                          : () => _fetchBalance(_selectedProduct!),
-                      icon: _isFetchingBalance 
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Icon(Icons.search),
-                      label: const Text('CHECK STOCK'),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  if (_errorMessage != null)
-                    _buildStatusView(
-                      icon: Icons.error_outline,
-                      color: Colors.red,
-                      message: _errorMessage!,
-                      subMessage: 'Try pulling the latest code on the server.',
-                    )
-                  else if (_balanceData != null) ...[
-                    Text(
-                      'Stock per Location',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${_balanceData!['product_name']} (${_balanceData!['sku']})',
-                      style: TextStyle(color: Colors.grey[600]),
+          : SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Select Product',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
-                    Expanded(
-                      child: _buildBalanceList(),
+                    ProductSelector(
+                      products: _products,
+                      selectedProduct: _selectedProduct,
+                      onChanged: (p) {
+                        setState(() {
+                          _selectedProduct = p;
+                          _balanceData = null;
+                          _errorMessage = null;
+                        });
+                      },
                     ),
-                  ] else if (_selectedProduct != null && !_isFetchingBalance)
-                    _buildStatusView(
-                      icon: Icons.info_outline,
-                      color: Colors.blue,
-                      message: 'Tap "Check Stock" to view data',
-                    )
-                  else if (_selectedProduct == null)
-                    _buildStatusView(
-                      icon: Icons.inventory_2_outlined,
-                      color: Colors.grey,
-                      message: 'Please select a product first',
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: (_selectedProduct == null || _isFetchingBalance) 
+                            ? null 
+                            : () => _fetchBalance(_selectedProduct!),
+                        icon: _isFetchingBalance 
+                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : const Icon(Icons.search),
+                        label: const Text('CHECK STOCK'),
+                      ),
                     ),
-                ],
+                    const SizedBox(height: 32),
+                    if (_errorMessage != null)
+                      _buildStatusView(
+                        icon: Icons.error_outline,
+                        color: Colors.red,
+                        message: _errorMessage!,
+                        subMessage: 'Try pulling the latest code on the server.',
+                      )
+                    else if (_balanceData != null) ...[
+                      Text(
+                        'Stock per Location',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${_balanceData!['product_name']} (${_balanceData!['sku']})',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: _buildBalanceList(),
+                      ),
+                    ] else if (_selectedProduct != null && !_isFetchingBalance)
+                      _buildStatusView(
+                        icon: Icons.info_outline,
+                        color: Colors.blue,
+                        message: 'Tap "Check Stock" to view data',
+                      )
+                    else if (_selectedProduct == null)
+                      _buildStatusView(
+                        icon: Icons.inventory_2_outlined,
+                        color: Colors.grey,
+                        message: 'Please select a product first',
+                      ),
+                  ],
+                ),
               ),
             ),
     );

@@ -58,29 +58,31 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
           ? const Center(child: CircularProgressIndicator())
           : _history.isEmpty
               ? const Center(child: Text('No attendance history found.'))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: months.length,
-                  itemBuilder: (context, index) {
-                    final month = months[index];
-                    final items = groupedHistory[month]!;
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
-                          child: Text(
-                            month,
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.accentColor,
-                                ),
+              : SafeArea(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: months.length,
+                    itemBuilder: (context, index) {
+                      final month = months[index];
+                      final items = groupedHistory[month]!;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+                            child: Text(
+                              month,
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.accentColor,
+                                  ),
+                            ),
                           ),
-                        ),
-                        ...items.map((item) => _buildHistoryItem(item)).toList(),
-                      ],
-                    );
-                  },
+                          ...items.map((item) => _buildHistoryItem(item)).toList(),
+                        ],
+                      );
+                    },
+                  ),
                 ),
     );
   }

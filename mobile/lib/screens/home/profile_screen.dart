@@ -171,87 +171,89 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                children: [
-                  const CircleAvatar(
-                    radius: 50,
-                    backgroundColor: AppTheme.primaryColor,
-                    child: Icon(Icons.person, size: 50, color: AppTheme.accentColor),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    _user?.name ?? 'Unknown User',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    '@${_user?.username ?? 'username'}',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                  if (_user != null) ...[
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children: _user!.roles.map((role) => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          role,
-                          style: const TextStyle(fontSize: 10, color: AppTheme.accentColor, fontWeight: FontWeight.bold),
-                        ),
-                      )).toList(),
+          : SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  children: [
+                    const CircleAvatar(
+                      radius: 50,
+                      backgroundColor: AppTheme.primaryColor,
+                      child: Icon(Icons.person, size: 50, color: AppTheme.accentColor),
                     ),
-                  ],
-                  const SizedBox(height: 32),
-                  _buildProfileItem(Icons.email_outlined, 'Email', _user?.email ?? 'Not provided'),
-                  const SizedBox(height: 16),
-                  _buildProfileItem(Icons.badge_outlined, 'User ID', '#${_user?.id ?? '0'}'),
-                  const SizedBox(height: 32),
-                  OutlinedButton.icon(
-                    onPressed: _showChangePasswordDialog,
-                    icon: const Icon(Icons.lock_outline),
-                    label: const Text('Change Password'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    const SizedBox(height: 24),
+                    Text(
+                      _user?.name ?? 'Unknown User',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                  ),
-                  if (_user?.roles.any((r) => r.toLowerCase().replaceAll('_', ' ') == 'super admin') ?? false) ...[
+                    Text(
+                      '@${_user?.username ?? 'username'}',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    if (_user != null) ...[
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        children: _user!.roles.map((role) => Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            role,
+                            style: const TextStyle(fontSize: 10, color: AppTheme.accentColor, fontWeight: FontWeight.bold),
+                          ),
+                        )).toList(),
+                      ),
+                    ],
+                    const SizedBox(height: 32),
+                    _buildProfileItem(Icons.email_outlined, 'Email', _user?.email ?? 'Not provided'),
                     const SizedBox(height: 16),
+                    _buildProfileItem(Icons.badge_outlined, 'User ID', '#${_user?.id ?? '0'}'),
+                    const SizedBox(height: 32),
+                    OutlinedButton.icon(
+                      onPressed: _showChangePasswordDialog,
+                      icon: const Icon(Icons.lock_outline),
+                      label: const Text('Change Password'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
+                    ),
+                    if (_user?.roles.any((r) => r.toLowerCase().replaceAll('_', ' ') == 'super admin') ?? false) ...[
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const UserSelectionScreen()),
+                          ),
+                          icon: const Icon(Icons.people_outline, color: AppTheme.accentColor),
+                          label: const Text('Impersonate User', style: TextStyle(color: AppTheme.accentColor)),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            side: const BorderSide(color: AppTheme.accentColor),
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 48),
                     SizedBox(
                       width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const UserSelectionScreen()),
+                      child: ElevatedButton(
+                        onPressed: _handleLogout,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red[50],
+                          foregroundColor: Colors.red,
+                          elevation: 0,
+                          side: BorderSide(color: Colors.red[100]!),
                         ),
-                        icon: const Icon(Icons.people_outline, color: AppTheme.accentColor),
-                        label: const Text('Impersonate User', style: TextStyle(color: AppTheme.accentColor)),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          side: const BorderSide(color: AppTheme.accentColor),
-                        ),
+                        child: const Text('LOGOUT'),
                       ),
                     ),
                   ],
-                  const SizedBox(height: 48),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _handleLogout,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red[50],
-                        foregroundColor: Colors.red,
-                        elevation: 0,
-                        side: BorderSide(color: Colors.red[100]!),
-                      ),
-                      child: const Text('LOGOUT'),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
     );
