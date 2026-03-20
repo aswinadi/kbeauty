@@ -18,6 +18,13 @@ class Customer extends Model
         'metadata' => 'array',
     ];
 
+    protected $appends = ['full_name'];
+
+    public function getFullNameAttribute()
+    {
+        return $this->name;
+    }
+
     public function portfolios()
     {
         return $this->hasMany(CustomerPortfolio::class);

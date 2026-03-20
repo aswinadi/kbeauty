@@ -30,6 +30,50 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
     });
   }
 
+  Future<void> _showAddCustomerDialog() async {
+    final nameController = TextEditingController();
+    final phoneController = TextEditingController();
+    
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add New Customer'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: 'Full Name'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: phoneController,
+              decoration: const InputDecoration(labelText: 'Phone Number'),
+              keyboardType: TextInputType.phone,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () async {
+              if (nameController.text.isEmpty) return;
+              final newCust = await _posService.registerCustomer({
+                'full_name': nameController.text,
+                'phone': phoneController.text,
+              });
+              if (newCust != null) {
+                _fetchCustomers();
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,9 +145,7 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Logic to add new customer (can reuse existing registration dialog or new screen)
-        },
+        onPressed: _showAddCustomerDialog,
         child: const Icon(Icons.add),
       ),
     );

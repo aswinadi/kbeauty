@@ -112,12 +112,18 @@ class PosController extends Controller
     public function registerCustomer(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required_without:full_name|string|max:255',
+            'full_name' => 'required_without:name|string|max:255',
             'phone' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
         ]);
 
-        $customer = Customer::create($request->all());
+        $data = $request->all();
+        if ($request->has('full_name') && !$request->has('name')) {
+            $data['name'] = $request->full_name;
+        }
+
+        $customer = Customer::create($data);
 
         return response()->json($customer, 201);
     }
