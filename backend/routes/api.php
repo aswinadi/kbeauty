@@ -55,4 +55,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/appointments', [\App\Http\Controllers\Api\AppointmentController::class, 'index']);
     Route::post('/appointments', [\App\Http\Controllers\Api\AppointmentController::class, 'store']);
     Route::patch('/appointments/{appointment}', [\App\Http\Controllers\Api\AppointmentController::class, 'update']);
+
+    // Master Data Routes
+    Route::get('/master/service-categories', [\App\Http\Controllers\Api\ServiceMasterController::class, 'categories']);
+    Route::post('/master/service-categories', [\App\Http\Controllers\Api\ServiceMasterController::class, 'storeCategory']);
+    Route::post('/master/service-categories/{category}', [\App\Http\Controllers\Api\ServiceMasterController::class, 'updateCategory']);
+    Route::delete('/master/service-categories/{category}', [\App\Http\Controllers\Api\ServiceMasterController::class, 'deleteCategory']);
+
+    Route::get('/master/services', [\App\Http\Controllers\Api\ServiceMasterController::class, 'services']);
+    Route::post('/master/services', [\App\Http\Controllers\Api\ServiceMasterController::class, 'storeService']);
+    Route::post('/master/services/{service}', [\App\Http\Controllers\Api\ServiceMasterController::class, 'updateService']);
+    Route::delete('/master/services/{service}', [\App\Http\Controllers\Api\ServiceMasterController::class, 'deleteService']);
 });

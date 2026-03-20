@@ -326,4 +326,94 @@ class PosService {
       return null;
     }
   }
+
+  // Master Data - Service Categories
+  Future<List<Map<String, dynamic>>> getServiceCategories() async {
+    try {
+      final token = await _authService.getToken();
+      final response = await http.get(
+        Uri.parse('$baseUrl/master/service-categories'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(response.body);
+        return data.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching service categories: $e');
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>?> saveServiceCategory(Map<String, dynamic> data, {int? id}) async {
+    try {
+      final token = await _authService.getToken();
+      final url = id != null ? '$baseUrl/master/service-categories/$id' : '$baseUrl/master/service-categories';
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(data),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Error saving service category: $e');
+      return null;
+    }
+  }
+
+  // Master Data - Services
+  Future<List<Map<String, dynamic>>> getMasterServices() async {
+    try {
+      final token = await _authService.getToken();
+      final response = await http.get(
+        Uri.parse('$baseUrl/master/services'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(response.body);
+        return data.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching master services: $e');
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>?> saveMasterService(Map<String, dynamic> data, {int? id}) async {
+    try {
+      final token = await _authService.getToken();
+      final url = id != null ? '$baseUrl/master/services/$id' : '$baseUrl/master/services';
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(data),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Error saving master service: $e');
+      return null;
+    }
+  }
 }

@@ -20,6 +20,9 @@ import '../pos/nailist_performance_screen.dart';
 import '../crm/customer_list_screen.dart';
 import '../crm/appointment_calendar_screen.dart';
 import '../pos/transaction_history_screen.dart';
+import '../master/service_category_list_screen.dart';
+import '../master/service_treatment_list_screen.dart';
+import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -177,6 +180,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _buildActionCard('Trans History', Icons.receipt_long, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const TransactionHistoryScreen()));
                   }),
+                ],
+              ),
+              const SizedBox(height: 24),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text('Master Data', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: [
+                   _buildMiniActionCard('Service Categories', Icons.category, () {
+                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceCategoryListScreen()));
+                   }),
+                   _buildMiniActionCard('Treatments', Icons.spa, () {
+                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceTreatmentListScreen()));
+                   }),
                 ],
               ),
               const SizedBox(height: 32),
@@ -382,25 +404,66 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildActionCard(String label, IconData icon, VoidCallback onTap) {
+  Widget _buildActionCard(String title, IconData icon, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
       child: Container(
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey[100]!, width: 1),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 40, color: AppTheme.accentColor),
-            const SizedBox(height: 8),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Icon(icon, size: 32, color: AppTheme.accentColor),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMiniActionCard(String title, IconData icon, VoidCallback onTap) {
+     return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: (MediaQuery.of(context).size.width - 44) / 2, // 2 items per row with spacing
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 24, color: AppTheme.accentColor),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
       ),
