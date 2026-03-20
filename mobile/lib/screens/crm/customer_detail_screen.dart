@@ -188,7 +188,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
             MaterialPageRoute(
               builder: (context) => AddCustomerPortfolioScreen(customerId: widget.customer['id']),
             ),
-          ).then((_) => _fetchDetails());
+          ).then((_) => _fetchData());
         },
         child: const Icon(Icons.add_a_photo),
       ),
