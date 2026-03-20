@@ -188,19 +188,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Text('Master Data', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
               const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: [
-                   _buildMiniActionCard('Service Categories', Icons.category, () {
-                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceCategoryListScreen()));
-                   }),
-                   _buildMiniActionCard('Treatments', Icons.spa, () {
-                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceTreatmentListScreen()));
-                   }),
-                ],
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                     _buildMiniActionCard('Service Categories', Icons.category, () {
+                       Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceCategoryListScreen()));
+                     }),
+                     _buildMiniActionCard('Treatments', Icons.spa, () {
+                       Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceTreatmentListScreen()));
+                     }),
+                  ],
+                ),
               ),
+
               const SizedBox(height: 32),
               Text(
                 'Inventory',
