@@ -109,8 +109,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildProfileCard(),
-              const SizedBox(height: 16),
-              const Text('Inventory Overview', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              const Text('Overview', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -119,13 +119,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _buildStatCard('Movements', _stats['total_movements']?.toString() ?? '0', Icons.swap_vert),
                 ],
               ),
-              const SizedBox(height: 16),
-              const Text('Attendance', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              const Text('Attendance', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              GridView.count(
+              GridView.extent(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 3,
+                maxCrossAxisExtent: 110,
                 crossAxisSpacing: 8,
                 mainAxisSpacing: 8,
                 childAspectRatio: 1.0,
@@ -141,16 +141,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   }),
                 ],
               ),
-              const SizedBox(height: 16),
-              const Text('Point of Sales', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              const Text('Point of Sales', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              GridView.count(
+              GridView.extent(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 4,
+                maxCrossAxisExtent: 110,
                 crossAxisSpacing: 8,
                 mainAxisSpacing: 8,
-                childAspectRatio: 0.9,
+                childAspectRatio: 1.0,
                 children: [
                   _buildActionCard('POS', Icons.point_of_sale, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const PosCheckoutScreen()));
@@ -169,35 +169,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   }),
                 ],
               ),
-              const SizedBox(height: 16),
-              const Text('Master Data', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              const Text('Master Data', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              GridView.count(
+              GridView.extent(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
+                maxCrossAxisExtent: 110,
                 crossAxisSpacing: 8,
                 mainAxisSpacing: 8,
-                childAspectRatio: 3.5,
+                childAspectRatio: 1.0,
                 children: [
-                   _buildActionListItem('Service Categories', Icons.category, () {
+                   _buildActionCard('Categories', Icons.category, () {
                      Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceCategoryListScreen()));
                    }),
-                   _buildActionListItem('Treatments', Icons.spa, () {
+                   _buildActionCard('Treatments', Icons.spa, () {
                      Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceTreatmentListScreen()));
                    }),
                 ],
               ),
-              const SizedBox(height: 16),
-              const Text('Inventory', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              const Text('Inventory', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              GridView.count(
+              GridView.extent(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 4,
+                maxCrossAxisExtent: 110,
                 crossAxisSpacing: 8,
                 mainAxisSpacing: 8,
-                childAspectRatio: 0.9,
+                childAspectRatio: 1.0,
                 children: [
                   _buildActionCard('Catalog', Icons.grid_view, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductBrowserScreen()));
