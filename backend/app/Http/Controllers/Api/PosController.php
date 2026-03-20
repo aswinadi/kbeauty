@@ -81,11 +81,13 @@ class PosController extends Controller
             'notes' => 'nullable|string',
             'images.*' => 'nullable|image|max:5120',
             'pos_transaction_id' => 'nullable|exists:pos_transactions,id',
+            'appointment_id' => 'nullable|exists:appointments,id',
         ]);
 
         $portfolio = new \App\Models\CustomerPortfolio([
             'notes' => $request->notes,
             'pos_transaction_id' => $request->pos_transaction_id,
+            'appointment_id' => $request->appointment_id,
         ]);
 
         $customer->portfolios()->save($portfolio);
@@ -214,6 +216,15 @@ class PosController extends Controller
 
             return response()->json($transaction->load('items', 'payments'), 201);
         });
+    }
+
+    public function transactions(Request $request)
+    {
+        $transactions = PosTransaction::with(['customer', 'items.item', 'portfolios.media'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return response()->json($transactions);
     }
 
     protected function processItemStock($item)

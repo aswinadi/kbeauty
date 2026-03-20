@@ -19,6 +19,7 @@ import '../pos/pos_checkout_screen.dart';
 import '../pos/nailist_performance_screen.dart';
 import '../crm/customer_list_screen.dart';
 import '../crm/appointment_calendar_screen.dart';
+import '../pos/transaction_history_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -173,6 +174,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _buildActionCard('Appointments', Icons.calendar_month_outlined, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const AppointmentCalendarScreen()));
                   }),
+                  _buildActionCard('Trans History', Icons.receipt_long, () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const TransactionHistoryScreen()));
+                  }),
                 ],
               ),
               const SizedBox(height: 32),
@@ -219,10 +223,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: (AppConfig.isProduction ? Colors.green : Colors.orange).withValues(alpha: 0.1),
+                        color: (AppConfig.isProduction ? Colors.green : Colors.orange).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: (AppConfig.isProduction ? Colors.green : Colors.orange).withValues(alpha: 0.2),
+                          color: (AppConfig.isProduction ? Colors.green : Colors.orange).withOpacity(0.2),
                         ),
                       ),
                       child: Row(
@@ -291,7 +295,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.accentColor.withValues(alpha: 0.3),
+            color: AppTheme.accentColor.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -324,7 +328,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Text(
                   greeting,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
+                    color: Colors.white.withOpacity(0.8),
                     fontSize: 14,
                   ),
                 ),
@@ -344,7 +348,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: Colors.white.withOpacity(0.2),
               shape: BoxShape.circle,
             ),
             child: const Icon(

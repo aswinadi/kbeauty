@@ -8,13 +8,12 @@ use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $appointments = Appointment::with('customer')
-            ->orderBy('appointment_date', 'asc')
-            ->orderBy('appointment_time', 'asc')
+        $date = $request->date ?? now()->toDateString();
+        $appointments = Appointment::with(['customer', 'portfolios.media'])
+            ->whereDate('appointment_date', $date)
             ->get();
-
         return response()->json($appointments);
     }
 

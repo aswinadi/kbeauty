@@ -122,6 +122,27 @@ class PosService {
     }
   }
 
+  Future<Map<String, dynamic>> getAllTransactions({int page = 1}) async {
+    try {
+      final token = await _authService.getToken();
+      final response = await http.get(
+        Uri.parse('$baseUrl/pos/transactions?page=$page'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return {'data': []};
+    } catch (e) {
+      print('Error fetching transactions: $e');
+      return {'data': []};
+    }
+  }
+
   Future<Map<String, dynamic>?> getPerformance({String? fromDate, String? toDate}) async {
     try {
       final token = await _authService.getToken();
@@ -191,6 +212,7 @@ class PosService {
     String? notes,
     List<File>? images,
     int? posTransactionId,
+    int? appointmentId,
   }) async {
     try {
       final token = await _authService.getToken();
@@ -210,6 +232,10 @@ class PosService {
 
       if (posTransactionId != null) {
         request.fields['pos_transaction_id'] = posTransactionId.toString();
+      }
+
+      if (appointmentId != null) {
+        request.fields['appointment_id'] = appointmentId.toString();
       }
 
       if (images != null && images.isNotEmpty) {
@@ -256,11 +282,11 @@ class PosService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getAppointments() async {
+  Future<List<Map<String, dynamic>>> getAppointments({String? date}) async {
     try {
       final token = await _authService.getToken();
       final response = await http.get(
-        Uri.parse('$baseUrl/appointments'),
+        Uri.parse('$baseUrl/appointments${date != null ? '?date=$date' : ''}'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',

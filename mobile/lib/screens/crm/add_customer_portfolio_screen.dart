@@ -5,8 +5,9 @@ import '../../services/pos_service.dart';
 
 class AddCustomerPortfolioScreen extends StatefulWidget {
   final int customerId;
+  final int? appointmentId;
 
-  const AddCustomerPortfolioScreen({super.key, required this.customerId});
+  const AddCustomerPortfolioScreen({super.key, required this.customerId, this.appointmentId});
 
   @override
   State<AddCustomerPortfolioScreen> createState() => _AddCustomerPortfolioScreenState();
@@ -49,6 +50,7 @@ class _AddCustomerPortfolioScreenState extends State<AddCustomerPortfolioScreen>
       widget.customerId,
       notes: _notesController.text,
       images: _images,
+      appointmentId: widget.appointmentId,
     );
 
     if (result != null) {

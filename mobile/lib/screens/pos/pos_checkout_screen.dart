@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/pos_service.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/receipt_helper.dart';
+import '../crm/add_customer_portfolio_screen.dart';
 import 'package:intl/intl.dart';
 
 class PosCheckoutScreen extends StatefulWidget {
@@ -165,12 +166,32 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                   onTap: () => ReceiptHelper().printReceipt(transaction),
                 ),
                 _buildActionButton(
-                  icon: Icons.share,
-                  label: 'WhatsApp',
-                  onTap: () => ReceiptHelper().shareViaWhatsApp(transaction),
-                ),
-              ],
-            ),
+                    icon: Icons.share,
+                    label: 'WhatsApp',
+                    onTap: () => ReceiptHelper().shareViaWhatsApp(transaction),
+                  ),
+                  _buildActionButton(
+                    icon: Icons.add_a_photo,
+                    label: 'Photo',
+                    color: Colors.pink,
+                    onTap: () {
+                      if (transaction['customer_id'] == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Guest checkout. No photo linkable.')));
+                        return;
+                      }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AddCustomerPortfolioScreen(
+                            customerId: transaction['customer_id'],
+                            posTransactionId: transaction['id'],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
           ],
         ),
         actions: [
@@ -194,15 +215,15 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     ReceiptHelper().printReceipt(draftData, isDraft: true);
   }
 
-  Widget _buildActionButton({required IconData icon, required String label, required VoidCallback onTap}) {
+  Widget _buildActionButton({required IconData icon, required String label, required VoidCallback onTap, Color? color}) {
     return InkWell(
       onTap: onTap,
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: AppTheme.accentColor.withValues(alpha: 0.1), shape: BoxShape.circle),
-            child: Icon(icon, color: AppTheme.accentColor),
+            decoration: BoxDecoration(color: (color ?? AppTheme.accentColor).withOpacity(0.1), shape: BoxShape.circle),
+            child: Icon(icon, color: color ?? AppTheme.accentColor),
           ),
           const SizedBox(height: 4),
           Text(label, style: const TextStyle(fontSize: 12)),

@@ -29,4 +29,9 @@ class Appointment extends Model
     {
         return $this->belongsTo(Customer::class);
     }
+
+    public function portfolios()
+    {
+        return $this->hasMany(CustomerPortfolio::class);
+    }
 }

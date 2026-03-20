@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../services/pos_service.dart';
 import 'add_appointment_screen.dart';
+import 'add_customer_portfolio_screen.dart';
+import '../../config/app_config.dart';
 import 'package:intl/intl.dart';
 
 class AppointmentCalendarScreen extends StatefulWidget {
@@ -175,15 +177,71 @@ class _AppointmentCalendarScreenState extends State<AppointmentCalendarScreen> {
                     ),
                   ],
                 ),
+                _buildAppointmentPhotos(event['portfolios'] ?? []),
               ],
             ),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.add_a_photo, color: Colors.pink, size: 20),
+                  onPressed: () async {
+                    if (customer == null) return;
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddCustomerPortfolioScreen(
+                          customerId: customer['id'],
+                          appointmentId: event['id'],
+                        ),
+                      ),
+                    );
+                    _fetchAppointments();
+                  },
+                ),
+              ],
+            ),
             onTap: () {
               // TODO: Show details
             },
           ),
         );
       },
+    );
+  }
+
+  Widget _buildAppointmentPhotos(List portfolios) {
+    if (portfolios.isEmpty) return const SizedBox();
+    
+    List<dynamic> allMedia = [];
+    for (var p in portfolios) {
+      final media = p['media'] as List? ?? [];
+      allMedia.addAll(media);
+    }
+
+    if (allMedia.isEmpty) return const SizedBox();
+
+    return Container(
+      height: 60,
+      margin: const EdgeInsets.only(top: 8),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: allMedia.length,
+        itemBuilder: (context, idx) {
+          final m = allMedia[idx];
+          return Container(
+            margin: const EdgeInsets.only(right: 8),
+            width: 60,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              image: DecorationImage(
+                image: NetworkImage(m['original_url']),
+                fit: BoxFit.cover,
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 

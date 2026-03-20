@@ -13,6 +13,7 @@ class CustomerPortfolio extends Model implements HasMedia
     protected $fillable = [
         'customer_id',
         'pos_transaction_id',
+        'appointment_id',
         'image_path',
         'notes',
     ];
@@ -20,6 +21,11 @@ class CustomerPortfolio extends Model implements HasMedia
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function appointment()
+    {
+        return $this->belongsTo(Appointment::class);
     }
 
     public function posTransaction()
