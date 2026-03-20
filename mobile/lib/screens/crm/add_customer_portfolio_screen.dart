@@ -15,20 +15,32 @@ class AddCustomerPortfolioScreen extends StatefulWidget {
 class _AddCustomerPortfolioScreenState extends State<AddCustomerPortfolioScreen> {
   final _posService = PosService();
   final _notesController = TextEditingController();
-  File? _image;
+  List<File> _images = [];
   bool _isSubmitting = false;
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImages() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.camera, imageQuality: 50);
+    final List<XFile> pickedFiles = await picker.pickMultiImage(imageQuality: 50);
+    if (pickedFiles.isNotEmpty) {
+      setState(() {
+        _images.addAll(pickedFiles.map((f) => File(f.path)));
+      });
+    }
+  }
+
+  Future<void> _capturePhoto() async {
+    final picker = ImagePicker();
+    final XFile? pickedFile = await picker.pickImage(source: ImageSource.camera, imageQuality: 50);
     if (pickedFile != null) {
-      setState(() => _image = File(pickedFile.path));
+      setState(() {
+        _images.add(File(pickedFile.path));
+      });
     }
   }
 
   Future<void> _submit() async {
-    if (_image == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please take a photo first')));
+    if (_images.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please add at least one photo')));
       return;
     }
 
@@ -36,7 +48,7 @@ class _AddCustomerPortfolioScreenState extends State<AddCustomerPortfolioScreen>
     final result = await _posService.addCustomerPortfolio(
       widget.customerId,
       notes: _notesController.text,
-      image: _image,
+      images: _images,
     );
 
     if (result != null) {
@@ -55,30 +67,57 @@ class _AddCustomerPortfolioScreenState extends State<AddCustomerPortfolioScreen>
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            GestureDetector(
-              onTap: _pickImage,
-              child: Container(
-                height: 300,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[300]!),
-                ),
-                child: _image != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.file(_image!, fit: BoxFit.cover),
-                      )
-                    : const Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.camera_alt, size: 64, color: Colors.grey),
-                          SizedBox(height: 8),
-                          Text('Tap to take photo'),
-                        ],
+            if (_images.isNotEmpty)
+              SizedBox(
+                height: 200,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _images.length,
+                  itemBuilder: (context, index) => Stack(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        width: 150,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          image: DecorationImage(image: FileImage(_images[index]), fit: BoxFit.cover),
+                        ),
                       ),
+                      Positioned(
+                        top: 4,
+                        right: 12,
+                        child: GestureDetector(
+                          onTap: () => setState(() => _images.removeAt(index)),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                            child: const Icon(Icons.close, color: Colors.white, size: 16),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _capturePhoto,
+                    icon: const Icon(Icons.camera_alt),
+                    label: const Text('Camera'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _pickImages,
+                    icon: const Icon(Icons.photo_library),
+                    label: const Text('Gallery'),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             TextField(

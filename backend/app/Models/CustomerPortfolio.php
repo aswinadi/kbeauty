@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class CustomerPortfolio extends Model
+class CustomerPortfolio extends Model implements HasMedia
 {
+    use InteractsWithMedia;
+
     protected $fillable = [
         'customer_id',
         'pos_transaction_id',

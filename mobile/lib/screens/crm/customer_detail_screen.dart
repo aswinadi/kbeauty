@@ -16,19 +16,24 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
   late TabController _tabController;
   final _posService = PosService();
   Map<String, dynamic>? _fullDetails;
+  List<Map<String, dynamic>> _history = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _fetchDetails();
+    _tabController = TabController(length: 4, vsync: this);
+    _fetchData();
   }
 
-  Future<void> _fetchDetails() async {
-    final details = await _posService.getCustomerDetails(widget.customer['id']);
+  Future<void> _fetchData() async {
+    final results = await Future.wait([
+      _posService.getCustomerDetails(widget.customer['id']),
+      _posService.getCustomerHistory(widget.customer['id']),
+    ]);
     setState(() {
-      _fullDetails = details;
+      _fullDetails = (results[0] as Map<String, dynamic>);
+      _history = (results[1] as List).cast<Map<String, dynamic>>();
       _isLoading = false;
     });
   }
@@ -44,6 +49,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
             Tab(icon: Icon(Icons.info), text: 'Info'),
             Tab(icon: Icon(Icons.card_membership), text: 'Members'),
             Tab(icon: Icon(Icons.photo_library), text: 'Portfolio'),
+            Tab(icon: Icon(Icons.history), text: 'History'),
           ],
         ),
       ),
@@ -55,6 +61,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
                 _buildInfoTab(),
                 _buildMembershipTab(),
                 _buildPortfolioTab(),
+                _buildHistoryTab(),
               ],
             ),
     );
@@ -186,5 +193,76 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
         child: const Icon(Icons.add_a_photo),
       ),
     );
+  }
+
+  Widget _buildHistoryTab() {
+    return _history.isEmpty
+        ? const Center(child: Text('No transaction history.'))
+        : ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: _history.length,
+            itemBuilder: (context, index) {
+              final tx = _history[index];
+              final date = tx['created_at'].split('T')[0];
+              final items = tx['items'] as List? ?? [];
+              final portfolios = tx['portfolios'] as List? ?? [];
+
+              return Card(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ListTile(
+                      title: Text(tx['transaction_number'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(date),
+                      trailing: Text('Rp ${tx['final_amount']}', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Items:', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                          ...items.map((it) => Text('• ${it['item_name']} x${it['quantity']}')),
+                          const SizedBox(height: 8),
+                          if (portfolios.isNotEmpty) ...[
+                            const Text('Photos from this visit:', style: TextStyle(fontSize: 12, color: Colors.pink)),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              height: 100,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: portfolios.length,
+                                itemBuilder: (context, pIdx) {
+                                  final p = portfolios[pIdx];
+                                  final media = p['media'] as List? ?? [];
+                                  if (media.isEmpty) return const SizedBox();
+                                  
+                                  return Row(
+                                    children: media.map((m) => Container(
+                                      margin: const EdgeInsets.only(right: 8),
+                                      width: 100,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8),
+                                        image: DecorationImage(
+                                          image: NetworkImage(m['original_url']),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    )).toList(),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              );
+            },
+          );
   }
 }

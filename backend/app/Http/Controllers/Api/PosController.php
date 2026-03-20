@@ -64,33 +64,49 @@ class PosController extends Controller
 
     public function showCustomer(Customer $customer)
     {
-        return response()->json($customer->load(['memberships', 'portfolios']));
+        return response()->json($customer->load(['memberships', 'portfolios.media']));
     }
 
     public function customerPortfolios(Customer $customer)
     {
-        return response()->json($customer->portfolios()->orderBy('created_at', 'desc')->get());
+        return response()->json($customer->portfolios()->with('media')->orderBy('created_at', 'desc')->get()->map(function($p) {
+            $p->image_urls = $p->getMedia('portfolio_images')->map(fn($m) => $m->getUrl());
+            return $p;
+        }));
     }
 
     public function addCustomerPortfolio(Request $request, Customer $customer)
     {
         $request->validate([
             'notes' => 'nullable|string',
-            'image' => 'nullable|image|max:2048',
+            'images.*' => 'nullable|image|max:5120',
+            'pos_transaction_id' => 'nullable|exists:pos_transactions,id',
         ]);
 
         $portfolio = new \App\Models\CustomerPortfolio([
             'notes' => $request->notes,
+            'pos_transaction_id' => $request->pos_transaction_id,
         ]);
-
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('portfolios', 'public');
-            $portfolio->image_path = $path;
-        }
 
         $customer->portfolios()->save($portfolio);
 
-        return response()->json($portfolio, 201);
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $portfolio->addMedia($image)->toMediaCollection('portfolio_images');
+            }
+        }
+
+        return response()->json($portfolio->load('media'), 201);
+    }
+
+    public function customerHistory(Customer $customer)
+    {
+        $transactions = $customer->posTransactions()
+            ->with(['items.item', 'portfolios.media'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($transactions);
     }
 
     public function registerCustomer(Request $request)

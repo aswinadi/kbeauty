@@ -26,10 +26,11 @@ class PortfoliosRelationManager extends RelationManager
     {
         return $schema
             ->components([
-                FileUpload::make('image_path')
+                \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('image')
+                    ->collection('portfolio_images')
+                    ->multiple()
                     ->image()
-                    ->label('Photo')
-                    ->directory('portfolios')
+                    ->label('Photos')
                     ->columnSpanFull(),
                 Textarea::make('notes')
                     ->maxLength(65535)
@@ -45,9 +46,11 @@ class PortfoliosRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                ImageColumn::make('image_path')
-                    ->label('Photo')
-                    ->circular(),
+                \Filament\Tables\Columns\SpatieMediaLibraryImageColumn::make('images')
+                    ->collection('portfolio_images')
+                    ->label('Photos')
+                    ->circular()
+                    ->stacked(),
                 TextColumn::make('notes')
                     ->limit(50),
                 TextColumn::make('posTransaction.transaction_number')

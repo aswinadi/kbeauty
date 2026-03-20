@@ -189,7 +189,8 @@ class PosService {
   Future<Map<String, dynamic>?> addCustomerPortfolio(
     int customerId, {
     String? notes,
-    File? image,
+    List<File>? images,
+    int? posTransactionId,
   }) async {
     try {
       final token = await _authService.getToken();
@@ -207,11 +208,17 @@ class PosService {
         request.fields['notes'] = notes;
       }
 
-      if (image != null) {
-        request.files.add(await http.MultipartFile.fromPath(
-          'image',
-          image.path,
-        ));
+      if (posTransactionId != null) {
+        request.fields['pos_transaction_id'] = posTransactionId.toString();
+      }
+
+      if (images != null && images.isNotEmpty) {
+        for (var i = 0; i < images.length; i++) {
+          request.files.add(await http.MultipartFile.fromPath(
+            'images[]',
+            images[i].path,
+          ));
+        }
       }
 
       var streamedResponse = await request.send();
@@ -224,6 +231,28 @@ class PosService {
     } catch (e) {
       print('Error adding customer portfolio: $e');
       return null;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getCustomerHistory(int customerId) async {
+    try {
+      final token = await _authService.getToken();
+      final response = await http.get(
+        Uri.parse('$baseUrl/pos/customers/$customerId/history'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(response.body);
+        return data.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching customer history: $e');
+      return [];
     }
   }
 }
