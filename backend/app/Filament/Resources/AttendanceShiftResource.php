@@ -23,7 +23,7 @@ class AttendanceShiftResource extends Resource
 {
     protected static ?string $model = Shift::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
 
     public static function getNavigationGroup(): ?string
     {
