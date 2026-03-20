@@ -255,4 +255,49 @@ class PosService {
       return [];
     }
   }
+
+  Future<List<Map<String, dynamic>>> getAppointments() async {
+    try {
+      final token = await _authService.getToken();
+      final response = await http.get(
+        Uri.parse('$baseUrl/appointments'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(response.body);
+        return data.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching appointments: $e');
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>?> addAppointment(Map<String, dynamic> data) async {
+    try {
+      final token = await _authService.getToken();
+      final response = await http.post(
+        Uri.parse('$baseUrl/appointments'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(data),
+      );
+
+      if (response.statusCode == 201) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Error adding appointment: $e');
+      return null;
+    }
+  }
 }

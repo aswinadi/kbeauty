@@ -49,4 +49,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/pos/employees', [\App\Http\Controllers\Api\PosController::class, 'employees']);
     Route::post('/pos/transactions', [\App\Http\Controllers\Api\PosController::class, 'storeTransaction']);
     Route::get('/pos/performance', [\App\Http\Controllers\Api\PosController::class, 'performance']);
+
+    // Appointment Routes
+    Route::get('/appointments', [\App\Http\Controllers\Api\AppointmentController::class, 'index']);
+    Route::post('/appointments', [\App\Http\Controllers\Api\AppointmentController::class, 'store']);
+    Route::patch('/appointments/{appointment}', [\App\Http\Controllers\Api\AppointmentController::class, 'update']);
 });

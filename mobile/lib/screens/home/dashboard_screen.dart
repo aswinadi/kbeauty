@@ -18,6 +18,7 @@ import '../attendance/attendance_history_screen.dart';
 import '../pos/pos_checkout_screen.dart';
 import '../pos/nailist_performance_screen.dart';
 import '../crm/customer_list_screen.dart';
+import '../crm/appointment_calendar_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -168,6 +169,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   }),
                   _buildActionCard('Customers (CRM)', Icons.group_outlined, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerListScreen()));
+                  }),
+                  _buildActionCard('Appointments', Icons.calendar_month_outlined, () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const AppointmentCalendarScreen()));
                   }),
                 ],
               ),
