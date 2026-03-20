@@ -62,6 +62,37 @@ class PosController extends Controller
         return response()->json($query->limit(20)->get());
     }
 
+    public function showCustomer(Customer $customer)
+    {
+        return response()->json($customer->load(['memberships', 'portfolios']));
+    }
+
+    public function customerPortfolios(Customer $customer)
+    {
+        return response()->json($customer->portfolios()->orderBy('created_at', 'desc')->get());
+    }
+
+    public function addCustomerPortfolio(Request $request, Customer $customer)
+    {
+        $request->validate([
+            'notes' => 'nullable|string',
+            'image' => 'nullable|image|max:2048',
+        ]);
+
+        $portfolio = new \App\Models\CustomerPortfolio([
+            'notes' => $request->notes,
+        ]);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('portfolios', 'public');
+            $portfolio->image_path = $path;
+        }
+
+        $customer->portfolios()->save($portfolio);
+
+        return response()->json($portfolio, 201);
+    }
+
     public function registerCustomer(Request $request)
     {
         $request->validate([
@@ -141,6 +172,14 @@ class PosController extends Controller
                 'final_amount' => $finalAmount,
                 'status' => 'completed',
             ]);
+
+            // Loyalty Points: 1 point for every Rp 100,000 spent
+            if ($transaction->customer_id) {
+                $points = floor($finalAmount / 100000);
+                if ($points > 0) {
+                    $transaction->customer->increment('loyalty_points', $points);
+                }
+            }
 
             foreach ($transactionItems as $ti) {
                 $item = $transaction->items()->create($ti);

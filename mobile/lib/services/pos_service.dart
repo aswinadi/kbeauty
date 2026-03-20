@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 import '../config/app_config.dart';
@@ -138,6 +139,90 @@ class PosService {
       return null;
     } catch (e) {
       print('Error fetching performance: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getCustomerDetails(int customerId) async {
+    try {
+      final token = await _authService.getToken();
+      final response = await http.get(
+        Uri.parse('$baseUrl/pos/customers/$customerId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching customer details: $e');
+      return null;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getCustomerPortfolios(int customerId) async {
+    try {
+      final token = await _authService.getToken();
+      final response = await http.get(
+        Uri.parse('$baseUrl/pos/customers/$customerId/portfolios'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(response.body);
+        return data.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching customer portfolios: $e');
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>?> addCustomerPortfolio(
+    int customerId, {
+    String? notes,
+    File? image,
+  }) async {
+    try {
+      final token = await _authService.getToken();
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/pos/customers/$customerId/portfolios'),
+      );
+
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      });
+
+      if (notes != null) {
+        request.fields['notes'] = notes;
+      }
+
+      if (image != null) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'image',
+          image.path,
+        ));
+      }
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 201) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Error adding customer portfolio: $e');
       return null;
     }
   }

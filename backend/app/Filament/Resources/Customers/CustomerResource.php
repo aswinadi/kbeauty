@@ -45,6 +45,14 @@ class CustomerResource extends Resource
         return CustomersTable::configure($table);
     }
 
+    public static function getRelations(): array
+    {
+        return [
+            RelationManagers\MembershipsRelationManager::class,
+            RelationManagers\PortfoliosRelationManager::class,
+        ];
+    }
+
     public static function getPages(): array
     {
         return [
