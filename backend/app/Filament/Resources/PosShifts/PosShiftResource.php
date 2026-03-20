@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Resources\Shifts;
+namespace App\Filament\Resources\PosShifts;
 
-use App\Filament\Resources\Shifts\Pages\CreateShift;
-use App\Filament\Resources\Shifts\Pages\EditShift;
-use App\Filament\Resources\Shifts\Pages\ListShifts;
-use App\Models\Shift;
+use App\Filament\Resources\PosShifts\Pages\CreatePosShift;
+use App\Filament\Resources\PosShifts\Pages\EditPosShift;
+use App\Filament\Resources\PosShifts\Pages\ListPosShifts;
+use App\Models\PosShift;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
@@ -18,9 +18,9 @@ use Filament\Actions\EditAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 
-class ShiftResource extends Resource
+class PosShiftResource extends Resource
 {
-    protected static ?string $model = Shift::class;
+    protected static ?string $model = PosShift::class;
 
     public static function getNavigationGroup(): ?string
     {
@@ -29,7 +29,7 @@ class ShiftResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return 'Shift';
+        return 'Cashier Shift';
     }
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clock';
@@ -107,9 +107,9 @@ class ShiftResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListShifts::route('/'),
-            'create' => CreateShift::route('/create'),
-            'edit' => EditShift::route('/{record}/edit'),
+            'index' => ListPosShifts::route('/'),
+            'create' => CreatePosShift::route('/create'),
+            'edit' => EditPosShift::route('/{record}/edit'),
         ];
     }
 }

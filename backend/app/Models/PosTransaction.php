@@ -24,7 +24,7 @@ class PosTransaction extends Model
 
     public function shift()
     {
-        return $this->belongsTo(Shift::class);
+        return $this->belongsTo(PosShift::class);
     }
 
     public function items()

@@ -3,35 +3,27 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Shift extends Model
 {
+    use HasFactory;
+
+    protected $table = 'employee_schedules';
+
     protected $fillable = [
-        'user_id',
+        'name',
         'start_time',
         'end_time',
-        'starting_cash',
-        'ending_cash',
-        'status',
+        'working_days',
     ];
 
     protected $casts = [
-        'start_time' => 'datetime',
-        'end_time' => 'datetime',
+        'working_days' => 'array',
     ];
 
-    public function user()
+    public function employees()
     {
-        return $this->belongsTo(User::class);
-    }
-
-    public function pettyCashTransactions()
-    {
-        return $this->hasMany(PettyCashTransaction::class);
-    }
-
-    public function posTransactions()
-    {
-        return $this->hasMany(PosTransaction::class);
+        return $this->hasMany(Employee::class);
     }
 }
