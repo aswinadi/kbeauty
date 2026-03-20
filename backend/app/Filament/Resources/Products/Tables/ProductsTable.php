@@ -13,6 +13,10 @@ class ProductsTable
     {
         return $table
             ->columns([
+                \Filament\Tables\Columns\IconColumn::make('is_active')
+                    ->label('Status')
+                    ->boolean()
+                    ->sortable(),
                 \Filament\Tables\Columns\SpatieMediaLibraryImageColumn::make('image')
                     ->label(__('messages.fields.image'))
                     ->collection('product_images')

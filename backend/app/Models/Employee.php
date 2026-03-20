@@ -55,6 +55,11 @@ class Employee extends Model implements HasMedia
         return $this->hasMany(Attendance::class);
     }
 
+    public function posTransactionItems()
+    {
+        return $this->hasMany(PosTransactionItem::class);
+    }
+
     public function absentAttendances()
     {
         return $this->hasMany(AbsentAttendance::class);

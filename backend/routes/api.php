@@ -37,4 +37,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/impersonate/{user}', [\App\Http\Controllers\Api\ImpersonateController::class, 'impersonate']);
     Route::get('/users', [\App\Http\Controllers\Api\ImpersonateController::class, 'index']);
     Route::get('/attendance/history', [\App\Http\Controllers\Api\AttendanceHistoryController::class, 'index']);
+
+    // POS Routes
+    Route::get('/pos/items', [\App\Http\Controllers\Api\PosController::class, 'items']);
+    Route::get('/pos/customers', [\App\Http\Controllers\Api\PosController::class, 'customers']);
+    Route::post('/pos/customers', [\App\Http\Controllers\Api\PosController::class, 'registerCustomer']);
+    Route::get('/pos/employees', [\App\Http\Controllers\Api\PosController::class, 'employees']);
+    Route::post('/pos/transactions', [\App\Http\Controllers\Api\PosController::class, 'storeTransaction']);
+    Route::get('/pos/performance', [\App\Http\Controllers\Api\PosController::class, 'performance']);
 });

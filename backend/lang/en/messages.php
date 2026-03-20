@@ -54,6 +54,7 @@ return [
         'reference' => 'Reference',
         'uom' => 'UOM',
         'min_stock' => 'Minimum Stock',
+        'face_similarity_threshold' => 'Face Similarity Threshold',
     ],
     'status' => [
         'pending' => 'Pending',

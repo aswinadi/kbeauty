@@ -1,0 +1,85 @@
+import 'package:blue_thermal_printer/blue_thermal_printer.dart';
+import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+class ReceiptHelper {
+  final BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
+  final _currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+
+  Future<void> printReceipt(Map<String, dynamic> transaction, {bool isDraft = false}) async {
+    bool? isConnected = await bluetooth.isConnected;
+    if (isConnected != true) {
+      // Logic to show printer selection or error
+      return;
+    }
+
+    if (isDraft) {
+      bluetooth.printCustom("DRAFT BILL", 2, 1);
+    } else {
+      bluetooth.printCustom("K-BEAUTY HOUSE", 2, 1);
+    }
+    bluetooth.printCustom("Nail Salon & Beauty", 1, 1);
+    bluetooth.write("--------------------------------\n");
+    
+    if (isDraft) {
+      bluetooth.write("Type: DRAFT (Check Items)\n");
+    } else {
+      bluetooth.write("No: ${transaction['transaction_number']}\n");
+    }
+    
+    final dateStr = transaction['created_at'] != null 
+        ? DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(transaction['created_at']))
+        : DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
+    
+    bluetooth.write("Date: $dateStr\n");
+    bluetooth.write("Customer: ${transaction['customer']?['name'] ?? 'Guest'}\n");
+    bluetooth.write("--------------------------------\n");
+
+    for (var item in transaction['items']) {
+      final name = item['item'] != null ? (item['item']['name'] ?? 'Item') : (item['name'] ?? 'Item');
+      bluetooth.write("$name\n");
+      bluetooth.write("${item['quantity']} x ${_currencyFormat.format(double.parse(item['price'].toString()))}   ${_currencyFormat.format(double.parse(item['subtotal'].toString()))}\n");
+    }
+
+    bluetooth.write("--------------------------------\n");
+    bluetooth.write("Total: ${_currencyFormat.format(double.parse(transaction['total_amount'].toString()))}\n");
+    bluetooth.write("Discount: ${_currencyFormat.format(double.parse(transaction['discount_amount'].toString()))}\n");
+    bluetooth.printCustom("Grand Total: ${_currencyFormat.format(double.parse(transaction['final_amount'].toString()))}", 1, 1);
+    bluetooth.write("--------------------------------\n");
+    
+    if (isDraft) {
+      bluetooth.printCustom("PLEASE PAY AT CASHIER", 1, 1);
+    } else {
+      bluetooth.printCustom("Thank You for Visiting!", 1, 1);
+    }
+    bluetooth.write("\n\n\n");
+  }
+
+  Future<void> shareViaWhatsApp(Map<String, dynamic> transaction) async {
+    final phone = transaction['customer']?['phone'];
+    if (phone == null || phone.isEmpty) return;
+
+    String message = "*K-BEAUTY HOUSE RECEIPT*\n\n";
+    message += "No: ${transaction['transaction_number']}\n";
+    message += "Date: ${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(transaction['created_at']))}\n";
+    message += "--------------------------------\n";
+    
+    for (var item in transaction['items']) {
+      message += "${item['item']?['name']} x ${item['quantity']}\n";
+      message += "${_currencyFormat.format(double.parse(item['subtotal'].toString()))}\n";
+    }
+    
+    message += "--------------------------------\n";
+    message += "*Grand Total: ${_currencyFormat.format(double.parse(transaction['final_amount'].toString()))}*\n\n";
+    message += "Thank you for visiting us!";
+
+    final url = "whatsapp://send?phone=$phone&text=${Uri.encodeComponent(message)}";
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    } else {
+      // Fallback to web link if app not installed
+      final webUrl = "https://wa.me/$phone?text=${Uri.encodeComponent(message)}";
+      await launchUrl(Uri.parse(webUrl), mode: LaunchMode.externalApplication);
+    }
+  }
+}

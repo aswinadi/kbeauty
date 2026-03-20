@@ -13,7 +13,7 @@ class Product extends Model implements HasMedia
 {
     use InteractsWithMedia;
 
-    protected $fillable = ['category_id', 'unit_id', 'secondary_unit_id', 'name', 'sku', 'price', 'conversion_ratio', 'min_stock'];
+    protected $fillable = ['is_active', 'category_id', 'unit_id', 'secondary_unit_id', 'name', 'sku', 'price', 'conversion_ratio', 'min_stock'];
 
     protected static function booted()
     {

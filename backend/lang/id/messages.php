@@ -54,6 +54,7 @@ return [
         'reference' => 'Referensi',
         'uom' => 'UOM',
         'min_stock' => 'Stok Minimum',
+        'face_similarity_threshold' => 'Ambang Kemiripan Wajah',
     ],
     'status' => [
         'pending' => 'Tertunda',

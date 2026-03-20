@@ -15,6 +15,8 @@ import '../../utils/responsive.dart';
 import '../attendance/attendance_screen.dart';
 import '../attendance/absent_form_screen.dart';
 import '../attendance/attendance_history_screen.dart';
+import '../pos/pos_checkout_screen.dart';
+import '../pos/nailist_performance_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -138,6 +140,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   }),
                   _buildActionCard('History', Icons.history, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceHistoryScreen()));
+                  }),
+                ],
+              ),
+              const SizedBox(height: 32),
+              Text(
+                'Point of Sales',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: Responsive.isTablet(context) 
+                  ? (Responsive.isLandscape(context) ? 5 : 4) 
+                  : 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: Responsive.isTablet(context) ? 1.2 : 1.1,
+                children: [
+                  _buildActionCard('POS Checkout', Icons.point_of_sale, () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const PosCheckoutScreen()));
+                  }),
+                  _buildActionCard('My Commission', Icons.account_balance_wallet_outlined, () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const NailistPerformanceScreen()));
                   }),
                 ],
               ),

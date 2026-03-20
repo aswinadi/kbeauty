@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\GeneralSetting;
+use App\Models\Location;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -41,14 +42,22 @@ class ManageGeneralSettings extends Page implements HasForms
             ->schema([
                 Section::make('Attendance Settings')
                     ->schema([
-                        TextInput::make('face_similarity_threshold')
-                            ->label('Face Similarity Threshold (%)')
+                        \Filament\Forms\Components\TextInput::make('face_similarity_threshold')
+                            ->label(__('messages.fields.face_similarity_threshold'))
                             ->numeric()
-                            ->required()
+                            ->default(80)
+                            ->step(1)
                             ->minValue(0)
                             ->maxValue(100)
+                            ->required()
                             ->suffix('%')
                             ->helperText('Minimum similarity percentage required for face verification during check-in/out.'),
+                        \Filament\Forms\Components\Select::make('pos_display_location_id')
+                            ->label('POS Display Location')
+                            ->helperText('Default location to deduct stock for POS transactions.')
+                            ->options(Location::pluck('name', 'id'))
+                            ->searchable()
+                            ->preload(),
                     ])
             ])
             ->statePath('data');

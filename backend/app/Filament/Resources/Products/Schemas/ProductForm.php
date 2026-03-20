@@ -12,6 +12,10 @@ class ProductForm
     {
         return $schema
             ->components([
+                \Filament\Forms\Components\Toggle::make('is_active')
+                    ->label('Active Status')
+                    ->default(true)
+                    ->columnSpanFull(),
                 \Filament\Forms\Components\Select::make('category_id')
                     ->label(__('messages.fields.category'))
                     ->relationship('category', 'name')
@@ -55,7 +59,7 @@ class ProductForm
                     ->label(__('messages.fields.min_stock'))
                     ->numeric()
                     ->default(0)
-                    ->suffix(fn (Get $get) => ($unit = Unit::find($get('unit_id'))) ? ($unit->short_name ?: $unit->name) : null)
+                    ->suffix(fn ($get) => ($unit = Unit::find($get('unit_id'))) ? ($unit->short_name ?: $unit->name) : null)
                     ->helperText('Alert will be shown when stock goes below this level.'),
                 \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('image')
                     ->label(__('messages.fields.image'))
