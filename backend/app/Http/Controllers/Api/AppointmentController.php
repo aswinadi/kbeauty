@@ -25,6 +25,7 @@ class AppointmentController extends Controller
             'appointment_date' => 'required|date',
             'appointment_time' => 'required',
             'treatment_name' => 'required|string',
+            'pax' => 'required|integer|min:1',
             'is_paid' => 'boolean',
             'notes' => 'nullable|string',
         ]);

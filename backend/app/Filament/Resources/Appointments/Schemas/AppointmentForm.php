@@ -28,6 +28,10 @@ class AppointmentForm
                     ->required(),
                 TextInput::make('treatment_name')
                     ->required(),
+                TextInput::make('pax')
+                    ->numeric()
+                    ->default(1)
+                    ->required(),
                 Toggle::make('is_paid')
                     ->required(),
                 Select::make('status')

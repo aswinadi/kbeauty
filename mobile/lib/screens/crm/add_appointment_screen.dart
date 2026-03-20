@@ -22,6 +22,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
   bool _isLoadingCustomers = true;
   
   final _treatmentController = TextEditingController();
+  final _paxController = TextEditingController(text: '1');
   final _notesController = TextEditingController();
   bool _isPaid = false;
   bool _isSubmitting = false;
@@ -69,6 +70,53 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
     }
   }
 
+  Future<void> _showNewCustomerDialog() async {
+    final nameController = TextEditingController();
+    final phoneController = TextEditingController();
+    
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add New Customer'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: 'Full Name'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: phoneController,
+              decoration: const InputDecoration(labelText: 'Phone Number'),
+              keyboardType: TextInputType.phone,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () async {
+              if (nameController.text.isEmpty) return;
+              final newCust = await _posService.registerCustomer({
+                'full_name': nameController.text,
+                'phone': phoneController.text,
+              });
+              if (newCust != null) {
+                setState(() {
+                  _customers.insert(0, newCust);
+                  _selectedCustomer = newCust;
+                });
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate() || _selectedCustomer == null) {
       if (_selectedCustomer == null) {
@@ -89,6 +137,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
       'appointment_date': dateString,
       'appointment_time': timeString,
       'treatment_name': _treatmentController.text,
+      'pax': int.tryParse(_paxController.text) ?? 1,
       'is_paid': _isPaid,
       'notes': _notesController.text,
     };
@@ -118,20 +167,32 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  DropdownButtonFormField<Map<String, dynamic>>(
-                    decoration: const InputDecoration(
-                      labelText: 'Customer',
-                      border: OutlineInputBorder(),
-                    ),
-                    value: _selectedCustomer,
-                    items: _customers.map((c) {
-                      return DropdownMenuItem(
-                        value: c,
-                        child: Text(c['full_name']),
-                      );
-                    }).toList(),
-                    onChanged: (val) => setState(() => _selectedCustomer = val),
-                    validator: (val) => val == null ? 'Required' : null,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<Map<String, dynamic>>(
+                          decoration: const InputDecoration(
+                            labelText: 'Customer',
+                            border: OutlineInputBorder(),
+                          ),
+                          value: _selectedCustomer,
+                          items: _customers.map((c) {
+                            return DropdownMenuItem(
+                              value: c,
+                              child: Text(c['full_name']),
+                            );
+                          }).toList(),
+                          onChanged: (val) => setState(() => _selectedCustomer = val),
+                          validator: (val) => val == null ? 'Required' : null,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: _showNewCustomerDialog,
+                        icon: const Icon(Icons.person_add_alt_1, color: Colors.pink),
+                        tooltip: 'Add New Customer',
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   ListTile(
@@ -163,6 +224,20 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
                       border: OutlineInputBorder(),
                     ),
                     validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _paxController,
+                    decoration: const InputDecoration(
+                      labelText: 'Pax (Number of People)',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (val) {
+                      if (val == null || val.isEmpty) return 'Required';
+                      if (int.tryParse(val) == null) return 'Must be a number';
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   TextFormField(

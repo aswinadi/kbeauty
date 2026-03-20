@@ -154,7 +154,7 @@ class _AppointmentCalendarScreenState extends State<AppointmentCalendarScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 4),
-                Text('$time - $treatment'),
+                Text('$time - $treatment (Pax: ${event['pax'] ?? 1})'),
                 const SizedBox(height: 4),
                 Row(
                   children: [

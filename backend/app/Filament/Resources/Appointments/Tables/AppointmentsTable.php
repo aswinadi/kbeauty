@@ -28,6 +28,9 @@ class AppointmentsTable
                     ->sortable(),
                 TextColumn::make('treatment_name')
                     ->searchable(),
+                TextColumn::make('pax')
+                    ->numeric()
+                    ->sortable(),
                 IconColumn::make('is_paid')
                     ->boolean(),
                 TextColumn::make('status')
