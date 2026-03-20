@@ -30,7 +30,7 @@ class _ServiceCategoryListScreenState extends State<ServiceCategoryListScreen> {
 
   Future<void> _showCategoryDialog({Map<String, dynamic>? category}) async {
     final nameController = TextEditingController(text: category?['name'] ?? '');
-    bool isActive = category?['is_active'] ?? true;
+    bool isActive = category?['is_active'] == 1 || category?['is_active'] == true;
 
     await showDialog(
       context: context,
@@ -87,9 +87,10 @@ class _ServiceCategoryListScreenState extends State<ServiceCategoryListScreen> {
                   itemCount: _categories.length,
                   itemBuilder: (context, index) {
                     final cat = _categories[index];
+                    final bool isActive = cat['is_active'] == 1 || cat['is_active'] == true;
                     return ListTile(
                       title: Text(cat['name']),
-                      subtitle: Text('Status: ${cat['is_active'] ? 'Active' : 'Inactive'}'),
+                      subtitle: Text('Status: ${isActive ? 'Active' : 'Inactive'}'),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

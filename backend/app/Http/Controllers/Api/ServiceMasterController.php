@@ -55,6 +55,9 @@ class ServiceMasterController extends Controller
             'service_category_id' => 'required|exists:service_categories,id',
             'price' => 'required|numeric|min:0',
             'is_active' => 'boolean',
+            'commission_type' => 'nullable|string',
+            'commission_value' => 'nullable|numeric|min:0',
+            'deduct_stock' => 'boolean',
         ]);
         $service = Service::create($request->all());
         return response()->json($service, 201);
@@ -67,6 +70,9 @@ class ServiceMasterController extends Controller
             'service_category_id' => 'required|exists:service_categories,id',
             'price' => 'required|numeric|min:0',
             'is_active' => 'boolean',
+            'commission_type' => 'nullable|string',
+            'commission_value' => 'nullable|numeric|min:0',
+            'deduct_stock' => 'boolean',
         ]);
         $service->update($request->all());
         return response()->json($service);

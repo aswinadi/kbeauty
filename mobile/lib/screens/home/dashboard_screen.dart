@@ -104,44 +104,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: RefreshIndicator(
         onRefresh: _loadData,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildProfileCard(),
-              const SizedBox(height: 24),
-              Text(
-                'Inventory Overview',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-              ),
               const SizedBox(height: 16),
+              const Text('Inventory Overview', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
               Row(
                 children: [
                   _buildStatCard('Products', _stats['total_products']?.toString() ?? '0', Icons.inventory_2),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 8),
                   _buildStatCard('Movements', _stats['total_movements']?.toString() ?? '0', Icons.swap_vert),
                 ],
               ),
-              const SizedBox(height: 32),
-              Text(
-                'Attendance',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
               const SizedBox(height: 16),
+              const Text('Attendance', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
               GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: Responsive.isTablet(context) 
-                  ? (Responsive.isLandscape(context) ? 5 : 4) 
-                  : 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: Responsive.isTablet(context) ? 1.2 : 1.1,
+                crossAxisCount: 3,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 1.0,
                 children: [
                   _buildActionCard('Izin', Icons.front_hand_outlined, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const AbsentFormScreen()));
                   }),
-                  _buildActionCard('Check In / Out', Icons.location_on_outlined, () {
+                  _buildActionCard('Check In/Out', Icons.location_on_outlined, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen()));
                   }),
                   _buildActionCard('History', Icons.history, () {
@@ -149,144 +141,89 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   }),
                 ],
               ),
-              const SizedBox(height: 32),
-              Text(
-                'Point of Sales',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
               const SizedBox(height: 16),
+              const Text('Point of Sales', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
               GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: Responsive.isTablet(context) 
-                  ? (Responsive.isLandscape(context) ? 5 : 4) 
-                  : 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: Responsive.isTablet(context) ? 1.2 : 1.1,
+                crossAxisCount: 4,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 0.9,
                 children: [
-                  _buildActionCard('POS Checkout', Icons.point_of_sale, () {
+                  _buildActionCard('POS', Icons.point_of_sale, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const PosCheckoutScreen()));
                   }),
-                  _buildActionCard('My Commission', Icons.account_balance_wallet_outlined, () {
+                  _buildActionCard('Comm', Icons.account_balance_wallet_outlined, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const NailistPerformanceScreen()));
                   }),
-                  _buildActionCard('Customers (CRM)', Icons.group_outlined, () {
+                  _buildActionCard('CRM', Icons.group_outlined, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerListScreen()));
                   }),
-                  _buildActionCard('Appointments', Icons.calendar_month_outlined, () {
+                  _buildActionCard('Appt', Icons.calendar_month_outlined, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const AppointmentCalendarScreen()));
                   }),
-                  _buildActionCard('Trans History', Icons.receipt_long, () {
+                  _buildActionCard('History', Icons.receipt_long, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const TransactionHistoryScreen()));
                   }),
                 ],
               ),
-              const SizedBox(height: 24),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text('Master Data', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                     _buildMiniActionCard('Service Categories', Icons.category, () {
-                       Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceCategoryListScreen()));
-                     }),
-                     _buildMiniActionCard('Treatments', Icons.spa, () {
-                       Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceTreatmentListScreen()));
-                     }),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 32),
-              Text(
-                'Inventory',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
               const SizedBox(height: 16),
+              const Text('Master Data', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
               GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: Responsive.isTablet(context) 
-                  ? (Responsive.isLandscape(context) ? 5 : 4) 
-                  : 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: Responsive.isTablet(context) ? 1.2 : 1.1,
+                crossAxisCount: 2,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 3.5,
+                children: [
+                   _buildActionListItem('Service Categories', Icons.category, () {
+                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceCategoryListScreen()));
+                   }),
+                   _buildActionListItem('Treatments', Icons.spa, () {
+                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceTreatmentListScreen()));
+                   }),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Text('Inventory', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 4,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 0.9,
                 children: [
                   _buildActionCard('Catalog', Icons.grid_view, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductBrowserScreen()));
                   }),
-                  _buildActionCard('Stock In', Icons.add_circle_outline, () {
+                  _buildActionCard('In', Icons.add_circle_outline, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const InventoryTransactionScreen(type: 'in')));
                   }),
-                  _buildActionCard('Stock Out', Icons.remove_circle_outline, () {
+                  _buildActionCard('Out', Icons.remove_circle_outline, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const InventoryTransactionScreen(type: 'out')));
                   }),
-                  _buildActionCard('Stock Move', Icons.swap_horiz, () {
+                  _buildActionCard('Move', Icons.swap_horiz, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const StockMovementScreen()));
                   }),
-                  _buildActionCard('Stock Opname', Icons.fact_check_outlined, () {
+                  _buildActionCard('Opname', Icons.fact_check_outlined, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const StockOpnameScreen()));
                   }),
                   if (!isNailist)
-                    _buildActionCard('Stock Balance', Icons.account_balance_wallet_outlined, () {
+                    _buildActionCard('Balance', Icons.account_balance, () {
                       Navigator.push(context, MaterialPageRoute(builder: (_) => const StockBalanceScreen()));
                     }),
                 ],
               ),
-              const SizedBox(height: 48),
-              Center(
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: (AppConfig.isProduction ? Colors.green : Colors.orange).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: (AppConfig.isProduction ? Colors.green : Colors.orange).withOpacity(0.2),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            AppConfig.isProduction ? Icons.cloud_done : Icons.developer_mode,
-                            size: 14,
-                            color: AppConfig.isProduction ? Colors.green : Colors.orange,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'v$_appVersion (${AppConfig.env.toUpperCase()})',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: AppConfig.isProduction ? Colors.green : Colors.orange,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Server: ${AppConfig.apiBaseUrl}',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.grey[400],
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               const SizedBox(height: 24),
+              Center(
+                child: Text('v$_appVersion (${AppConfig.env.toUpperCase()})', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+              ),
             ],
           ),
         ),
@@ -295,92 +232,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildProfileCard() {
-    final name = _user?.employee?.fullName ?? _user?.name ?? 'User';
-    final photoUrl = _user?.employee?.photoUrl;
-    
-    // Determine greeting
+    final name = _user?.employee?.fullName ?? _user?.name ?? 'Admin';
     final hour = DateTime.now().hour;
     String greeting = 'Selamat Pagi';
-    if (hour >= 11 && hour < 15) {
-      greeting = 'Selamat Siang';
-    } else if (hour >= 15 && hour < 18) {
-      greeting = 'Selamat Sore';
-    } else if (hour >= 18 || hour < 4) {
-      greeting = 'Selamat Malam';
-    }
+    if (hour >= 11 && hour < 15) greeting = 'Selamat Siang';
+    else if (hour >= 15 && hour < 18) greeting = 'Selamat Sore';
+    else if (hour >= 18 || hour < 4) greeting = 'Selamat Malam';
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppTheme.accentColor, Color(0xFFE91E63)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.accentColor.withOpacity(0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        color: AppTheme.accentColor,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(3),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
-            child: CircleAvatar(
-              radius: 30,
-              backgroundColor: Colors.grey[200],
-              backgroundImage: photoUrl != null && photoUrl.isNotEmpty
-                  ? NetworkImage(photoUrl)
-                  : null,
-              child: photoUrl == null || photoUrl.isEmpty
-                  ? const Icon(Icons.person, size: 30, color: AppTheme.accentColor)
-                  : null,
-            ),
+          const CircleAvatar(
+            backgroundColor: Colors.white,
+            child: Icon(Icons.person, color: AppTheme.accentColor),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  greeting,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(greeting, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+              Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            ],
           ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.notifications_none,
-              color: Colors.white,
-            ),
-          ),
+          const Spacer(),
+          const Icon(Icons.notifications, color: Colors.white70),
         ],
       ),
     );
@@ -389,18 +269,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildStatCard(String label, String value, IconData icon) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppTheme.primaryColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16),
+          color: AppTheme.accentColor.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.accentColor.withOpacity(0.1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: AppTheme.accentColor),
-            const SizedBox(height: 8),
-            Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.accentColor)),
-            Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+            Icon(icon, size: 20, color: AppTheme.accentColor),
+            const SizedBox(height: 4),
+            Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.accentColor)),
+            Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
           ],
         ),
       ),
@@ -411,62 +292,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 4, offset: const Offset(0, 2))],
+          border: Border.all(color: Colors.grey.shade100),
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 32, color: AppTheme.accentColor),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-            ),
+            Icon(icon, size: 20, color: AppTheme.accentColor),
+            const SizedBox(height: 4),
+            Text(title, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMiniActionCard(String title, IconData icon, VoidCallback onTap) {
+  Widget _buildActionListItem(String title, IconData icon, VoidCallback onTap) {
      return InkWell(
       onTap: onTap,
       child: Container(
-        width: (MediaQuery.of(context).size.width - 44) / 2, // 2 items per row with spacing
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade100),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 24, color: AppTheme.accentColor),
+            Icon(icon, size: 18, color: AppTheme.accentColor),
             const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
+            Text(title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
           ],
         ),
       ),

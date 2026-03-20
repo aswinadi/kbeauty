@@ -31,7 +31,7 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
     ]);
     setState(() {
       _services = results[0];
-      _categories = results[1].where((c) => c['is_active']).toList();
+      _categories = results[1].where((c) => c['is_active'] == 1 || c['is_active'] == true).toList();
       _isLoading = false;
     });
   }
@@ -39,8 +39,17 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
   Future<void> _showServiceDialog({Map<String, dynamic>? service}) async {
     final nameController = TextEditingController(text: service?['name'] ?? '');
     final priceController = TextEditingController(text: service?['price']?.toString() ?? '');
+    final commValueController = TextEditingController(text: service?['commission_value']?.toString() ?? '');
+    
     int? selectedCategoryId = service?['service_category_id'];
-    bool isActive = service?['is_active'] ?? true;
+    String? commissionType = service?['commission_type'];
+    bool isActive = service?['is_active'] == 1 || service?['is_active'] == true;
+    bool deductStock = service?['deduct_stock'] == 1 || service?['deduct_stock'] == true;
+    
+    if (service == null) {
+      isActive = true;
+      deductStock = false;
+    }
 
     await showDialog(
       context: context,
@@ -51,16 +60,12 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Treatment Name'),
+                SwitchListTile(
+                  title: const Text('Active Status'),
+                  value: isActive,
+                  onChanged: (val) => setDialogState(() => isActive = val),
+                  dense: true,
                 ),
-                TextField(
-                  controller: priceController,
-                  decoration: const InputDecoration(labelText: 'Price (Rp)'),
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 16),
                 DropdownButtonFormField<int>(
                   value: selectedCategoryId,
                   hint: const Text('Select Category'),
@@ -69,23 +74,50 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
                     child: Text(c['name']),
                   )).toList(),
                   onChanged: (val) => setDialogState(() => selectedCategoryId = val),
-                  decoration: const InputDecoration(labelText: 'Category'),
+                  decoration: const InputDecoration(labelText: 'Service Category'),
+                ),
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Name *'),
+                ),
+                TextField(
+                  controller: priceController,
+                  decoration: const InputDecoration(labelText: 'Price (Rp) *'),
+                  keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 16),
+                const Divider(),
+                const Text('Commission & Stock', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                DropdownButtonFormField<String>(
+                  value: commissionType,
+                  hint: const Text('Commission type'),
+                  items: const [
+                    DropdownMenuItem(value: 'fixed', child: Text('Fixed Amount')),
+                    DropdownMenuItem(value: 'percentage', child: Text('Percentage')),
+                  ],
+                  onChanged: (val) => setDialogState(() => commissionType = val),
+                  decoration: const InputDecoration(labelText: 'Commission type'),
+                ),
+                TextField(
+                  controller: commValueController,
+                  decoration: const InputDecoration(labelText: 'Commission (Rp/%)'),
+                  keyboardType: TextInputType.number,
+                ),
                 SwitchListTile(
-                  title: const Text('Active Status'),
-                  value: isActive,
-                  onChanged: (val) => setDialogState(() => isActive = val),
+                  title: const Text('Deduct Stock from Inventory'),
+                  value: deductStock,
+                  onChanged: (val) => setDialogState(() => deductStock = val),
+                  dense: true,
                 ),
               ],
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
             ElevatedButton(
               onPressed: () async {
                 if (nameController.text.isEmpty || priceController.text.isEmpty || selectedCategoryId == null) {
-                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
+                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all mandatory fields (*)')));
                    return;
                 }
                 final data = {
@@ -93,6 +125,9 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
                   'price': double.parse(priceController.text),
                   'service_category_id': selectedCategoryId,
                   'is_active': isActive,
+                   if (commissionType != null) 'commission_type': commissionType,
+                   if (commValueController.text.isNotEmpty) 'commission_value': double.parse(commValueController.text),
+                  'deduct_stock': deductStock,
                 };
                 final result = await _posService.saveMasterService(data, id: service?['id']);
                 if (result != null) {
@@ -120,9 +155,10 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
                   itemCount: _services.length,
                   itemBuilder: (context, index) {
                     final s = _services[index];
+                    final bool isActive = s['is_active'] == 1 || s['is_active'] == true;
                     return ListTile(
                       title: Text(s['name']),
-                      subtitle: Text('${s['service_category']?['name'] ?? 'N/A'} • ${s['is_active'] ? 'Active' : 'Inactive'}'),
+                      subtitle: Text('${s['service_category']?['name'] ?? 'N/A'} • ${isActive ? 'Active' : 'Inactive'}'),
                       trailing: Text(
                         _currencyFormat.format(double.parse(s['price'].toString())),
                         style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.pink),
