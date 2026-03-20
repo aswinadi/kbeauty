@@ -1,5 +1,25 @@
 # Project Changelog
 
+## [1.6.0] - 2026-03-20
+
+### Added
+- **Service Master Data Management (Mobile)**: 
+  - Complete control over Service Categories and Treatments directly from the mobile app.
+  - Added `is_active` status toggle for both categories and treatments to manage availability dynamically.
+  - Aligned mobile treatment forms with Filament backend, including **Commission Type**, **Commission Amount**, and **Stock Deduction** settings.
+- **POS & CRM Enhancements**:
+  - Integrated **Customer Treatment Photos** with POS transactions at checkout.
+  - **Transaction History**: New mobile screen to view past sales, totals, and attached result photos.
+  - **Auto-Portfolio Sync**: Photos taken during checkout are automatically linked to the Customer's Portfolio for easy reference.
+- **Dashboard Optimization**: 
+  - New **Master Data** and **Point of Sales** sections for better organization.
+  - **Responsive Single-Page Layout**: Re-engineered the dashboard using dynamic grids (`GridView.extent`) to keep buttons compact and professional across all screen sizes (Phone, Tablet, Desktop).
+
+### Fixed
+- **Type Compatibility**: Resolved `int is not a bool` errors in mobile service views by handling database boolean casting (1/0 vs true/false).
+- **UI Stability**: Corrected layout logic on the dashboard that caused build failures on certain screen sizes.
+- **Data Integrity**: Ensured mandatory fields are clearly marked and validated in mobile master data forms.
+
 ## [1.5.0] - 2026-03-12
 
 ### Fixed
