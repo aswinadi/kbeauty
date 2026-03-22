@@ -186,7 +186,27 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
         title: const Text('Designated Employee'),
         content: SizedBox(
           width: double.maxFinite,
-          child: GridView.builder(
+          child: _employees.isEmpty
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.people_outline, size: 48, color: Colors.grey),
+                    const SizedBox(height: 16),
+                    const Text('No active employees found', style: TextStyle(color: Colors.grey)),
+                    const SizedBox(height: 8),
+                    TextButton.icon(
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        await _loadData();
+                        _selectEmployee();
+                      },
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Refresh List'),
+                    ),
+                  ],
+                )
+              : GridView.builder(
+// ... rest same
             shrinkWrap: true,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
@@ -232,9 +252,28 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           title: const Text('Assign Nailists'),
           content: SizedBox(
             width: double.maxFinite,
-            child: GridView.builder(
-              shrinkWrap: true,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            child: _employees.isEmpty
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.people_outline, size: 48, color: Colors.grey),
+                      const SizedBox(height: 16),
+                      const Text('No active employees found', style: TextStyle(color: Colors.grey)),
+                      const SizedBox(height: 8),
+                      TextButton.icon(
+                        onPressed: () async {
+                          await _loadData();
+                          setDialogState(() {});
+                        },
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Refresh List'),
+                      ),
+                    ],
+                  )
+                : GridView.builder(
+                    shrinkWrap: true,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+// ... rest same
                 crossAxisCount: 2,
                 childAspectRatio: 2,
                 crossAxisSpacing: 10,
