@@ -8,12 +8,17 @@ use App\Models\Employee;
 use App\Models\Product;
 use App\Models\Service;
 use App\Models\Shift;
-use Filament\Forms\Components\Repeater;
+use App\Models\PaymentType;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\MorphToSelect;
-use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Placeholder;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
 
@@ -120,19 +125,103 @@ class PosTransactionForm
                         Repeater::make('payments')
                             ->relationship('payments')
                             ->schema([
-                                Select::make('payment_method')
-                                    ->options([
-                                        'cash' => 'Cash',
-                                        'debit' => 'Debit Card',
-                                        'credit' => 'Credit Card',
-                                        'qris' => 'QRIS',
-                                        'transfer' => 'Transfer',
-                                    ])
-                                    ->required(),
+                                Radio::make('payment_type_id')
+                                    ->label('Payment Method')
+                                    ->options(fn () => PaymentType::where('is_active', true)->pluck('name', 'id'))
+                                    ->columns(2)
+                                    ->required()
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        if (!$state) return;
+                                        
+                                        $paymentType = PaymentType::find($state);
+                                        $typeName = $paymentType?->name;
+                                        
+                                        // Set payment method name for backward compatibility or display
+                                        $set('payment_method', $typeName);
+
+                                        // Auto-calculate amount for non-Tunai
+                                        if ($typeName !== 'Tunai') {
+                                            $finalAmount = (float) $get('../../final_amount');
+                                            $otherPayments = $get('../../payments') ?: [];
+                                            $currentId = $get('id'); // This might be tricky in a repeater
+                                            
+                                            $paidAlready = 0;
+                                            foreach ($otherPayments as $key => $payment) {
+                                                // Simplified: sum all but this one
+                                                if (isset($payment['amount'])) {
+                                                    $paidAlready += (float) $payment['amount'];
+                                                }
+                                            }
+                                            // Subtract the current payment's previous amount if it was already summed
+                                            $paidAlready -= (float) ($get('amount') ?: 0);
+                                            
+                                            $remaining = max(0, $finalAmount - $paidAlready);
+                                            $set('amount', $remaining);
+                                        }
+                                    }),
                                 TextInput::make('amount')
                                     ->numeric()
                                     ->required()
-                                    ->prefix('Rp'),
+                                    ->prefix('Rp')
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        $moneyReceived = (float) ($get('money_received') ?: 0);
+                                        if ($moneyReceived > 0) {
+                                            $set('change_amount', max(0, $moneyReceived - (float) $state));
+                                        }
+                                    }),
+                                TextInput::make('bank_name')
+                                    ->label('Bank Name')
+                                    ->placeholder('e.g., BCA, Mandiri')
+                                    ->required(fn ($get) => in_array($get('payment_method'), ['Credit Card', 'Debit Card']))
+                                    ->visible(fn ($get) => in_array($get('payment_method'), ['Credit Card', 'Debit Card'])),
+                                
+                                Grid::make(1)
+                                    ->schema([
+                                        TextInput::make('money_received')
+                                            ->numeric()
+                                            ->prefix('Rp')
+                                            ->label('Money Received')
+                                            ->live()
+                                            ->afterStateUpdated(function ($state, $set, $get) {
+                                                $amount = (float) ($get('amount') ?: 0);
+                                                $set('change_amount', max(0, (float) $state - $amount));
+                                            }),
+                                        Radio::make('quick_cash')
+                                            ->label('Quick Cash')
+                                            ->options([
+                                                100000 => '100k',
+                                                50000 => '50k',
+                                                20000 => '20k',
+                                                10000 => '10k',
+                                                5000 => '5k',
+                                                2000 => '2k',
+                                                1000 => '1k',
+                                            ])
+                                            ->columns(4)
+                                            ->live()
+                                            ->afterStateUpdated(function ($state, $set, $get) {
+                                                if (!$state) return;
+                                                $current = (float) ($get('money_received') ?: 0);
+                                                $newAmount = $current + (float) $state;
+                                                $set('money_received', $newAmount);
+                                                
+                                                $amount = (float) ($get('amount') ?: 0);
+                                                $set('change_amount', max(0, $newAmount - $amount));
+                                                
+                                                $set('quick_cash', null); // Reset to allow repeated clicks
+                                            }),
+                                        TextInput::make('change_amount')
+                                            ->numeric()
+                                            ->prefix('Rp')
+                                            ->label('Change Amount')
+                                            ->disabled()
+                                            ->dehydrated(),
+                                    ])
+                                    ->visible(fn ($get) => $get('payment_method') === 'Tunai'),
+                                
+                                TextInput::make('payment_method')->hidden()->dehydrated(),
                             ])
                             ->columns(2)
                             ->columnSpanFull(),

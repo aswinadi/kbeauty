@@ -179,7 +179,7 @@ class PosController extends Controller
             'total_amount' => 'required|numeric',
             'discount_amount' => 'nullable|numeric',
             'discount_id' => 'nullable|exists:discounts,id',
-            'final_amount' => 'required|numeric',
+            'final_amount' => 'required|numeric|min:0',
             'payments' => 'required|array|min:1',
             'payments.*.payment_method' => 'required|string',
             'payments.*.amount' => 'required|numeric|min:0',
@@ -236,7 +236,7 @@ class PosController extends Controller
 
             $totalAmount = $request->total_amount;
             $discount = $request->discount_amount ?? 0;
-            $finalAmount = $request->final_amount;
+            $finalAmount = max(0, $request->final_amount);
 
             $transaction = PosTransaction::create([
                 'transaction_number' => 'POS-' . date('YmdHis') . '-' . Str::upper(Str::random(4)),
@@ -269,6 +269,11 @@ class PosController extends Controller
             }
 
             foreach ($request->payments as $p) {
+                // Try to find the payment type by name (case-insensitive)
+                $paymentType = \App\Models\PaymentType::where('name', 'like', $p['payment_method'])->first();
+                if ($paymentType) {
+                    $p['payment_type_id'] = $paymentType->id;
+                }
                 $transaction->payments()->create($p);
             }
             

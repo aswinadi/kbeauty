@@ -237,7 +237,8 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   }
 
   double get _totalAfterDiscount {
-    return _totalBeforeDiscount - _discountAmount;
+    final total = _totalBeforeDiscount - _discountAmount;
+    return total < 0 ? 0 : total;
   }
 
   Future<void> _syncEmployees() async {
@@ -419,15 +420,15 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           width: double.maxFinite,
           child: GridView.count(
             shrinkWrap: true,
-            crossAxisCount: 2,
-            childAspectRatio: 1.5,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
+            crossAxisCount: 4,
+            childAspectRatio: 0.9,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
             children: [
-              _paymentButton(context, 'Cash', Icons.money, Colors.green),
-              _paymentButton(context, 'Debit', Icons.credit_card, Colors.blue),
+              _paymentButton(context, 'Tunai', Icons.money, Colors.green),
+              _paymentButton(context, 'Debit Card', Icons.credit_card, Colors.blue),
+              _paymentButton(context, 'Credit Card', Icons.credit_score, Colors.indigo),
               _paymentButton(context, 'QRIS', Icons.qr_code_scanner, Colors.purple),
-              _paymentButton(context, 'Transfer', Icons.account_balance, Colors.orange),
             ],
           ),
         ),
@@ -660,7 +661,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 0,
       ),
-      onPressed: () => Navigator.pop(context, label.toLowerCase()),
+      onPressed: () => Navigator.pop(context, label),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
