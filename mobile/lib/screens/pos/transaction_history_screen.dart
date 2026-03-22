@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/pos_service.dart';
 import 'package:intl/intl.dart';
 import '../crm/add_customer_portfolio_screen.dart';
+import '../../utils/receipt_helper.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
@@ -258,6 +259,18 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           ),
         ),
         actions: [
+          ElevatedButton.icon(
+            onPressed: () async {
+              final success = await ReceiptHelper().printReceipt(tx);
+              if (success && mounted) {
+                ScaffoldMessenger.of(this.context).showSnackBar(const SnackBar(content: Text('Receipt printed.')));
+              } else if (mounted) {
+                ScaffoldMessenger.of(this.context).showSnackBar(const SnackBar(content: Text('Printer not connected.')));
+              }
+            },
+            icon: const Icon(Icons.print),
+            label: const Text('Reprint'),
+          ),
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
         ],
       ),
