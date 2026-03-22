@@ -479,6 +479,16 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                         spacing: 8,
                         runSpacing: 8,
                         children: [
+                          // Clear Button
+                          ActionChip(
+                            label: const Text('Clear'),
+                            onPressed: () {
+                              setDialogState(() {
+                                amount = 0;
+                                controller.text = '0';
+                              });
+                            },
+                          ),
                           // Exact Money Button
                           ActionChip(
                             label: const Text('Exact Amount'),
@@ -496,7 +506,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                               label: Text(_currencyFormat.format(pecahan)),
                               onPressed: () {
                                 setDialogState(() {
-                                  amount = pecahan.toDouble();
+                                  amount += pecahan.toDouble();
                                   controller.text = amount.toStringAsFixed(0);
                                 });
                               },
