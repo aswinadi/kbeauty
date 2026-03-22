@@ -262,8 +262,8 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
 // ... rest same
             shrinkWrap: true,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 2,
+              crossAxisCount: 3,
+              childAspectRatio: 2.5,
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
             ),
@@ -330,8 +330,8 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                     shrinkWrap: true,
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
 // ... rest same
-                crossAxisCount: 2,
-                childAspectRatio: 2,
+                crossAxisCount: 3,
+                childAspectRatio: 2.5,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),
