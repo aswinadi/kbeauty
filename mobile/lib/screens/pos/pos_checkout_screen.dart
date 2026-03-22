@@ -22,7 +22,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   List<Map<String, dynamic>> _cart = [];
   Map<String, dynamic>? _selectedCustomer;
 
-  List<String> _categories = ['All'];
+  List<String> _posServiceCategories = ['All'];
   String _selectedCategory = 'All';
   bool _isLoading = true;
   String _searchQuery = '';
@@ -47,7 +47,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       
       final cats = _allItems.map((e) => (e['category'] ?? 'Uncategorized').toString()).toSet().toList();
       cats.sort();
-      _categories = ['All', ...cats];
+      _posServiceCategories = ['All', ...cats];
       
       _isLoading = false;
     });
@@ -358,14 +358,15 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   }
 
   Widget _buildCategoryTabs() {
+    final List<String> list = _posServiceCategories;
     return SizedBox(
       height: 50,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        itemCount: _categories.length,
+        itemCount: list.length,
         itemBuilder: (context, index) {
-          final cat = _categories[index];
+          final cat = list[index];
           final isSelected = _selectedCategory == cat;
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
