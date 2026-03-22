@@ -23,6 +23,11 @@ class PaymentTypeResource extends Resource
 {
     protected static ?string $model = PaymentType::class;
 
+    public static function getNavigationGroup(): ?string
+    {
+        return 'POS';
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'name';
