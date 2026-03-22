@@ -77,10 +77,15 @@ class ReceiptHelper {
   }
 
   Future<String?> shareViaWhatsApp(Map<String, dynamic> transaction) async {
+    final settings = await PosService().getSettings();
+    final storeName = settings?['store_name'] ?? "K-BEAUTY HOUSE";
+    final storeAddress = settings?['store_address'] ?? "Nail Salon & Beauty";
+    final storePhone = settings?['store_phone'] ?? "";
+
     final phone = transaction['customer']?['phone'];
     if (phone == null || phone.isEmpty) return 'Customer phone number is missing';
 
-    String message = "*K-BEAUTY HOUSE RECEIPT*\n\n";
+    String message = "*$storeName RECEIPT*\n\n";
     if (transaction['transaction_number'] != null) {
       message += "No: ${transaction['transaction_number']}\n";
     } else {
@@ -107,7 +112,9 @@ class ReceiptHelper {
     
     message += "--------------------------------\n";
     message += "*Grand Total: ${_currencyFormat.format(double.parse(transaction['final_amount'].toString()))}*\n\n";
-    message += "Thank you for visiting us!";
+    message += "Thank you for visiting us!\n";
+    message += "_$storeAddress_\n";
+    if (storePhone.isNotEmpty) message += "_Tel: $storePhone_\n";
 
     final url = "whatsapp://send?phone=$phone&text=${Uri.encodeComponent(message)}";
     try {

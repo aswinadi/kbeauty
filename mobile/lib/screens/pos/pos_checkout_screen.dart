@@ -703,8 +703,10 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Center(child: Text('K-BEAUTY HOUSE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18))),
-              const Center(child: Text('Nail Salon & Beauty')),
+              Center(child: Text(_settings?['store_name'] ?? 'K-BEAUTY HOUSE', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18))),
+              Center(child: Text(_settings?['store_address'] ?? 'Nail Salon & Beauty')),
+              if (_settings?['store_phone'] != null && _settings?['store_phone'] != '-')
+                Center(child: Text('Phone: ${_settings?['store_phone']}')),
               const Divider(),
               Text('Date: ${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())}'),
               Text('Customer: ${_selectedCustomer?['name'] ?? 'Guest'}'),
