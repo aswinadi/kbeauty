@@ -22,11 +22,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   List<Map<String, dynamic>> _cart = [];
   Map<String, dynamic>? _selectedCustomer;
 
-  ValueNotifier<List<String>>? _categoriesNotifier;
-  ValueNotifier<List<String>> get _safeCategoriesNotifier {
-    _categoriesNotifier ??= ValueNotifier<List<String>>(['All']);
-    return _categoriesNotifier!;
-  }
+  List<String> _categories = ['All'];
   String _selectedCategory = 'All';
   bool _isLoading = true;
   String _searchQuery = '';
@@ -51,7 +47,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       
       final cats = _allItems.map((e) => (e['category'] ?? 'Uncategorized').toString()).toSet().toList();
       cats.sort();
-      _safeCategoriesNotifier.value = ['All', ...cats];
+      _categories = ['All', ...cats];
       
       _isLoading = false;
     });
@@ -362,42 +358,37 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   }
 
   Widget _buildCategoryTabs() {
-    return ValueListenableBuilder<List<String>>(
-      valueListenable: _safeCategoriesNotifier,
-      builder: (context, categories, child) {
-        return SizedBox(
-          height: 50,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              final cat = categories[index];
-              final isSelected = _selectedCategory == cat;
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: ChoiceChip(
-                  label: Text(cat),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected) {
-                      setState(() {
-                        _selectedCategory = cat;
-                        _filterItems(_searchQuery);
-                      });
-                    }
-                  },
-                  selectedColor: AppTheme.accentColor.withValues(alpha: 0.2),
-                  labelStyle: TextStyle(
-                    color: isSelected ? AppTheme.accentColor : Colors.black87,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                ),
-              );
-            },
-          ),
-        );
-      },
+    return SizedBox(
+      height: 50,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        itemCount: _categories.length,
+        itemBuilder: (context, index) {
+          final cat = _categories[index];
+          final isSelected = _selectedCategory == cat;
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: ChoiceChip(
+              label: Text(cat),
+              selected: isSelected,
+              onSelected: (selected) {
+                if (selected) {
+                  setState(() {
+                    _selectedCategory = cat;
+                    _filterItems(_searchQuery);
+                  });
+                }
+              },
+              selectedColor: AppTheme.accentColor.withOpacity(0.2),
+              labelStyle: TextStyle(
+                color: isSelected ? AppTheme.accentColor : Colors.black87,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -425,7 +416,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: AppTheme.accentColor.withValues(alpha: 0.1),
+                        color: AppTheme.accentColor.withOpacity(0.1),
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                       ),
                       child: Center(
@@ -523,7 +514,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, -2))],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, -2))],
       ),
       child: Column(
         children: [
