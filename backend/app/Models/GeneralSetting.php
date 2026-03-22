@@ -13,6 +13,7 @@ class GeneralSetting extends Model
         'store_address',
         'store_phone',
         'pos_item_layout',
+        'bill_footer',
     ];
 
     public function posDisplayLocation()

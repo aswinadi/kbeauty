@@ -44,7 +44,7 @@ class ReceiptHelper {
       final name = item['item'] != null ? (item['item']['name'] ?? 'Item') : (item['name'] ?? 'Item');
       bluetooth.write("$name\n");
       
-      final employees = (item['employees'] as List?)?.map((e) => e['name']).join(', ') ?? '';
+      final employees = (item['employees'] as List?)?.map((e) => (e['full_name'] ?? e['name'] ?? 'Staff').toString()).join(', ') ?? '';
       if (employees.isNotEmpty) {
         bluetooth.write(" ($employees)\n");
       }
@@ -64,7 +64,8 @@ class ReceiptHelper {
     if (isDraft) {
       bluetooth.printCustom("PLEASE PAY AT CASHIER", 1, 1);
     } else {
-      bluetooth.printCustom("Thank You for Visiting!", 1, 1);
+      final footer = settings?['bill_footer'] ?? "Thank You for Visiting!";
+      bluetooth.printCustom(footer, 1, 1);
     }
     bluetooth.write("\n\n\n");
     return true;
@@ -85,7 +86,11 @@ class ReceiptHelper {
     final phone = customPhone ?? transaction['customer']?['phone'];
     if (phone == null || phone.isEmpty) return 'Customer phone number is missing';
 
-    String message = "*$storeName RECEIPT*\n\n";
+    String message = "*$storeName RECEIPT*\n";
+    message += "_${storeAddress}_\n";
+    if (storePhone.isNotEmpty) message += "_Tel: ${storePhone}_\n";
+    message += "\n";
+
     if (transaction['transaction_number'] != null) {
       message += "No: ${transaction['transaction_number']}\n";
     } else {
@@ -103,7 +108,7 @@ class ReceiptHelper {
       final name = item['item'] != null ? (item['item']['name'] ?? 'Item') : (item['name'] ?? 'Item');
       final subtotal = item['subtotal'] ?? (double.parse(item['price'].toString()) * (item['quantity'] ?? 1));
       
-      final employees = (item['employees'] as List?)?.map((e) => e['name']).join(', ') ?? '';
+      final employees = (item['employees'] as List?)?.map((e) => (e['full_name'] ?? e['name'] ?? 'Staff').toString()).join(', ') ?? '';
       String itemLine = "$name x ${item['quantity']}";
       if (employees.isNotEmpty) itemLine += " ($employees)";
       message += "$itemLine\n";
@@ -112,9 +117,8 @@ class ReceiptHelper {
     
     message += "--------------------------------\n";
     message += "*Grand Total: ${_currencyFormat.format(double.parse(transaction['final_amount'].toString()))}*\n\n";
-    message += "Thank you for visiting us!\n";
-    message += "_${storeAddress}_\n";
-    if (storePhone.isNotEmpty) message += "_Tel: ${storePhone}_\n";
+    final footer = settings?['bill_footer'] ?? "Thank you for visiting us!";
+    message += "$footer\n";
 
     final url = "whatsapp://send?phone=$phone&text=${Uri.encodeComponent(message)}";
     try {

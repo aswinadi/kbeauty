@@ -56,6 +56,10 @@ class ManageGeneralSettings extends Page implements HasForms
                         TextInput::make('store_phone')
                             ->label('Store Phone')
                             ->placeholder('e.g., 08123456789'),
+                        TextInput::make('bill_footer')
+                            ->label('Bill Footer Message')
+                            ->placeholder('e.g., Thank you for visiting us!')
+                            ->helperText('This message will appear at the bottom of printed and WhatsApp receipts.'),
                     ])->columns(2),
 
                 Section::make('POS & Attendance Settings')

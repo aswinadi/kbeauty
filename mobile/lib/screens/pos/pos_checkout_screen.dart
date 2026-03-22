@@ -705,9 +705,9 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(child: Text(_settings?['store_name'] ?? 'K-BEAUTY HOUSE', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18))),
-              Center(child: Text(_settings?['store_address'] ?? 'Nail Salon & Beauty')),
+              Center(child: Text(_settings?['store_address'] ?? 'Nail Salon & Beauty', style: const TextStyle(fontSize: 12))),
               if (_settings?['store_phone'] != null && _settings?['store_phone'] != '-')
-                Center(child: Text('Phone: ${_settings?['store_phone']}')),
+                Center(child: Text('Phone: ${_settings?['store_phone']}', style: const TextStyle(fontSize: 12))),
               const Divider(),
               Text('Date: ${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())}'),
               Text('Customer: ${_selectedCustomer?['name'] ?? 'Guest'}'),
@@ -727,7 +727,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                                   Text(item['name']),
                                   if (item['employees'] != null && (item['employees'] as List).isNotEmpty)
                                     Text(
-                                      '(${(item['employees'] as List).map((e) => e['name']).join(', ')})',
+                                      '(${(item['employees'] as List).map((e) => (e['full_name'] ?? e['name'] ?? 'Staff').toString()).join(', ')})',
                                       style: const TextStyle(fontSize: 11, color: Colors.grey),
                                     ),
                                 ],
@@ -765,7 +765,13 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                 ],
               ),
               const Divider(),
-              const Center(child: Text('THANK YOU', style: TextStyle(fontSize: 12, color: Colors.grey))),
+              Center(
+                child: Text(
+                  _settings?['bill_footer'] ?? 'Thank you for visiting us!',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.grey, fontSize: 12),
+                ),
+              ),
             ],
           ),
         ),
