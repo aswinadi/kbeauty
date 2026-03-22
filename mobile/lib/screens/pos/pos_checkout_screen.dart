@@ -326,68 +326,70 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           title: const Text('Assign Nailists'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: _employees.isEmpty
-                ? Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.people_outline, size: 48, color: Colors.grey),
-                      const SizedBox(height: 16),
-                      const Text('No active employees found', style: TextStyle(color: Colors.grey)),
-                      const SizedBox(height: 8),
-                      TextButton.icon(
-                        onPressed: () async {
-                          await _loadData();
-                          setDialogState(() {});
-                        },
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Refresh List'),
-                      ),
-                    ],
-                  )
-                : GridView.builder(
-                    shrinkWrap: true,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-// ... rest same
-                crossAxisCount: 3,
-                childAspectRatio: 2.5,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-              ),
-              itemCount: _employees.length,
-              itemBuilder: (context, i) {
-                final e = _employees[i];
-                final isSelected = selectedIds.contains(e['id']);
-                return InkWell(
-                  onTap: () {
-                    setDialogState(() {
-                      if (isSelected) {
-                        selectedIds.remove(e['id']);
-                      } else {
-                        selectedIds.add(e['id']);
-                      }
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppTheme.accentColor : Colors.grey[100],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
-                      child: Text(
-                        e['name'],
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black87,
-                          fontWeight: FontWeight.bold,
+          content: SingleChildScrollView(
+            child: SizedBox(
+              width: double.maxFinite,
+              child: _employees.isEmpty
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.people_outline, size: 48, color: Colors.grey),
+                        const SizedBox(height: 16),
+                        const Text('No active employees found', style: TextStyle(color: Colors.grey)),
+                        const SizedBox(height: 8),
+                        TextButton.icon(
+                          onPressed: () async {
+                            await _loadData();
+                            setDialogState(() {});
+                          },
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Refresh List'),
                         ),
+                      ],
+                    )
+                  : GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        childAspectRatio: 2.5,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
                       ),
+                      itemCount: _employees.length,
+                      itemBuilder: (context, i) {
+                        final e = _employees[i];
+                        final isSelected = selectedIds.contains(e['id']);
+                        return InkWell(
+                          onTap: () {
+                            setDialogState(() {
+                              if (isSelected) {
+                                selectedIds.remove(e['id']);
+                              } else {
+                                selectedIds.add(e['id']);
+                              }
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: isSelected ? AppTheme.accentColor : Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: Text(
+                                e['name'],
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: isSelected ? Colors.white : Colors.black87,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                );
-              },
             ),
           ),
           actions: [
@@ -416,20 +418,23 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Payment Method'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: GridView.count(
-            shrinkWrap: true,
-            crossAxisCount: 4,
-            childAspectRatio: 0.9,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            children: [
-              _paymentButton(context, 'Tunai', Icons.money, Colors.green),
-              _paymentButton(context, 'Debit Card', Icons.credit_card, Colors.blue),
-              _paymentButton(context, 'Credit Card', Icons.credit_score, Colors.indigo),
-              _paymentButton(context, 'QRIS', Icons.qr_code_scanner, Colors.purple),
-            ],
+        content: SingleChildScrollView(
+          child: SizedBox(
+            width: double.maxFinite,
+            child: GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 4,
+              childAspectRatio: 0.9,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+              children: [
+                _paymentButton(context, 'Tunai', Icons.money, Colors.green),
+                _paymentButton(context, 'Debit Card', Icons.credit_card, Colors.blue),
+                _paymentButton(context, 'Credit Card', Icons.credit_score, Colors.indigo),
+                _paymentButton(context, 'QRIS', Icons.qr_code_scanner, Colors.purple),
+              ],
+            ),
           ),
         ),
       ),
@@ -1250,12 +1255,14 @@ class _CustomerSelectionDialogState extends State<CustomerSelectionDialog> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('New Customer'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Name')),
-            TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Phone')),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Name')),
+              TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Phone')),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
