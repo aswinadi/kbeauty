@@ -76,7 +76,7 @@ class _NailistPerformanceScreenState extends State<NailistPerformanceScreen> {
                   children: [
                     _buildSummaryCard(),
                     const SizedBox(height: 32),
-                    const Text('Service History', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text('Treatment History', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 16),
                     _buildHistoryList(),
                   ],
@@ -108,7 +108,7 @@ class _NailistPerformanceScreenState extends State<NailistPerformanceScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildMetric('Services', totalServices.toString(), Icons.spa),
+              _buildMetric('Treatments', totalServices.toString(), Icons.spa),
               _buildMetric('Commissions', _currencyFormat.format(totalComm), Icons.account_balance_wallet),
             ],
           ),
@@ -137,7 +137,7 @@ class _NailistPerformanceScreenState extends State<NailistPerformanceScreen> {
   Widget _buildHistoryList() {
     final List details = _data?['details'] ?? [];
     if (details.isEmpty) {
-      return const Center(child: Text('No service history found for this period.'));
+      return const Center(child: Text('No treatment history found for this period.'));
     }
 
     return ListView.separated(

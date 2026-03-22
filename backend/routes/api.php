@@ -51,6 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/pos/transactions', [\App\Http\Controllers\Api\PosController::class, 'transactions']);
     Route::get('/pos/settings', [\App\Http\Controllers\Api\PosController::class, 'settings']);
     Route::get('/pos/performance', [\App\Http\Controllers\Api\PosController::class, 'performance']);
+    Route::apiResource('/discounts', \App\Http\Controllers\Api\DiscountController::class);
 
     // Appointment Routes
     Route::get('/appointments', [\App\Http\Controllers\Api\AppointmentController::class, 'index']);

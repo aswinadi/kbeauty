@@ -24,11 +24,13 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   Map<String, dynamic>? _selectedEmployee;
   final _searchController = TextEditingController();
 
+  List<Map<String, dynamic>> _discounts = [];
+  Map<String, dynamic>? _selectedDiscount;
   List<String> _categories = ['All'];
   String _selectedCategory = 'All';
   bool _isLoading = true;
   String _searchQuery = '';
-  double _discountAmount = 0;
+  // double _discountAmount = 0; // Removed in favor of computed logic
   String _posItemLayout = 'grid';
 
   @override
@@ -51,10 +53,12 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       _posService.getItems(),
       _posService.getEmployees(),
       _posService.getSettings(),
+      _posService.getDiscounts(),
     ]);
     setState(() {
       _allItems = (results[0] as List).map((e) => e as Map<String, dynamic>).where((item) => item['type'] == 'service').toList();
       _employees = (results[1] as List).map((e) => e as Map<String, dynamic>).toList();
+      _discounts = (results[3] as List).map((e) => e as Map<String, dynamic>).toList();
       _filteredItems = _allItems;
       
       final settings = results[2] as Map<String, dynamic>?;
@@ -220,8 +224,12 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     });
   }
 
-  double get _totalBeforeDiscount {
-    return _cart.fold(0, (sum, item) => sum + (double.parse(item['price'].toString()) * item['quantity']));
+  double get _discountAmount {
+    if (_selectedDiscount == null) return 0;
+    if (_selectedDiscount!['type'] == 'percentage') {
+      return (_totalBeforeDiscount * (double.parse(_selectedDiscount!['value'].toString()) / 100));
+    }
+    return double.parse(_selectedDiscount!['value'].toString());
   }
 
   double get _totalAfterDiscount {
@@ -442,6 +450,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           'quantity': item['quantity'],
         }).toList(),
         'discount_amount': _discountAmount,
+        'discount_id': _selectedDiscount?['id'],
         'payments': [
           {
             'payment_method': paymentMethod,
@@ -458,7 +467,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           _cart.clear();
           _selectedCustomer = null;
           _selectedEmployee = null;
-          _discountAmount = 0;
+          _selectedDiscount = null;
         });
         _showSuccessDialog(response);
       }
@@ -880,21 +889,45 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
               Text(_currencyFormat.format(_totalBeforeDiscount)),
             ],
           ),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text('Discount'),
-              SizedBox(
-                width: 100,
-                child: TextField(
-                  keyboardType: TextInputType.number,
-                  onChanged: (val) => setState(() => _discountAmount = double.tryParse(val) ?? 0),
-                  textAlign: TextAlign.right,
-                  decoration: const InputDecoration(hintText: '0', isDense: true),
+              InkWell(
+                onTap: _showDiscountDialog,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        _selectedDiscount == null ? 'Apply' : _selectedDiscount!['name'],
+                        style: const TextStyle(color: AppTheme.accentColor, fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                      const Icon(Icons.arrow_drop_down, color: AppTheme.accentColor, size: 20),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
+          if (_selectedDiscount != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    "- ${_currencyFormat.format(_discountAmount)}",
+                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
           const Divider(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -917,6 +950,56 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showDiscountDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Select Discount", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                _discountItem(null), // None
+                ..._discounts.map((d) => _discountItem(d)).toList(),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _discountItem(Map<String, dynamic>? discount) {
+    final isSelected = _selectedDiscount?['id'] == discount?['id'];
+    return InkWell(
+      onTap: () {
+        setState(() => _selectedDiscount = discount);
+        Navigator.pop(context);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.accentColor : Colors.grey[200],
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          discount?['name'] ?? 'None',
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.black87,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }

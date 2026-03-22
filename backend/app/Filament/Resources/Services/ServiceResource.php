@@ -25,12 +25,12 @@ class ServiceResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return 'Service';
+        return 'Treatment';
     }
 
     public static function getPluralModelLabel(): string
     {
-        return 'Services';
+        return 'Treatments';
     }
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-scissors';

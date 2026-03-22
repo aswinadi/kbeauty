@@ -27,7 +27,11 @@ class PosController extends Controller
 
     public function items()
     {
-        $services = Service::where('is_active', true)->with(['serviceCategory', 'variants'])->orderBy('name')->get()->map(fn($s) => [
+        $services = Service::where('is_active', true)
+            ->whereHas('serviceCategory', function($q) {
+                $q->where('is_active', true);
+            })
+            ->with(['serviceCategory', 'variants'])->orderBy('name')->get()->map(fn($s) => [
             'id' => $s->id,
             'name' => $s->name,
             'price' => $s->price,
@@ -172,7 +176,10 @@ class PosController extends Controller
             'items.*.employee_ids.*' => 'exists:employees,id',
             'items.*.price' => 'nullable|numeric|min:0',
             'items.*.quantity' => 'required|integer|min:1',
-            'discount_amount' => 'nullable|numeric|min:0',
+            'total_amount' => 'required|numeric',
+            'discount_amount' => 'nullable|numeric',
+            'discount_id' => 'nullable|exists:discounts,id',
+            'final_amount' => 'required|numeric',
             'payments' => 'required|array|min:1',
             'payments.*.payment_method' => 'required|string',
             'payments.*.amount' => 'required|numeric|min:0',
@@ -185,7 +192,9 @@ class PosController extends Controller
                 return response()->json(['message' => 'No active shift found. Please start a shift first.'], 422);
             }
 
-            $totalAmount = 0;
+            // The totalAmount, discount, and finalAmount are now expected from the request
+            // The following block is no longer needed for calculation but can be used for validation if desired
+            // $totalAmount = 0;
             $transactionItems = [];
 
             foreach ($request->items as $i) {
@@ -211,7 +220,7 @@ class PosController extends Controller
                 }
 
                 $subtotal = $price * $i['quantity'];
-                $totalAmount += $subtotal;
+                // $totalAmount += $subtotal; // No longer calculating here
 
                 $transactionItems[] = [
                     'item_id' => $i['item_id'],
@@ -225,8 +234,9 @@ class PosController extends Controller
                 ];
             }
 
+            $totalAmount = $request->total_amount;
             $discount = $request->discount_amount ?? 0;
-            $finalAmount = max(0, $totalAmount - $discount);
+            $finalAmount = $request->final_amount;
 
             $transaction = PosTransaction::create([
                 'transaction_number' => 'POS-' . date('YmdHis') . '-' . Str::upper(Str::random(4)),
@@ -234,6 +244,7 @@ class PosController extends Controller
                 'shift_id' => $shift->id,
                 'total_amount' => $totalAmount,
                 'discount_amount' => $discount,
+                'discount_id' => $request->discount_id,
                 'final_amount' => $finalAmount,
                 'employee_id' => $request->employee_id,
                 'status' => 'completed',

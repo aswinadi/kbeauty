@@ -78,7 +78,7 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
                     child: Text(c['name']),
                   )).toList(),
                   onChanged: (val) => setDialogState(() => selectedCategoryId = val),
-                  decoration: const InputDecoration(labelText: 'Service Category'),
+                  decoration: const InputDecoration(labelText: 'Treatment Category'),
                 ),
                 const SizedBox(height: 16),
                 TextField(
@@ -175,7 +175,7 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
         : _services.where((s) => s['service_category_id'] == _selectedCategoryId).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Service Treatments'), elevation: 0),
+      appBar: AppBar(title: const Text('Treatments'), elevation: 0),
       body: Column(
         children: [
           if (!_isLoading && _categories.isNotEmpty)

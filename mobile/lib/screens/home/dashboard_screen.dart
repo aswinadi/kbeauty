@@ -182,7 +182,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 mainAxisSpacing: 8,
                 childAspectRatio: 1.0,
                 children: [
-                   _buildActionCard('Categories', Icons.category, () {
+                   _buildActionCard('Tr. Category', Icons.category, () {
                      Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceCategoryListScreen()));
                    }),
                    _buildActionCard('Treatments', Icons.spa, () {

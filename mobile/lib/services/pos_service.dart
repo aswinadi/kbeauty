@@ -435,4 +435,26 @@ class PosService {
       return null;
     }
   }
+
+  Future<List<Map<String, dynamic>>> getDiscounts() async {
+    try {
+      final token = await _authService.getToken();
+      final response = await http.get(
+        Uri.parse('$baseUrl/discounts'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(response.body);
+        return data.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching discounts: $e');
+      return [];
+    }
+  }
 }

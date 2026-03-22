@@ -78,7 +78,7 @@ class _ServiceCategoryListScreenState extends State<ServiceCategoryListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Service Categories')),
+      appBar: AppBar(title: const Text('Treatment Categories')),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _categories.isEmpty
@@ -94,7 +94,7 @@ class _ServiceCategoryListScreenState extends State<ServiceCategoryListScreen> {
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('${cat['services_count'] ?? 0} Services', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                          Text('${cat['services_count'] ?? 0} Treatments', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                           const Icon(Icons.chevron_right),
                         ],
                       ),

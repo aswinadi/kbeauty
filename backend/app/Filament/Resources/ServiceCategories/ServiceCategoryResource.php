@@ -21,6 +21,16 @@ class ServiceCategoryResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'name';
+    
+    public static function getModelLabel(): string
+    {
+        return 'Treatment Category';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Treatment Categories';
+    }
 
     public static function form(Schema $schema): Schema
     {
