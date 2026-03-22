@@ -229,28 +229,71 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
 
   @override
   Widget build(BuildContext context) {
+    final filteredServices = _selectedCategoryId == null 
+        ? _services 
+        : _services.where((s) => s['service_category_id'] == _selectedCategoryId).toList();
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Service Treatments')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _services.isEmpty
-              ? const Center(child: Text('No treatments found.'))
-              : ListView.builder(
-                  itemCount: _services.length,
-                  itemBuilder: (context, index) {
-                    final s = _services[index];
-                    final bool isActive = s['is_active'] == 1 || s['is_active'] == true;
-                    return ListTile(
-                      title: Text(s['name']),
-                      subtitle: Text('${s['service_category']?['name'] ?? 'N/A'} • ${isActive ? 'Active' : 'Inactive'}'),
-                      trailing: Text(
-                        _currencyFormat.format(double.parse(s['price'].toString())),
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.pink),
+      appBar: AppBar(title: const Text('Service Treatments'), elevation: 0),
+      body: Column(
+        children: [
+          if (!_isLoading && _categories.isNotEmpty)
+            Container(
+              height: 50,
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: _categories.length + 1,
+                itemBuilder: (context, index) {
+                  final isAll = index == 0;
+                  final category = isAll ? null : _categories[index - 1];
+                  final isSelected = isAll ? _selectedCategoryId == null : _selectedCategoryId == category!['id'];
+
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(isAll ? 'All' : category!['name']),
+                      selected: isSelected,
+                      onSelected: (val) {
+                        setState(() {
+                          _selectedCategoryId = isAll ? null : category!['id'];
+                        });
+                      },
+                      selectedColor: AppTheme.accentColor.withOpacity(0.2),
+                      labelStyle: TextStyle(
+                        color: isSelected ? AppTheme.accentColor : Colors.black87,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       ),
-                      onTap: () => _showServiceDialog(service: s),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : filteredServices.isEmpty
+                    ? const Center(child: Text('No treatments found.'))
+                    : ListView.builder(
+                        itemCount: filteredServices.length,
+                        itemBuilder: (context, index) {
+                          final s = filteredServices[index];
+                          final bool isActive = s['is_active'] == 1 || s['is_active'] == true;
+                          return ListTile(
+                            title: Text(s['name']),
+                            subtitle: Text('${s['service_category']?['name'] ?? 'N/A'} • ${isActive ? 'Active' : 'Inactive'}'),
+                            trailing: Text(
+                              _currencyFormat.format(double.parse(s['price'].toString())),
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.pink),
+                            ),
+                            onTap: () => _showServiceDialog(service: s),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showServiceDialog(),
         child: const Icon(Icons.add),
