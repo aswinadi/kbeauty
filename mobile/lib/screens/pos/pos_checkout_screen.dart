@@ -501,6 +501,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.person_add_alt),
+            tooltip: 'Select/Add Customer',
             onPressed: () => _selectCustomer(),
           ),
           if (_selectedCustomer != null)

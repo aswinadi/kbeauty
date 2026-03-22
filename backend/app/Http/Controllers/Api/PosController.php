@@ -137,7 +137,14 @@ class PosController extends Controller
 
     public function employees()
     {
-        return response()->json(Employee::where('status', 'active')->get());
+        return response()->json(
+            Employee::with('user:id,name')->get()->map(function ($employee) {
+                return [
+                    'id' => $employee->id,
+                    'name' => $employee->full_name ?? ($employee->user->name ?? 'Employee #' . $employee->id),
+                ];
+            })
+        );
     }
 
     public function storeTransaction(Request $request)
