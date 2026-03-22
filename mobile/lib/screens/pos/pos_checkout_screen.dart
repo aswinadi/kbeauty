@@ -21,12 +21,19 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   List<Map<String, dynamic>> _employees = [];
   List<Map<String, dynamic>> _cart = [];
   Map<String, dynamic>? _selectedCustomer;
+  final _searchController = TextEditingController();
 
   List<String> _categories = ['All'];
   String _selectedCategory = 'All';
   bool _isLoading = true;
   String _searchQuery = '';
   double _discountAmount = 0;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -70,6 +77,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   void _addToCart(Map<String, dynamic> item, {Map<String, dynamic>? variant}) {
     // If item is a service and has variants, and no variant is selected yet, show picker
     if (item['type'] == 'service' && item['variants'] != null && (item['variants'] as List).isNotEmpty && variant == null) {
+      FocusScope.of(context).unfocus();
       _showVariantPicker(item);
       return;
     }
@@ -325,6 +333,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           : Column(
               children: [
                 _buildSearchBar(),
+                _buildCategoryTabs(),
                 Expanded(
                   child: Row(
                     children: [
@@ -339,12 +348,13 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   }
 
   Widget _buildSearchBar() {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: TextField(
-            onChanged: _filterItems,
+    return Padding(
+      key: const ValueKey('pos_search_bar_container'),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: TextField(
+        key: const ValueKey('pos_search_field'),
+        controller: _searchController,
+        onChanged: _filterItems,
             decoration: InputDecoration(
               hintText: 'Search items...',
               prefixIcon: const Icon(Icons.search),
@@ -352,17 +362,16 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
               filled: true,
               fillColor: Colors.grey[100],
             ),
-          ),
-        ),
-        _buildCategoryTabs(),
-      ],
+      ),
     );
   }
 
   Widget _buildCategoryTabs() {
     return SizedBox(
+      key: const ValueKey('pos_category_tabs_container'),
       height: 50,
       child: ListView.builder(
+        key: const ValueKey('pos_category_tabs_list'),
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         itemCount: _categories.length,
