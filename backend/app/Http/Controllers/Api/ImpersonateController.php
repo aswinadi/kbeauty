@@ -14,20 +14,20 @@ class ImpersonateController extends Controller
      */
     public function index(Request $request)
     {
-        $isAdmin = $request->user()->roles->any(function ($role) {
-            $name = strtolower($role->name);
-            return $name === 'super admin' || $name === 'super_admin';
-        });
+        /** @var User $user */
+        $user = $request->user();
+        
+        $isAdmin = $user->hasRole('super_admin') || $user->hasRole('Super Admin');
 
         if (!$isAdmin) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $users = User::whereDoesntHave('roles', function ($query) {
-            $query->where('name', 'like', 'Super Admin')
-                  ->orWhere('name', 'like', 'super_admin')
-                  ->orWhere('name', 'like', 'super-admin');
-        })->get();
+            $query->whereIn('name', ['super_admin', 'Super Admin', 'super-admin']);
+        })
+        ->with(['roles', 'employee'])
+        ->get();
 
         return response()->json($users);
     }
