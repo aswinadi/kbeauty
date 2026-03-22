@@ -12,7 +12,7 @@ class ListHolidays extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            \Filament\Actions\CreateAction::make(),
+            \Filament\CreateAction::make(),
         ];
     }
 }

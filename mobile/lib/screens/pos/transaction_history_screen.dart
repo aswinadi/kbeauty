@@ -199,7 +199,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 const SizedBox(height: 8),
                 ...(tx['items'] as List? ?? []).map((item) {
                    final name = item['item'] != null ? (item['item']['name'] ?? 'Item') : (item['name'] ?? 'Item');
-                   final employees = (item['employees'] as List?)?.map((e) => e['name']).join(', ') ?? '';
+                   final employees = (item['employees'] as List?)?.map((e) => e['full_name'] ?? e['name']).join(', ') ?? '';
                    return Padding(
                      padding: const EdgeInsets.only(bottom: 12),
                      child: Column(
@@ -259,6 +259,19 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           ),
         ),
         actions: [
+          ElevatedButton.icon(
+            onPressed: () async {
+              final phone = tx['customer']?['phone'];
+              if (phone == null || phone.isEmpty) {
+                ScaffoldMessenger.of(this.context).showSnackBar(const SnackBar(content: Text('Customer phone not found.')));
+                return;
+              }
+              await ReceiptHelper().shareViaWhatsApp(tx, phone);
+            },
+            icon: const Icon(Icons.share),
+            label: const Text('WhatsApp'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+          ),
           ElevatedButton.icon(
             onPressed: () async {
               final success = await ReceiptHelper().printReceipt(tx);
