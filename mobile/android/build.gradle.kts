@@ -33,6 +33,11 @@ subprojects {
                 if (android.namespace == null) {
                     android.namespace = "id.antigravity.${project.name.replace("-", ".").replace("_", ".")}"
                 }
+
+                android.compileOptions {
+                    sourceCompatibility = JavaVersion.VERSION_17
+                    targetCompatibility = JavaVersion.VERSION_17
+                }
             }
         }
     }
