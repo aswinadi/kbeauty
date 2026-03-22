@@ -21,7 +21,9 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
   @override
   void initState() {
     super.initState();
-    _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
   }
 
   Future<void> _loadData() async {
