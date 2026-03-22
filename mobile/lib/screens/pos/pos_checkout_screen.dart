@@ -21,6 +21,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   List<Map<String, dynamic>> _employees = [];
   List<Map<String, dynamic>> _cart = [];
   Map<String, dynamic>? _selectedCustomer;
+  Map<String, dynamic>? _selectedEmployee;
   final _searchController = TextEditingController();
 
   List<String> _categories = ['All'];
@@ -102,7 +103,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           'name': variant != null ? "${item['name']} - ${variant['name']}" : item['name'],
           'service_variant_id': variantId,
           'quantity': 1,
-          'employee_id': _employees.isNotEmpty ? _employees[0]['id'] : null,
+          'employee_id': _selectedEmployee != null ? _selectedEmployee!['id'] : (_employees.isNotEmpty ? _employees[0]['id'] : null),
         });
       }
     });
@@ -162,6 +163,30 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     return _totalBeforeDiscount - _discountAmount;
   }
 
+  Future<void> _selectEmployee() async {
+    final employee = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('Designated Employee'),
+        children: _employees.map((e) => SimpleDialogOption(
+          onPressed: () => Navigator.pop(context, e),
+          child: Text(e['name']),
+        )).toList(),
+      ),
+    );
+    if (employee != null) {
+      setState(() => _selectedEmployee = employee);
+      // Automatically assign this employee to all items in cart if they don't have one
+      setState(() {
+        for (var i = 0; i < _cart.length; i++) {
+          if (_cart[i]['employee_id'] == null) {
+            _cart[i]['employee_id'] = employee['id'];
+          }
+        }
+      });
+    }
+  }
+
   Future<void> _processCheckout() async {
     if (_cart.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cart is empty')));
@@ -183,8 +208,14 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     if (paymentMethod == null) return;
 
     try {
+      if (_selectedEmployee == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an employee first')));
+        return;
+      }
+
       final transactionData = {
         'customer_id': _selectedCustomer?['id'],
+        'employee_id': _selectedEmployee?['id'],
         'items': _cart.map((item) => {
           'item_id': item['id'],
           'item_type': item['type'],
@@ -208,6 +239,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
         setState(() {
           _cart.clear();
           _selectedCustomer = null;
+          _selectedEmployee = null;
           _discountAmount = 0;
         });
         _showSuccessDialog(response);
@@ -319,11 +351,25 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           ),
           if (_selectedCustomer != null)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Center(
-                child: Text(
-                  _selectedCustomer!['name'],
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                child: Chip(
+                  label: Text(_selectedCustomer!['name'], style: const TextStyle(fontSize: 12)),
+                  backgroundColor: AppTheme.accentColor.withOpacity(0.1),
+                ),
+              ),
+            ),
+          IconButton(
+            icon: const Icon(Icons.badge),
+            onPressed: () => _selectEmployee(),
+          ),
+          if (_selectedEmployee != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Center(
+                child: Chip(
+                  label: Text(_selectedEmployee!['name'], style: const TextStyle(fontSize: 12)),
+                  backgroundColor: Colors.blue.withOpacity(0.1),
                 ),
               ),
             ),

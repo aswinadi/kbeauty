@@ -14,8 +14,14 @@ class PosTransaction extends Model
         'discount_amount',
         'points_redeemed',
         'final_amount',
+        'employee_id',
         'status',
     ];
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
+    }
 
     public function customer()
     {

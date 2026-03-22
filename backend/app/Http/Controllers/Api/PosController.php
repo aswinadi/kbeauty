@@ -154,6 +154,7 @@ class PosController extends Controller
             'payments' => 'required|array|min:1',
             'payments.*.payment_method' => 'required|string',
             'payments.*.amount' => 'required|numeric|min:0',
+            'employee_id' => 'required|exists:employees,id',
         ]);
 
         return DB::transaction(function () use ($request) {
@@ -209,6 +210,7 @@ class PosController extends Controller
                 'total_amount' => $totalAmount,
                 'discount_amount' => $discount,
                 'final_amount' => $finalAmount,
+                'employee_id' => $request->employee_id,
                 'status' => 'completed',
             ]);
 
