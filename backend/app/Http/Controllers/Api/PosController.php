@@ -26,6 +26,7 @@ class PosController extends Controller
             'id' => $s->id,
             'name' => $s->name,
             'price' => $s->price,
+            'is_variable_price' => (bool)$s->is_variable_price,
             'type' => 'service',
             'category' => $s->serviceCategory?->name,
             'variants' => $s->variants->map(fn($v) => [
@@ -162,8 +163,9 @@ class PosController extends Controller
             'items.*.item_id' => 'required',
             'items.*.item_type' => 'required|in:service,product,bundle',
             'items.*.service_variant_id' => 'nullable|exists:service_variants,id',
-            'items.*.employee_ids' => 'required|array|min:1',
+            'items.*.employee_ids' => 'nullable|array',
             'items.*.employee_ids.*' => 'exists:employees,id',
+            'items.*.price' => 'nullable|numeric|min:0',
             'items.*.quantity' => 'required|integer|min:1',
             'discount_amount' => 'nullable|numeric|min:0',
             'payments' => 'required|array|min:1',
@@ -194,7 +196,9 @@ class PosController extends Controller
                 }
 
                 $price = $itemModel->price;
-                if ($i['item_type'] === 'service' && !empty($i['service_variant_id'])) {
+                if ($i['item_type'] === 'service' && $itemModel->is_variable_price && isset($i['price'])) {
+                    $price = $i['price'];
+                } elseif ($i['item_type'] === 'service' && !empty($i['service_variant_id'])) {
                     $variant = \App\Models\ServiceVariant::find($i['service_variant_id']);
                     if ($variant && $variant->service_id == $i['item_id']) {
                         $price = $variant->price;
@@ -208,8 +212,8 @@ class PosController extends Controller
                     'item_id' => $i['item_id'],
                     'item_type' => $modelClass,
                     'service_variant_id' => $i['service_variant_id'] ?? null,
-                    'employee_id' => $i['employee_ids'][0], // Store first one as primary
-                    'employee_ids' => $i['employee_ids'], // Temporarily store for pivot
+                    'employee_id' => !empty($i['employee_ids']) ? $i['employee_ids'][0] : null,
+                    'employee_ids' => $i['employee_ids'] ?? [],
                     'quantity' => $i['quantity'],
                     'price' => $price,
                     'subtotal' => $subtotal,
@@ -242,7 +246,9 @@ class PosController extends Controller
                 $employeeIds = $ti['employee_ids'];
                 unset($ti['employee_ids']);
                 $item = $transaction->items()->create($ti);
-                $item->employees()->attach($employeeIds);
+                if (!empty($employeeIds)) {
+                    $item->employees()->attach($employeeIds);
+                }
                 $this->processItemStock($item);
             }
 

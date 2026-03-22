@@ -46,16 +46,12 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
     final commValueController = TextEditingController(text: service?['commission_value']?.toString() ?? '');
     
     int? selectedCategoryId = service?['service_category_id'] ?? _selectedCategoryId;
-    String? commissionType = service?['commission_type'];
     bool isActive = service?['is_active'] == 1 || service?['is_active'] == true;
-    bool deductStock = service?['deduct_stock'] == 1 || service?['deduct_stock'] == true;
-    List<Map<String, dynamic>> variants = service?['variants'] != null 
-        ? List<Map<String, dynamic>>.from(service!['variants'])
-        : [];
+    bool isVariablePrice = service?['is_variable_price'] == 1 || service?['is_variable_price'] == true;
     
     if (service == null) {
       isActive = true;
-      deductStock = false;
+      isVariablePrice = false;
     }
 
     await showDialog(
@@ -90,91 +86,36 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
                   decoration: const InputDecoration(labelText: 'Name *'),
                 ),
                 const SizedBox(height: 16),
-                TextField(
-                  controller: priceController,
-                  decoration: const InputDecoration(labelText: 'Price (Rp) *'),
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 16),
-                const Text('Commission & Stock', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  value: commissionType,
-                  hint: const Text('Commission type'),
-                  items: const [
-                    DropdownMenuItem(value: 'fixed', child: Text('Fixed Amount')),
-                    DropdownMenuItem(value: 'percentage', child: Text('Percentage')),
-                  ],
-                  onChanged: (val) => setDialogState(() => commissionType = val),
-                  decoration: const InputDecoration(labelText: 'Commission type'),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: commValueController,
-                  decoration: const InputDecoration(labelText: 'Commission (Rp/%)'),
-                  keyboardType: TextInputType.number,
-                ),
+                if (!isVariablePrice)
+                  TextField(
+                    controller: priceController,
+                    decoration: const InputDecoration(labelText: 'Price (Rp) *'),
+                    keyboardType: TextInputType.number,
+                  ),
                 const SizedBox(height: 16),
                 SwitchListTile(
-                  title: const Text('Deduct Stock from Inventory'),
-                  value: deductStock,
-                  onChanged: (val) => setDialogState(() => deductStock = val),
+                  title: const Text('Is Variable Price'),
+                  subtitle: const Text('User will input price at POS'),
+                  value: isVariablePrice,
+                  onChanged: (val) => setDialogState(() => isVariablePrice = val),
                   dense: true,
                 ),
-                const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Variants', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    TextButton.icon(
-                      onPressed: () => _showAddVariantDialog(setDialogState, variants),
-                      icon: const Icon(Icons.add, size: 18),
-                      label: const Text('Add Variant'),
-                    ),
-                  ],
-                ),
-                if (variants.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child: Text('No variants added.', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                  ),
-                ...variants.asMap().entries.map((entry) {
-                  final idx = entry.key;
-                  final v = entry.value;
-                  return ListTile(
-                    title: Text(v['name']),
-                    subtitle: Text(_currencyFormat.format(double.parse(v['price'].toString()))),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-                      onPressed: () => setDialogState(() => variants.removeAt(idx)),
-                    ),
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                  );
-                }).toList(),
               ],
             ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
             ElevatedButton(
               onPressed: () async {
-                if (nameController.text.isEmpty || priceController.text.isEmpty || selectedCategoryId == null) {
+                if (nameController.text.isEmpty || (priceController.text.isEmpty && !isVariablePrice) || selectedCategoryId == null) {
                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all mandatory fields (*)')));
                    return;
                 }
                 final data = {
                   'name': nameController.text,
-                  'price': double.parse(priceController.text),
+                  'price': isVariablePrice ? 0 : double.parse(priceController.text),
                   'service_category_id': selectedCategoryId,
                   'is_active': isActive,
-                   if (commissionType != null) 'commission_type': commissionType,
-                   if (commValueController.text.isNotEmpty) 'commission_value': double.parse(commValueController.text),
-                  'deduct_stock': deductStock,
-                  'variants': variants,
+                  'is_variable_price': isVariablePrice,
                 };
                 final result = await _posService.saveMasterService(data, id: service?['id']);
                 if (result != null) {

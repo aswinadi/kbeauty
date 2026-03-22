@@ -75,7 +75,22 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     });
   }
 
-  void _addToCart(Map<String, dynamic> item, {Map<String, dynamic>? variant}) {
+  Future<void> _addToCart(Map<String, dynamic> item, {Map<String, dynamic>? variant}) async {
+    // If item is a service with variable price, and we haven't prompted yet
+    if (item['type'] == 'service' && 
+        item['is_variable_price'] == true && 
+        item['price_manually_set'] != true) {
+      
+      final double? manualPrice = await _showPriceInputDialog(item['name']);
+      if (manualPrice == null) return; // User cancelled
+      
+      return _addToCart({
+        ...item, 
+        'price': manualPrice, 
+        'price_manually_set': true
+      }, variant: variant);
+    }
+
     // If item is a service and has variants, and no variant is selected yet, show picker
     if (item['type'] == 'service' && item['variants'] != null && (item['variants'] as List).isNotEmpty && variant == null) {
       FocusScope.of(context).unfocus();
@@ -91,10 +106,11 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       final existingIndex = _cart.indexWhere((cartItem) => 
         cartItem['id'] == itemId && 
         cartItem['type'] == itemType && 
-        cartItem['service_variant_id'] == variantId
+        cartItem['service_variant_id'] == variantId &&
+        cartItem['price'] == (variant != null ? variant['price'] : item['price'])
       );
 
-      if (existingIndex >= 0) {
+      if (existingIndex >= 0 && item['is_variable_price'] != true) {
         _cart[existingIndex]['quantity']++;
       } else {
         _cart.add({
@@ -103,10 +119,36 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           'name': variant != null ? "${item['name']} - ${variant['name']}" : item['name'],
           'service_variant_id': variantId,
           'quantity': 1,
-          'employee_ids': _selectedEmployee != null ? [_selectedEmployee!['id']] : (_employees.isNotEmpty ? [_employees[0]['id']] : []),
+          'employee_ids': [], // Default to unassigned as requested
         });
       }
     });
+  }
+
+  Future<double?> _showPriceInputDialog(String itemName) async {
+    final controller = TextEditingController();
+    return showDialog<double>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Enter Price for $itemName'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(labelText: 'Price (Rp)', hintText: '0'),
+          keyboardType: TextInputType.number,
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              final price = double.tryParse(controller.text) ?? 0;
+              Navigator.pop(context, price);
+            },
+            child: const Text('Add to Cart'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showVariantPicker(Map<String, dynamic> item) {
@@ -387,6 +429,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
         'items': _cart.map((item) => {
           'item_id': item['id'],
           'item_type': item['type'],
+          'price': item['price'],
           'service_variant_id': item['service_variant_id'],
           'employee_ids': item['employee_ids'],
           'quantity': item['quantity'],

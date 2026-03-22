@@ -11,6 +11,7 @@ class Service extends Model
         'service_category_id',
         'name',
         'price',
+        'is_variable_price',
         'commission_type',
         'commission_value',
         'deduct_stock',
