@@ -122,22 +122,38 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           children: [
             Text("Select Variant for ${item['name']}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            Flexible(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: variants.length,
-                itemBuilder: (context, index) {
-                  final v = variants[index];
-                  return ListTile(
-                    title: Text(v['name']),
-                    trailing: Text(_currencyFormat.format(double.parse(v['price'].toString())), style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.accentColor)),
-                    onTap: () {
-                      Navigator.pop(context);
-                      _addToCart(item, variant: v);
-                    },
-                  );
-                },
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 2.5,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
               ),
+              itemCount: variants.length,
+              itemBuilder: (context, index) {
+                final v = variants[index];
+                return ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black87,
+                    side: const BorderSide(color: Colors.grey),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _addToCart(item, variant: v);
+                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(v['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      Text(_currencyFormat.format(double.parse(v['price'].toString())), style: const TextStyle(fontSize: 11, color: AppTheme.accentColor)),
+                    ],
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -166,12 +182,30 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   Future<void> _selectEmployee() async {
     final employee = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (context) => SimpleDialog(
+      builder: (context) => AlertDialog(
         title: const Text('Designated Employee'),
-        children: _employees.map((e) => SimpleDialogOption(
-          onPressed: () => Navigator.pop(context, e),
-          child: Text(e['name']),
-        )).toList(),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: GridView.builder(
+            shrinkWrap: true,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 2,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+            ),
+            itemCount: _employees.length,
+            itemBuilder: (context, i) => ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.accentColor.withOpacity(0.05),
+                foregroundColor: Colors.black87,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () => Navigator.pop(context, _employees[i]),
+              child: Text(_employees[i]['name'], textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ),
       ),
     );
     if (employee != null) {
@@ -198,24 +232,45 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           title: const Text('Assign Nailists'),
           content: SizedBox(
             width: double.maxFinite,
-            child: ListView.builder(
+            child: GridView.builder(
               shrinkWrap: true,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
               itemCount: _employees.length,
               itemBuilder: (context, i) {
                 final e = _employees[i];
                 final isSelected = selectedIds.contains(e['id']);
-                return CheckboxListTile(
-                  title: Text(e['name']),
-                  value: isSelected,
-                  onChanged: (val) {
+                return InkWell(
+                  onTap: () {
                     setDialogState(() {
-                      if (val == true) {
-                        selectedIds.add(e['id']);
-                      } else {
+                      if (isSelected) {
                         selectedIds.remove(e['id']);
+                      } else {
+                        selectedIds.add(e['id']);
                       }
                     });
                   },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppTheme.accentColor : Colors.grey[100],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Text(
+                        e['name'],
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : Colors.black87,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
                 );
               },
             ),
@@ -244,12 +299,24 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     // Show payment method dialog
     final paymentMethod = await showDialog<String>(
       context: context,
-      builder: (context) => SimpleDialog(
-        title: const Text('Select Payment Method'),
-        children: ['Cash', 'Debit', 'QRIS', 'Transfer'].map((method) => SimpleDialogOption(
-          onPressed: () => Navigator.pop(context, method.toLowerCase()),
-          child: Text(method),
-        )).toList(),
+      builder: (context) => AlertDialog(
+        title: const Text('Payment Method'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: GridView.count(
+            shrinkWrap: true,
+            crossAxisCount: 2,
+            childAspectRatio: 1.5,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            children: [
+              _paymentButton(context, 'Cash', Icons.money, Colors.green),
+              _paymentButton(context, 'Debit', Icons.credit_card, Colors.blue),
+              _paymentButton(context, 'QRIS', Icons.qr_code_scanner, Colors.purple),
+              _paymentButton(context, 'Transfer', Icons.account_balance, Colors.orange),
+            ],
+          ),
+        ),
       ),
     );
 
