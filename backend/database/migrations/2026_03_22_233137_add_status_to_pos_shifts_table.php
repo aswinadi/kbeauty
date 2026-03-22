@@ -9,11 +9,22 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public static function up(): void
+    public function up(): void
     {
-        if (Schema::hasTable('pos_shifts') && !Schema::hasColumn('pos_shifts', 'status')) {
+        if (Schema::hasTable('pos_shifts')) {
             Schema::table('pos_shifts', function (Blueprint $table) {
-                $table->enum('status', ['open', 'closed'])->default('open')->after('ending_cash');
+                if (!Schema::hasColumn('pos_shifts', 'user_id')) {
+                    $table->foreignId('user_id')->nullable()->constrained('users')->after('id');
+                }
+                if (!Schema::hasColumn('pos_shifts', 'starting_cash')) {
+                    $table->decimal('starting_cash', 15, 2)->default(0)->after('end_time');
+                }
+                if (!Schema::hasColumn('pos_shifts', 'ending_cash')) {
+                    $table->decimal('ending_cash', 15, 2)->nullable()->after('starting_cash');
+                }
+                if (!Schema::hasColumn('pos_shifts', 'status')) {
+                    $table->enum('status', ['open', 'closed'])->default('open');
+                }
             });
         }
     }
