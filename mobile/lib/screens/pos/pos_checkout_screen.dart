@@ -179,7 +179,18 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     return _totalBeforeDiscount - _discountAmount;
   }
 
+  Future<void> _syncEmployees() async {
+    final employees = await _posService.getEmployees();
+    if (mounted) {
+      setState(() {
+        _employees = employees;
+      });
+    }
+  }
+
   Future<void> _selectEmployee() async {
+    await _syncEmployees();
+    if (!mounted) return;
     final employee = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) => AlertDialog(
@@ -242,6 +253,9 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   }
 
   void _selectEmployeesForItem(int index) async {
+    await _syncEmployees();
+    if (!mounted) return;
+    
     final item = _cart[index];
     final List<int> selectedIds = List<int>.from(item['employee_ids'] ?? []);
     
