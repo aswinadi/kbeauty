@@ -22,7 +22,10 @@ class ManageGeneralSettings extends Page implements HasForms
     use InteractsWithForms;
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static ?string $navigationGroup = 'POS';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'POS';
+    }
 
     protected static ?string $navigationLabel = 'General Settings';
 
