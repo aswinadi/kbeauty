@@ -50,7 +50,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       _posService.getEmployees(),
     ]);
     setState(() {
-      _allItems = results[0];
+      _allItems = (results[0] as List).map((e) => e as Map<String, dynamic>).where((item) => item['type'] == 'service').toList();
       _employees = results[1];
       _filteredItems = _allItems;
       
