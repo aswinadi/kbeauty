@@ -690,24 +690,6 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
-          TextButton.icon(
-            onPressed: () {
-              final draftData = {
-                'customer': _selectedCustomer,
-                'items': _cart,
-                'total_amount': _totalBeforeDiscount,
-                'discount_amount': _discountAmount,
-                'final_amount': _totalAfterDiscount,
-              };
-              ReceiptHelper().shareViaWhatsApp(draftData).then((error) {
-                if (error != null && mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
-                }
-              });
-            },
-            icon: const Icon(Icons.share, size: 18),
-            label: const Text('WhatsApp'),
-          ),
           ElevatedButton.icon(
             onPressed: () async {
               Navigator.pop(context);
