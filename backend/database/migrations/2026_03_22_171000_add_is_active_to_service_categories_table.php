@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('service_categories', function (Blueprint $table) {
-            $table->boolean('is_active')->default(true)->after('name');
-        });
+        if (!Schema::hasColumn('service_categories', 'is_active')) {
+            Schema::table('service_categories', function (Blueprint $table) {
+                $table->boolean('is_active')->default(true)->after('name');
+            });
+        }
     }
 
     /**
