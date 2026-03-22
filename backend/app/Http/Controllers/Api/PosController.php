@@ -13,7 +13,7 @@ use App\Models\PosTransaction;
 use App\Models\PosTransactionItem;
 use App\Models\Product;
 use App\Models\Service;
-use App\Models\Shift;
+use App\Models\PosShift as Shift;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
