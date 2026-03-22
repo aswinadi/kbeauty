@@ -12,16 +12,16 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class AttendanceRecapExport implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
 {
-    protected $query;
+    protected $data;
 
-    public function __construct($query)
+    public function __construct($data)
     {
-        $this->query = $query;
+        $this->data = $data;
     }
 
     public function collection()
     {
-        return $this->query->get();
+        return $this->data;
     }
 
     public function headings(): array
@@ -66,6 +66,7 @@ class AttendanceRecapExport implements FromCollection, WithHeadings, WithMapping
             'sick' => 'Sakit',
             'leave' => 'Cuti',
             'izin' => 'Izin',
+            'absent' => 'Tanpa Keterangan',
             default => $type,
         };
     }

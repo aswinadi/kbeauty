@@ -44,6 +44,7 @@ class AttendanceRecapResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->records(fn (ListAttendanceRecaps $livewire) => $livewire->getRecapData())
             ->columns([
                 TextColumn::make('date')
                     ->label(__('messages.attendance.date'))
@@ -66,6 +67,7 @@ class AttendanceRecapResource extends Resource
                         'sick' => 'danger',
                         'leave' => 'info',
                         'izin', 'sakit', 'cuti' => 'info',
+                        'absent' => 'gray',
                         default => 'gray',
                     })
                     ->icon(fn (string $state): string => match ($state) {
@@ -75,6 +77,7 @@ class AttendanceRecapResource extends Resource
                         'sick' => 'heroicon-m-heart',
                         'leave' => 'heroicon-m-calendar-days',
                         'izin' => 'heroicon-m-document-text',
+                        'absent' => 'heroicon-m-x-mark',
                         default => 'heroicon-m-question-mark-circle',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
@@ -84,6 +87,7 @@ class AttendanceRecapResource extends Resource
                         'sick', 'sakit' => 'Sakit',
                         'leave', 'cuti' => 'Cuti',
                         'izin' => 'Izin',
+                        'absent' => 'Tanpa Keterangan',
                         default => $state,
                     }),
                 TextColumn::make('check_in')

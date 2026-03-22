@@ -20,7 +20,19 @@ subprojects {
         if (plugins.hasPlugin("com.android.library") || plugins.hasPlugin("com.android.application")) {
             val android = extensions.getByName("android") as com.android.build.gradle.BaseExtension
             if (android.namespace == null) {
-                android.namespace = "id.antigravity.${project.name.replace("-", ".").replace("_", ".")}"
+                val manifestFile = project.file("src/main/AndroidManifest.xml")
+                if (manifestFile.exists()) {
+                    val manifestXml = manifestFile.readText()
+                    val packageRegex = Regex("""package="([^"]+)"""")
+                    val match = packageRegex.find(manifestXml)
+                    if (match != null) {
+                        android.namespace = match.groupValues[1]
+                    }
+                }
+                
+                if (android.namespace == null) {
+                    android.namespace = "id.antigravity.${project.name.replace("-", ".").replace("_", ".")}"
+                }
             }
         }
     }

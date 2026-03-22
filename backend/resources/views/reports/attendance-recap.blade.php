@@ -69,6 +69,7 @@
                                 'sick' => 'Sakit',
                                 'leave' => 'Cuti',
                                 'izin' => 'Izin',
+                                'absent' => 'Tanpa Keterangan',
                                 default => $record->type,
                             };
                             $class = match ($record->type) {
@@ -76,6 +77,7 @@
                                 'late' => 'warning',
                                 'sick' => 'danger',
                                 'leave', 'early_out', 'izin' => 'info',
+                                'absent' => 'gray',
                                 default => 'gray',
                             };
                         @endphp
