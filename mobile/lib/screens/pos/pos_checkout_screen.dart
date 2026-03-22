@@ -22,7 +22,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   List<Map<String, dynamic>> _cart = [];
   Map<String, dynamic>? _selectedCustomer;
 
-  List<String> _posServiceCategories = ['All'];
+  final ValueNotifier<List<String>> _categoriesNotifier = ValueNotifier<List<String>>(['All']);
   String _selectedCategory = 'All';
   bool _isLoading = true;
   String _searchQuery = '';
@@ -47,7 +47,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       
       final cats = _allItems.map((e) => (e['category'] ?? 'Uncategorized').toString()).toSet().toList();
       cats.sort();
-      _posServiceCategories = ['All', ...cats];
+      _categoriesNotifier.value = ['All', ...cats];
       
       _isLoading = false;
     });
@@ -358,38 +358,42 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   }
 
   Widget _buildCategoryTabs() {
-    final List<String> list = _posServiceCategories;
-    return SizedBox(
-      height: 50,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        itemCount: list.length,
-        itemBuilder: (context, index) {
-          final cat = list[index];
-          final isSelected = _selectedCategory == cat;
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: ChoiceChip(
-              label: Text(cat),
-              selected: isSelected,
-              onSelected: (selected) {
-                if (selected) {
-                  setState(() {
-                    _selectedCategory = cat;
-                    _filterItems(_searchQuery);
-                  });
-                }
-              },
-              selectedColor: AppTheme.accentColor.withOpacity(0.2),
-              labelStyle: TextStyle(
-                color: isSelected ? AppTheme.accentColor : Colors.black87,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          );
-        },
-      ),
+    return ValueListenableBuilder<List<String>>(
+      valueListenable: _categoriesNotifier,
+      builder: (context, categories, child) {
+        return SizedBox(
+          height: 50,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemCount: categories.length,
+            itemBuilder: (context, index) {
+              final cat = categories[index];
+              final isSelected = _selectedCategory == cat;
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: ChoiceChip(
+                  label: Text(cat),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    if (selected) {
+                      setState(() {
+                        _selectedCategory = cat;
+                        _filterItems(_searchQuery);
+                      });
+                    }
+                  },
+                  selectedColor: AppTheme.accentColor.withValues(alpha: 0.2),
+                  labelStyle: TextStyle(
+                    color: isSelected ? AppTheme.accentColor : Colors.black87,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
