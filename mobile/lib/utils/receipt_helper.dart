@@ -7,10 +7,10 @@ class ReceiptHelper {
   final BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
   final _currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
-  Future<void> printReceipt(Map<String, dynamic> transaction, {bool isDraft = false}) async {
+  Future<bool> printReceipt(Map<String, dynamic> transaction, {bool isDraft = false}) async {
     final settings = await PosService().getSettings();
     bool? isConnected = await bluetooth.isConnected;
-    if (isConnected != true) return;
+    if (isConnected != true) return false;
 
     final storeName = settings?['store_name'] ?? "K-BEAUTY HOUSE";
     final storeAddress = settings?['store_address'] ?? "Nail Salon & Beauty";
@@ -66,6 +66,7 @@ class ReceiptHelper {
       bluetooth.printCustom("Thank You for Visiting!", 1, 1);
     }
     bluetooth.write("\n\n\n");
+    return true;
   }
 
   String _alignRow(String left, String right, {int width = 32}) {

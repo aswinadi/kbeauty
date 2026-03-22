@@ -126,7 +126,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           'name': variant != null ? "${item['name']} - ${variant['name']}" : item['name'],
           'service_variant_id': variantId,
           'quantity': 1,
-          'employee_ids': [], // Default to unassigned as requested
+          'employee_ids': _selectedEmployee != null ? [_selectedEmployee!['id']] : [],
         });
       }
     });
@@ -488,7 +488,14 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                 _buildActionButton(
                   icon: Icons.print,
                   label: 'Print',
-                  onTap: () => ReceiptHelper().printReceipt(transaction),
+                  onTap: () async {
+                    final success = await ReceiptHelper().printReceipt(transaction);
+                    if (!success && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Printer not connected.')),
+                      );
+                    }
+                  },
                 ),
                 _buildActionButton(
                     icon: Icons.share,
@@ -529,7 +536,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     );
   }
 
-  void _printDraftBill() {
+  void _printDraftBill() async {
     final draftData = {
       'customer': _selectedCustomer,
       'items': _cart,
@@ -537,7 +544,12 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       'discount_amount': _discountAmount,
       'final_amount': _totalAfterDiscount,
     };
-    ReceiptHelper().printReceipt(draftData, isDraft: true);
+    final bool success = await ReceiptHelper().printReceipt(draftData, isDraft: true);
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Printer not connected. Please connect your Bluetooth printer.')),
+      );
+    }
   }
 
   Widget _buildActionButton({required IconData icon, required String label, required VoidCallback onTap, Color? color}) {
@@ -560,6 +572,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text('POS Checkout'),
         actions: [
