@@ -1,7 +1,7 @@
-import 'package:blue_thermal_printer/blue_thermal_printer.dart';
+import 'package: blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'pos_service.dart';
+import '../services/pos_service.dart';
 
 class ReceiptHelper {
   final BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;

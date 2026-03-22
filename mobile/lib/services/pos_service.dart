@@ -411,6 +411,9 @@ class PosService {
         return jsonDecode(response.body);
       }
       return null;
+    } catch (e) {
+      print('Error saving master service: $e');
+      return null;
     }
   }
 
