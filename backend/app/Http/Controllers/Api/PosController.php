@@ -138,12 +138,19 @@ class PosController extends Controller
     public function employees()
     {
         return response()->json(
-            Employee::with('user:id,name')->get()->map(function ($employee) {
-                return [
-                    'id' => $employee->id,
-                    'name' => $employee->full_name ?? ($employee->user->name ?? 'Employee #' . $employee->id),
-                ];
-            })
+            Employee::with('user:id,name')
+                ->whereHas('user', function ($q) {
+                    $q->whereDoesntHave('roles', function ($q) {
+                        $q->where('name', 'super_admin');
+                    });
+                })
+                ->get()
+                ->map(function ($employee) {
+                    return [
+                        'id' => $employee->id,
+                        'name' => $employee->full_name ?? ($employee->user->name ?? 'Employee #' . $employee->id),
+                    ];
+                })
         );
     }
 
