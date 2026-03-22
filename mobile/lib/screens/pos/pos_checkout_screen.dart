@@ -450,7 +450,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Total to pay: Rp ${numberFormat.format(_totalAfterDiscount)}'),
+                Text('Total to pay: ${_currencyFormat.format(_totalAfterDiscount)}'),
                 const SizedBox(height: 16),
                 TextField(
                   autofocus: true,
@@ -469,7 +469,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                   runSpacing: 8,
                   children: [100000, 50000, 20000, 10000, 5000, 2000, 1000].map((pecahan) {
                     return ActionChip(
-                      label: Text(numberFormat.format(pecahan)),
+                      label: Text(_currencyFormat.format(pecahan)),
                       onPressed: () {
                         // This is a quick fix, ideally it should update the TextField
                         // But for now we just return it if they click
@@ -615,19 +615,97 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   }
 
   void _printDraftBill() async {
-    final draftData = {
-      'customer': _selectedCustomer,
-      'items': _cart,
-      'total_amount': _totalBeforeDiscount,
-      'discount_amount': _discountAmount,
-      'final_amount': _totalAfterDiscount,
-    };
-    final bool success = await ReceiptHelper().printReceipt(draftData, isDraft: true);
-    if (!success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Printer not connected. Please connect your Bluetooth printer.')),
-      );
-    }
+    _showBillPreview();
+  }
+
+  void _showBillPreview() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Bill Preview (Draft)'),
+        content: SizedBox(
+          width: 400,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Center(child: Text('K-BEAUTY HOUSE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18))),
+              const Center(child: Text('Nail Salon & Beauty')),
+              const Divider(),
+              Text('Date: ${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())}'),
+              Text('Customer: ${_selectedCustomer?['name'] ?? 'Guest'}'),
+              const Divider(),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: _cart.map((item) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(child: Text(item['name'])),
+                            Text('${item['quantity']} x ${_currencyFormat.format(item['price'])}'),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              const Divider(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Total:'),
+                  Text(_currencyFormat.format(_totalBeforeDiscount)),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Discount:'),
+                  Text("- ${_currencyFormat.format(_discountAmount)}"),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Grand Total:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(_currencyFormat.format(_totalAfterDiscount), style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.accentColor)),
+                ],
+              ),
+              const Divider(),
+              const Center(child: Text('THANK YOU', style: TextStyle(fontSize: 12, color: Colors.grey))),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+          ElevatedButton.icon(
+            onPressed: () async {
+              Navigator.pop(context);
+              final draftData = {
+                'customer': _selectedCustomer,
+                'items': _cart,
+                'total_amount': _totalBeforeDiscount,
+                'discount_amount': _discountAmount,
+                'final_amount': _totalAfterDiscount,
+              };
+              final bool success = await ReceiptHelper().printReceipt(draftData, isDraft: true);
+              if (!success && mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Printer not connected.')),
+                );
+              }
+            },
+            icon: const Icon(Icons.print),
+            label: const Text('Print Draft'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildActionButton({required IconData icon, required String label, required VoidCallback onTap, Color? color}) {
