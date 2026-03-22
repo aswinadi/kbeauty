@@ -76,13 +76,13 @@ class ReceiptHelper {
     return left + (" " * total) + right;
   }
 
-  Future<String?> shareViaWhatsApp(Map<String, dynamic> transaction) async {
+  Future<String?> shareViaWhatsApp(Map<String, dynamic> transaction, [String? customPhone]) async {
     final settings = await PosService().getSettings();
     final storeName = settings?['store_name'] ?? "K-BEAUTY HOUSE";
     final storeAddress = settings?['store_address'] ?? "Nail Salon & Beauty";
     final storePhone = settings?['store_phone'] ?? "";
 
-    final phone = transaction['customer']?['phone'];
+    final phone = customPhone ?? transaction['customer']?['phone'];
     if (phone == null || phone.isEmpty) return 'Customer phone number is missing';
 
     String message = "*$storeName RECEIPT*\n\n";
