@@ -41,7 +41,7 @@ class ServiceMasterController extends Controller
     // Services (Treatments)
     public function services(Request $request)
     {
-        $query = Service::with('serviceCategory');
+        $query = Service::with(['serviceCategory', 'variants']);
         if ($request->has('service_category_id')) {
             $query->where('service_category_id', $request->service_category_id);
         }
@@ -60,7 +60,14 @@ class ServiceMasterController extends Controller
             'deduct_stock' => 'boolean',
         ]);
         $service = Service::create($request->all());
-        return response()->json($service, 201);
+
+        if ($request->has('variants')) {
+            foreach ($request->variants as $v) {
+                $service->variants()->create($v);
+            }
+        }
+
+        return response()->json($service->load('variants'), 201);
     }
 
     public function updateService(Request $request, Service $service)
@@ -75,7 +82,15 @@ class ServiceMasterController extends Controller
             'deduct_stock' => 'boolean',
         ]);
         $service->update($request->all());
-        return response()->json($service);
+
+        if ($request->has('variants')) {
+            $service->variants()->delete(); // Simple approach: delete and recreate
+            foreach ($request->variants as $v) {
+                $service->variants()->create($v);
+            }
+        }
+
+        return response()->json($service->load('variants'));
     }
 
     public function deleteService(Service $service)

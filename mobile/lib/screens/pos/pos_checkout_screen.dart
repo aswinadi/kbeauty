@@ -22,6 +22,8 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   List<Map<String, dynamic>> _cart = [];
   Map<String, dynamic>? _selectedCustomer;
 
+  late List<String> _categories;
+  late String _selectedCategory;
   bool _isLoading = true;
   String _searchQuery = '';
   double _discountAmount = 0;
@@ -29,6 +31,8 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   @override
   void initState() {
     super.initState();
+    _categories = ['All'];
+    _selectedCategory = 'All';
     _loadData();
   }
 
@@ -42,6 +46,11 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       _allItems = results[0];
       _employees = results[1];
       _filteredItems = _allItems;
+      
+      final cats = _allItems.map((e) => (e['category'] ?? 'Uncategorized').toString()).toSet().toList();
+      cats.sort();
+      _categories = ['All', ...cats];
+      
       _isLoading = false;
     });
   }
@@ -51,24 +60,80 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       _searchQuery = query;
       _filteredItems = _allItems.where((item) {
         final name = item['name'].toString().toLowerCase();
-        return name.contains(query.toLowerCase());
+        final nameMatches = name.contains(query.toLowerCase());
+        final categoryMatches = _selectedCategory == 'All' || item['category'] == _selectedCategory;
+        return nameMatches && categoryMatches;
       }).toList();
     });
   }
 
-  void _addToCart(Map<String, dynamic> item) {
+  void _addToCart(Map<String, dynamic> item, {Map<String, dynamic>? variant}) {
+    // If item is a service and has variants, and no variant is selected yet, show picker
+    if (item['type'] == 'service' && item['variants'] != null && (item['variants'] as List).isNotEmpty && variant == null) {
+      _showVariantPicker(item);
+      return;
+    }
+
     setState(() {
-      final existingIndex = _cart.indexWhere((cartItem) => cartItem['id'] == item['id'] && cartItem['type'] == item['type']);
+      final itemId = item['id'];
+      final itemType = item['type'];
+      final variantId = variant?['id'];
+      
+      final existingIndex = _cart.indexWhere((cartItem) => 
+        cartItem['id'] == itemId && 
+        cartItem['type'] == itemType && 
+        cartItem['service_variant_id'] == variantId
+      );
+
       if (existingIndex >= 0) {
         _cart[existingIndex]['quantity']++;
       } else {
         _cart.add({
           ...item,
+          'price': variant != null ? variant['price'] : item['price'],
+          'name': variant != null ? "${item['name']} - ${variant['name']}" : item['name'],
+          'service_variant_id': variantId,
           'quantity': 1,
           'employee_id': _employees.isNotEmpty ? _employees[0]['id'] : null,
         });
       }
     });
+  }
+
+  void _showVariantPicker(Map<String, dynamic> item) {
+    final List variants = item['variants'];
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Select Variant for ${item['name']}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: variants.length,
+                itemBuilder: (context, index) {
+                  final v = variants[index];
+                  return ListTile(
+                    title: Text(v['name']),
+                    trailing: Text(_currencyFormat.format(double.parse(v['price'].toString())), style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.accentColor)),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _addToCart(item, variant: v);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _removeFromCart(int index) {
@@ -115,6 +180,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
         'items': _cart.map((item) => {
           'item_id': item['id'],
           'item_type': item['type'],
+          'service_variant_id': item['service_variant_id'],
           'employee_id': item['employee_id'],
           'quantity': item['quantity'],
         }).toList(),
@@ -273,17 +339,57 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   }
 
   Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: TextField(
-        onChanged: _filterItems,
-        decoration: InputDecoration(
-          hintText: 'Search items...',
-          prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          filled: true,
-          fillColor: Colors.grey[100],
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: TextField(
+            onChanged: _filterItems,
+            decoration: InputDecoration(
+              hintText: 'Search items...',
+              prefixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              filled: true,
+              fillColor: Colors.grey[100],
+            ),
+          ),
         ),
+        _buildCategoryTabs(),
+      ],
+    );
+  }
+
+  Widget _buildCategoryTabs() {
+    return SizedBox(
+      height: 50,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        itemCount: (_categories as dynamic) == null ? 0 : _categories.length,
+        itemBuilder: (context, index) {
+          final cat = _categories[index];
+          final isSelected = _selectedCategory == cat;
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: ChoiceChip(
+              label: Text(cat),
+              selected: isSelected,
+              onSelected: (selected) {
+                if (selected) {
+                  setState(() {
+                    _selectedCategory = cat;
+                    _filterItems(_searchQuery);
+                  });
+                }
+              },
+              selectedColor: AppTheme.accentColor.withOpacity(0.2),
+              labelStyle: TextStyle(
+                color: isSelected ? AppTheme.accentColor : Colors.black87,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -299,7 +405,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),
-        itemCount: _filteredItems.length,
+        itemCount: (_filteredItems as dynamic) == null ? 0 : _filteredItems.length,
         itemBuilder: (context, index) {
           final item = _filteredItems[index];
           return InkWell(
@@ -366,7 +472,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
             ),
             Expanded(
               child: ListView.builder(
-                itemCount: _cart.length,
+                itemCount: (_cart as dynamic) == null ? 0 : _cart.length,
                 itemBuilder: (context, index) {
                   final item = _cart[index];
                   return ListTile(

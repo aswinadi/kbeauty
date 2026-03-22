@@ -35,4 +35,9 @@ class Service extends Model
     {
         return $this->morphMany(PosTransactionItem::class, 'item');
     }
+
+    public function variants()
+    {
+        return $this->hasMany(ServiceVariant::class);
+    }
 }

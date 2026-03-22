@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/pos_service.dart';
+import '../../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
 class ServiceTreatmentListScreen extends StatefulWidget {
@@ -45,6 +46,9 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
     String? commissionType = service?['commission_type'];
     bool isActive = service?['is_active'] == 1 || service?['is_active'] == true;
     bool deductStock = service?['deduct_stock'] == 1 || service?['deduct_stock'] == true;
+    List<Map<String, dynamic>> variants = service?['variants'] != null 
+        ? List<Map<String, dynamic>>.from(service!['variants'])
+        : [];
     
     if (service == null) {
       isActive = true;
@@ -66,6 +70,7 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
                   onChanged: (val) => setDialogState(() => isActive = val),
                   dense: true,
                 ),
+                const SizedBox(height: 16),
                 DropdownButtonFormField<int>(
                   value: selectedCategoryId,
                   hint: const Text('Select Category'),
@@ -76,10 +81,12 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
                   onChanged: (val) => setDialogState(() => selectedCategoryId = val),
                   decoration: const InputDecoration(labelText: 'Service Category'),
                 ),
+                const SizedBox(height: 16),
                 TextField(
                   controller: nameController,
                   decoration: const InputDecoration(labelText: 'Name *'),
                 ),
+                const SizedBox(height: 16),
                 TextField(
                   controller: priceController,
                   decoration: const InputDecoration(labelText: 'Price (Rp) *'),
@@ -87,7 +94,9 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
                 ),
                 const SizedBox(height: 16),
                 const Divider(),
+                const SizedBox(height: 16),
                 const Text('Commission & Stock', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
                   value: commissionType,
                   hint: const Text('Commission type'),
@@ -98,17 +107,52 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
                   onChanged: (val) => setDialogState(() => commissionType = val),
                   decoration: const InputDecoration(labelText: 'Commission type'),
                 ),
+                const SizedBox(height: 16),
                 TextField(
                   controller: commValueController,
                   decoration: const InputDecoration(labelText: 'Commission (Rp/%)'),
                   keyboardType: TextInputType.number,
                 ),
+                const SizedBox(height: 16),
                 SwitchListTile(
                   title: const Text('Deduct Stock from Inventory'),
                   value: deductStock,
                   onChanged: (val) => setDialogState(() => deductStock = val),
                   dense: true,
                 ),
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Variants', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    TextButton.icon(
+                      onPressed: () => _showAddVariantDialog(setDialogState, variants),
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text('Add Variant'),
+                    ),
+                  ],
+                ),
+                if (variants.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Text('No variants added.', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  ),
+                ...variants.asMap().entries.map((entry) {
+                  final idx = entry.key;
+                  final v = entry.value;
+                  return ListTile(
+                    title: Text(v['name']),
+                    subtitle: Text(_currencyFormat.format(double.parse(v['price'].toString()))),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                      onPressed: () => setDialogState(() => variants.removeAt(idx)),
+                    ),
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                  );
+                }).toList(),
               ],
             ),
           ),
@@ -128,6 +172,7 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
                    if (commissionType != null) 'commission_type': commissionType,
                    if (commValueController.text.isNotEmpty) 'commission_value': double.parse(commValueController.text),
                   'deduct_stock': deductStock,
+                  'variants': variants,
                 };
                 final result = await _posService.saveMasterService(data, id: service?['id']);
                 if (result != null) {
@@ -139,6 +184,43 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _showAddVariantDialog(StateSetter setDialogState, List<Map<String, dynamic>> variants) async {
+    final vNameController = TextEditingController();
+    final vPriceController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Variant'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: vNameController, decoration: const InputDecoration(labelText: 'Variant Name (e.g. 10 Fingers)')),
+            const SizedBox(height: 16),
+            TextField(controller: vPriceController, decoration: const InputDecoration(labelText: 'Price (Rp)'), keyboardType: TextInputType.number),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              if (vNameController.text.isNotEmpty && vPriceController.text.isNotEmpty) {
+                setDialogState(() {
+                  variants.add({
+                    'name': vNameController.text,
+                    'price': double.parse(vPriceController.text),
+                  });
+                });
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Add'),
+          ),
+        ],
       ),
     );
   }

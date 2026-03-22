@@ -10,11 +10,17 @@ class PosTransactionItem extends Model
         'pos_transaction_id',
         'item_type',
         'item_id',
+        'service_variant_id',
         'employee_id',
         'quantity',
         'price',
         'subtotal',
     ];
+
+    public function variant()
+    {
+        return $this->belongsTo(ServiceVariant::class, 'service_variant_id');
+    }
 
     public function posTransaction()
     {

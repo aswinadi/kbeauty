@@ -22,12 +22,17 @@ class PosController extends Controller
 {
     public function items()
     {
-        $services = Service::where('is_active', true)->with('serviceCategory')->get()->map(fn($s) => [
+        $services = Service::where('is_active', true)->with(['serviceCategory', 'variants'])->get()->map(fn($s) => [
             'id' => $s->id,
             'name' => $s->name,
             'price' => $s->price,
             'type' => 'service',
             'category' => $s->serviceCategory?->name,
+            'variants' => $s->variants->map(fn($v) => [
+                'id' => $v->id,
+                'name' => $v->name,
+                'price' => $v->price,
+            ]),
         ]);
 
         $products = Product::where('is_active', true)->with('category')->get()->map(fn($p) => [
@@ -142,6 +147,7 @@ class PosController extends Controller
             'items' => 'required|array|min:1',
             'items.*.item_id' => 'required',
             'items.*.item_type' => 'required|in:service,product,bundle',
+            'items.*.service_variant_id' => 'nullable|exists:service_variants,id',
             'items.*.employee_id' => 'required|exists:employees,id',
             'items.*.quantity' => 'required|integer|min:1',
             'discount_amount' => 'nullable|numeric|min:0',
@@ -171,15 +177,24 @@ class PosController extends Controller
                     throw new \Exception("Item {$i['item_id']} of type {$i['item_type']} not found.");
                 }
 
-                $subtotal = $itemModel->price * $i['quantity'];
+                $price = $itemModel->price;
+                if ($i['item_type'] === 'service' && !empty($i['service_variant_id'])) {
+                    $variant = \App\Models\ServiceVariant::find($i['service_variant_id']);
+                    if ($variant && $variant->service_id == $i['item_id']) {
+                        $price = $variant->price;
+                    }
+                }
+
+                $subtotal = $price * $i['quantity'];
                 $totalAmount += $subtotal;
 
                 $transactionItems[] = [
                     'item_id' => $i['item_id'],
                     'item_type' => $modelClass,
+                    'service_variant_id' => $i['service_variant_id'] ?? null,
                     'employee_id' => $i['employee_id'],
                     'quantity' => $i['quantity'],
-                    'price' => $itemModel->price,
+                    'price' => $price,
                     'subtotal' => $subtotal,
                 ];
             }
