@@ -75,18 +75,29 @@ class ReceiptHelper {
     return left + (" " * total) + right;
   }
 
-  Future<void> shareViaWhatsApp(Map<String, dynamic> transaction) async {
+  Future<String?> shareViaWhatsApp(Map<String, dynamic> transaction) async {
     final phone = transaction['customer']?['phone'];
-    if (phone == null || phone.isEmpty) return;
+    if (phone == null || phone.isEmpty) return 'Customer phone number is missing';
 
     String message = "*K-BEAUTY HOUSE RECEIPT*\n\n";
-    message += "No: ${transaction['transaction_number']}\n";
-    message += "Date: ${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(transaction['created_at']))}\n";
+    if (transaction['transaction_number'] != null) {
+      message += "No: ${transaction['transaction_number']}\n";
+    } else {
+      message += "Type: DRAFT (Check Items)\n";
+    }
+    
+    final dateStr = transaction['created_at'] != null 
+        ? DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(transaction['created_at']))
+        : DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
+        
+    message += "Date: $dateStr\n";
     message += "--------------------------------\n";
     
     for (var item in transaction['items']) {
-      message += "${item['item']?['name']} x ${item['quantity']}\n";
-      message += "${_currencyFormat.format(double.parse(item['subtotal'].toString()))}\n";
+      final name = item['item'] != null ? (item['item']['name'] ?? 'Item') : (item['name'] ?? 'Item');
+      message += "$name x ${item['quantity']}\n";
+      final subtotal = item['subtotal'] ?? (double.parse(item['price'].toString()) * (item['quantity'] ?? 1));
+      message += "${_currencyFormat.format(double.parse(subtotal.toString()))}\n";
     }
     
     message += "--------------------------------\n";
@@ -94,12 +105,18 @@ class ReceiptHelper {
     message += "Thank you for visiting us!";
 
     final url = "whatsapp://send?phone=$phone&text=${Uri.encodeComponent(message)}";
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
-    } else {
-      // Fallback to web link if app not installed
-      final webUrl = "https://wa.me/$phone?text=${Uri.encodeComponent(message)}";
-      await launchUrl(Uri.parse(webUrl), mode: LaunchMode.externalApplication);
+    try {
+      if (await canLaunchUrl(Uri.parse(url))) {
+        await launchUrl(Uri.parse(url));
+        return null;
+      } else {
+        // Fallback to web link if app not installed
+        final webUrl = "https://wa.me/$phone?text=${Uri.encodeComponent(message)}";
+        await launchUrl(Uri.parse(webUrl), mode: LaunchMode.externalApplication);
+        return null;
+      }
+    } catch (e) {
+      return 'Could not launch WhatsApp: $e';
     }
   }
 }
