@@ -203,7 +203,8 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
 
       final response = await _posService.submitTransaction(transactionData);
       
-      if (mounted && response != null) {
+      if (!mounted) return;
+      if (response != null) {
         setState(() {
           _cart.clear();
           _selectedCustomer = null;
@@ -296,7 +297,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: (color ?? AppTheme.accentColor).withOpacity(0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: (color ?? AppTheme.accentColor).withValues(alpha: 0.1), shape: BoxShape.circle),
             child: Icon(icon, color: color ?? AppTheme.accentColor),
           ),
           const SizedBox(height: 4),
@@ -393,7 +394,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                   });
                 }
               },
-              selectedColor: AppTheme.accentColor.withOpacity(0.2),
+              selectedColor: AppTheme.accentColor.withValues(alpha: 0.2),
               labelStyle: TextStyle(
                 color: isSelected ? AppTheme.accentColor : Colors.black87,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -429,7 +430,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: AppTheme.accentColor.withOpacity(0.1),
+                        color: AppTheme.accentColor.withValues(alpha: 0.1),
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                       ),
                       child: Center(
@@ -492,15 +493,30 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('${_currencyFormat.format(double.parse(item['price'].toString()))} x ${item['quantity']}'),
-                        DropdownButton<int>(
-                          value: item['employee_id'],
-                          items: _employees.map((e) => DropdownMenuItem(
+                        PopupMenuButton<int>(
+                          initialValue: item['employee_id'],
+                          itemBuilder: (context) => _employees.map((e) => PopupMenuItem(
                             value: e['id'] as int,
                             child: Text(e['name']),
                           )).toList(),
-                          onChanged: (val) => setState(() => _cart[index]['employee_id'] = val),
-                          isDense: true,
-                          underline: const SizedBox(),
+                          onSelected: (val) => setState(() => _cart[index]['employee_id'] = val),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey[300]!),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _employees.firstWhere((e) => e['id'] == item['employee_id'], orElse: () => {'name': 'Assign'})['name'],
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                const Icon(Icons.arrow_drop_down, size: 16),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -527,7 +543,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, -2))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, -2))],
       ),
       child: Column(
         children: [
