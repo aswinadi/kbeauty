@@ -45,8 +45,29 @@ class ManageGeneralSettings extends Page implements HasForms
     {
         return $form
             ->schema([
-                Section::make('Attendance Settings')
+                Section::make('Store Information')
                     ->schema([
+                        TextInput::make('store_name')
+                            ->label('Store Name')
+                            ->required(),
+                        TextInput::make('store_address')
+                            ->label('Store Address')
+                            ->placeholder('e.g., Jl. Jendral Sudirman No. 123'),
+                        TextInput::make('store_phone')
+                            ->label('Store Phone')
+                            ->placeholder('e.g., 08123456789'),
+                    ])->columns(2),
+
+                Section::make('POS & Attendance Settings')
+                    ->schema([
+                        \Filament\Forms\Components\Select::make('pos_item_layout')
+                            ->label('POS Item Layout')
+                            ->options([
+                                'grid' => 'Grid View',
+                                'list' => 'List View',
+                            ])
+                            ->default('grid')
+                            ->required(),
                         \Filament\Forms\Components\TextInput::make('face_similarity_threshold')
                             ->label(__('messages.fields.face_similarity_threshold'))
                             ->numeric()
@@ -63,7 +84,7 @@ class ManageGeneralSettings extends Page implements HasForms
                             ->options(Location::pluck('name', 'id'))
                             ->searchable()
                             ->preload(),
-                    ])
+                    ])->columns(2),
             ])
             ->statePath('data');
     }
