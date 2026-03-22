@@ -209,8 +209,9 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Future<void> _showAddVariantDialog(StateSetter setDialogState, List<Map<String, dynamic>> variants) async {
     final vNameController = TextEditingController();
