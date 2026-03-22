@@ -17,6 +17,7 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
   List<Map<String, dynamic>> _services = [];
   List<Map<String, dynamic>> _categories = [];
   bool _isLoading = true;
+  int? _selectedCategoryId;
 
   @override
   void initState() {
