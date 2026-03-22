@@ -62,11 +62,11 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
+          scrollable: true,
           title: Text(service == null ? 'Add Treatment' : 'Edit Treatment'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
                 SwitchListTile(
                   title: const Text('Active Status'),
                   value: isActive,
@@ -158,7 +158,6 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
                 }).toList(),
               ],
             ),
-          ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
             ElevatedButton(
