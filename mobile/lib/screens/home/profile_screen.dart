@@ -4,6 +4,7 @@ import '../../models/user.dart';
 import '../../theme/app_theme.dart';
 import '../auth/login_screen.dart';
 import 'user_selection_screen.dart';
+import '../settings/printer_settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -218,6 +219,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       label: const Text('Change Password'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const PrinterSettingsScreen()),
+                        ),
+                        icon: const Icon(Icons.print, color: AppTheme.accentColor),
+                        label: const Text('Bluetooth Printer Settings', style: TextStyle(color: AppTheme.accentColor)),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: const BorderSide(color: AppTheme.accentColor),
+                        ),
                       ),
                     ),
                     if (_user?.roles.any((r) => r.toLowerCase().replaceAll('_', ' ') == 'super admin') ?? false) ...[
