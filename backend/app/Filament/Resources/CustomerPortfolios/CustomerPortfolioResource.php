@@ -11,6 +11,7 @@ use App\Models\CustomerPortfolio;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use BackedEnum;
 
 class CustomerPortfolioResource extends Resource
 {
@@ -31,7 +32,7 @@ class CustomerPortfolioResource extends Resource
         return 'Customer Portfolios';
     }
 
-    protected static ?string $navigationIcon = 'heroicon-o-photo';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-photo';
 
     public static function form(Schema $schema): Schema
     {
