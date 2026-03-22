@@ -22,8 +22,8 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   List<Map<String, dynamic>> _cart = [];
   Map<String, dynamic>? _selectedCustomer;
 
-  late List<String> _categories;
-  late String _selectedCategory;
+  List<String> _categories = ['All'];
+  String _selectedCategory = 'All';
   bool _isLoading = true;
   String _searchQuery = '';
   double _discountAmount = 0;
@@ -31,8 +31,6 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   @override
   void initState() {
     super.initState();
-    _categories = ['All'];
-    _selectedCategory = 'All';
     _loadData();
   }
 
@@ -365,7 +363,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        itemCount: (_categories as dynamic) == null ? 0 : _categories.length,
+        itemCount: _categories.length,
         itemBuilder: (context, index) {
           final cat = _categories[index];
           final isSelected = _selectedCategory == cat;
@@ -405,7 +403,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),
-        itemCount: (_filteredItems as dynamic) == null ? 0 : _filteredItems.length,
+        itemCount: _filteredItems.length,
         itemBuilder: (context, index) {
           final item = _filteredItems[index];
           return InkWell(
@@ -472,7 +470,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
             ),
             Expanded(
               child: ListView.builder(
-                itemCount: (_cart as dynamic) == null ? 0 : _cart.length,
+                itemCount: _cart.length,
                 itemBuilder: (context, index) {
                   final item = _cart[index];
                   return ListTile(
