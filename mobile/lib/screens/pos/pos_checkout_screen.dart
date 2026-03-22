@@ -29,6 +29,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   bool _isLoading = true;
   String _searchQuery = '';
   double _discountAmount = 0;
+  String _posItemLayout = 'grid';
 
   @override
   void dispose() {
@@ -49,12 +50,18 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     final results = await Future.wait([
       _posService.getItems(),
       _posService.getEmployees(),
+      _posService.getSettings(),
     ]);
     setState(() {
       _allItems = (results[0] as List).map((e) => e as Map<String, dynamic>).where((item) => item['type'] == 'service').toList();
-      _employees = results[1];
+      _employees = (results[1] as List).map((e) => e as Map<String, dynamic>).toList();
       _filteredItems = _allItems;
       
+      final settings = results[2] as Map<String, dynamic>?;
+      if (settings != null) {
+        _posItemLayout = settings['pos_item_layout'] ?? 'grid';
+      }
+
       final cats = _allItems.map((e) => (e['category'] ?? 'Uncategorized').toString()).toSet().toList();
       cats.sort();
       _categories = ['All', ...cats];
@@ -687,6 +694,30 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   }
 
   Widget _buildItemGrid() {
+    if (_posItemLayout == 'list') {
+      return Expanded(
+        flex: 3,
+        child: ListView.separated(
+          padding: const EdgeInsets.all(16),
+          itemCount: _filteredItems.length,
+          separatorBuilder: (context, index) => const Divider(),
+          itemBuilder: (context, index) {
+            final item = _filteredItems[index];
+            return ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              title: Text(item['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(item['category'] ?? 'No Category'),
+              trailing: Text(
+                _currencyFormat.format(double.parse(item['price'].toString())),
+                style: const TextStyle(color: AppTheme.accentColor, fontWeight: FontWeight.bold),
+              ),
+              onTap: () => _addToCart(item),
+            );
+          },
+        ),
+      );
+    }
+
     return Expanded(
       flex: 3,
       child: GridView.builder(
@@ -703,6 +734,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           return InkWell(
             onTap: () => _addToCart(item),
             child: Card(
+              elevation: 2,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -727,8 +759,8 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(item['name'], style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1),
-                        Text(_currencyFormat.format(double.parse(item['price'].toString())), style: const TextStyle(color: AppTheme.accentColor)),
+                        Text(item['name'], style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        Text(_currencyFormat.format(double.parse(item['price'].toString())), style: const TextStyle(color: AppTheme.accentColor, fontSize: 13)),
                       ],
                     ),
                   ),

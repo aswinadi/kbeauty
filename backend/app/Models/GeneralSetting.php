@@ -9,6 +9,10 @@ class GeneralSetting extends Model
     protected $fillable = [
         'face_similarity_threshold',
         'pos_display_location_id',
+        'store_name',
+        'store_address',
+        'store_phone',
+        'pos_item_layout',
     ];
 
     public function posDisplayLocation()

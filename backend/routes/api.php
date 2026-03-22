@@ -49,6 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/pos/employees', [\App\Http\Controllers\Api\PosController::class, 'employees']);
     Route::post('/pos/transactions', [\App\Http\Controllers\Api\PosController::class, 'storeTransaction']);
     Route::get('/pos/transactions', [\App\Http\Controllers\Api\PosController::class, 'transactions']);
+    Route::get('/pos/settings', [\App\Http\Controllers\Api\PosController::class, 'settings']);
     Route::get('/pos/performance', [\App\Http\Controllers\Api\PosController::class, 'performance']);
 
     // Appointment Routes

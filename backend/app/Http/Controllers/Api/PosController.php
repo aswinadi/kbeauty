@@ -20,6 +20,11 @@ use Illuminate\Support\Str;
 
 class PosController extends Controller
 {
+    public function settings()
+    {
+        return response()->json(GeneralSetting::first());
+    }
+
     public function items()
     {
         $services = Service::where('is_active', true)->with(['serviceCategory', 'variants'])->orderBy('name')->get()->map(fn($s) => [
@@ -255,14 +260,14 @@ class PosController extends Controller
             foreach ($request->payments as $p) {
                 $transaction->payments()->create($p);
             }
-
-            return response()->json($transaction->load('items', 'payments'), 201);
+            
+            return response()->json($transaction->load(['items.item', 'items.employees', 'payments', 'employee', 'customer']), 201);
         });
     }
 
     public function transactions(Request $request)
     {
-        $transactions = PosTransaction::with(['customer', 'items.item', 'portfolios.media'])
+        $transactions = PosTransaction::with(['customer', 'items.item', 'items.employees', 'portfolios.media', 'employee'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 

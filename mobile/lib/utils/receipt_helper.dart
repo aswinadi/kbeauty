@@ -1,24 +1,26 @@
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'pos_service.dart';
 
 class ReceiptHelper {
   final BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
   final _currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
   Future<void> printReceipt(Map<String, dynamic> transaction, {bool isDraft = false}) async {
+    final settings = await PosService().getSettings();
     bool? isConnected = await bluetooth.isConnected;
-    if (isConnected != true) {
-      // Logic to show printer selection or error
-      return;
-    }
+    if (isConnected != true) return;
 
-    if (isDraft) {
-      bluetooth.printCustom("DRAFT BILL", 2, 1);
-    } else {
-      bluetooth.printCustom("K-BEAUTY HOUSE", 2, 1);
+    final storeName = settings?['store_name'] ?? "K-BEAUTY HOUSE";
+    final storeAddress = settings?['store_address'] ?? "Nail Salon & Beauty";
+    final storePhone = settings?['store_phone'] ?? "";
+
+    bluetooth.printCustom(storeName, 2, 1);
+    bluetooth.printCustom(storeAddress, 1, 1);
+    if (storePhone.isNotEmpty) {
+      bluetooth.printCustom("Tel: $storePhone", 1, 1);
     }
-    bluetooth.printCustom("Nail Salon & Beauty", 1, 1);
     bluetooth.write("--------------------------------\n");
     
     if (isDraft) {
@@ -33,18 +35,29 @@ class ReceiptHelper {
     
     bluetooth.write("Date: $dateStr\n");
     bluetooth.write("Customer: ${transaction['customer']?['name'] ?? 'Guest'}\n");
+    if (transaction['employee'] != null) {
+      bluetooth.write("Cashier: ${transaction['employee']['name']}\n");
+    }
     bluetooth.write("--------------------------------\n");
 
     for (var item in transaction['items']) {
       final name = item['item'] != null ? (item['item']['name'] ?? 'Item') : (item['name'] ?? 'Item');
       bluetooth.write("$name\n");
-      bluetooth.write("${item['quantity']} x ${_currencyFormat.format(double.parse(item['price'].toString()))}   ${_currencyFormat.format(double.parse(item['subtotal'].toString()))}\n");
+      
+      final employees = (item['employees'] as List?)?.map((e) => e['name']).join(', ') ?? '';
+      if (employees.isNotEmpty) {
+        bluetooth.write(" ($employees)\n");
+      }
+
+      final qtyPrice = "${item['quantity']} x ${_currencyFormat.format(double.parse(item['price'].toString()))}";
+      final subtotal = _currencyFormat.format(double.parse(item['subtotal'].toString()));
+      bluetooth.write(_alignRow(qtyPrice, subtotal) + "\n");
     }
 
     bluetooth.write("--------------------------------\n");
-    bluetooth.write("Total: ${_currencyFormat.format(double.parse(transaction['total_amount'].toString()))}\n");
-    bluetooth.write("Discount: ${_currencyFormat.format(double.parse(transaction['discount_amount'].toString()))}\n");
-    bluetooth.printCustom("Grand Total: ${_currencyFormat.format(double.parse(transaction['final_amount'].toString()))}", 1, 1);
+    bluetooth.write(_alignRow("Total:", _currencyFormat.format(double.parse(transaction['total_amount'].toString()))) + "\n");
+    bluetooth.write(_alignRow("Discount:", _currencyFormat.format(double.parse(transaction['discount_amount'].toString()))) + "\n");
+    bluetooth.printCustom(_alignRow("Grand Total:", _currencyFormat.format(double.parse(transaction['final_amount'].toString()))), 1, 1);
     bluetooth.write("--------------------------------\n");
     
     if (isDraft) {
@@ -53,6 +66,12 @@ class ReceiptHelper {
       bluetooth.printCustom("Thank You for Visiting!", 1, 1);
     }
     bluetooth.write("\n\n\n");
+  }
+
+  String _alignRow(String left, String right, {int width = 32}) {
+    int total = width - left.length - right.length;
+    if (total < 1) return left + " " + right;
+    return left + (" " * total) + right;
   }
 
   Future<void> shareViaWhatsApp(Map<String, dynamic> transaction) async {
