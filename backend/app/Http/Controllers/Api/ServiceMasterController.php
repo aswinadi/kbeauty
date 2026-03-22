@@ -12,7 +12,7 @@ class ServiceMasterController extends Controller
     // Categories
     public function categories()
     {
-        return response()->json(ServiceCategory::withCount('services')->get());
+        return response()->json(ServiceCategory::withCount('services')->orderBy('name')->get());
     }
 
     public function storeCategory(Request $request)
@@ -41,7 +41,7 @@ class ServiceMasterController extends Controller
     // Services (Treatments)
     public function services(Request $request)
     {
-        $query = Service::with(['serviceCategory', 'variants']);
+        $query = Service::with(['serviceCategory', 'variants'])->orderBy('name');
         if ($request->has('service_category_id')) {
             $query->where('service_category_id', $request->service_category_id);
         }

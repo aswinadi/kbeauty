@@ -22,7 +22,7 @@ class PosController extends Controller
 {
     public function items()
     {
-        $services = Service::where('is_active', true)->with(['serviceCategory', 'variants'])->get()->map(fn($s) => [
+        $services = Service::where('is_active', true)->with(['serviceCategory', 'variants'])->orderBy('name')->get()->map(fn($s) => [
             'id' => $s->id,
             'name' => $s->name,
             'price' => $s->price,
@@ -35,7 +35,7 @@ class PosController extends Controller
             ]),
         ]);
 
-        $products = Product::where('is_active', true)->with('category')->get()->map(fn($p) => [
+        $products = Product::where('is_active', true)->with('category')->orderBy('name')->get()->map(fn($p) => [
             'id' => $p->id,
             'name' => $p->name,
             'price' => $p->price,
@@ -43,7 +43,7 @@ class PosController extends Controller
             'category' => $p->category?->name,
         ]);
 
-        $bundles = Bundle::where('is_active', true)->get()->map(fn($b) => [
+        $bundles = Bundle::where('is_active', true)->orderBy('name')->get()->map(fn($b) => [
             'id' => $b->id,
             'name' => $b->name,
             'price' => $b->price,
