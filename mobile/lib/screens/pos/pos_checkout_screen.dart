@@ -574,7 +574,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(this.context).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -601,7 +601,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                   onTap: () async {
                     final success = await ReceiptHelper().printReceipt(transaction);
                     if (!success && mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      ScaffoldMessenger.of(this.context).showSnackBar(
                         const SnackBar(content: Text('Printer not connected.')),
                       );
                     }
@@ -613,7 +613,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                     onTap: () async {
                       final error = await ReceiptHelper().shareViaWhatsApp(transaction);
                       if (error != null && mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+                        ScaffoldMessenger.of(this.context).showSnackBar(SnackBar(content: Text(error)));
                       }
                     },
                   ),
@@ -623,7 +623,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                     color: Colors.pink,
                     onTap: () {
                       if (transaction['customer_id'] == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Guest checkout. No photo linkable.')));
+                        ScaffoldMessenger.of(this.context).showSnackBar(const SnackBar(content: Text('Guest checkout. No photo linkable.')));
                         return;
                       }
                       Navigator.push(
@@ -731,7 +731,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
               };
               final bool success = await ReceiptHelper().printReceipt(draftData, isDraft: true);
               if (!success && mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                ScaffoldMessenger.of(this.context).showSnackBar(
                   const SnackBar(content: Text('Printer not connected.')),
                 );
               }
