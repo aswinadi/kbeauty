@@ -437,6 +437,66 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
 
     if (paymentMethod == null) return;
 
+    double moneyReceived = _totalAfterDiscount;
+    double changeAmount = 0;
+
+    if (paymentMethod == 'Tunai') {
+      final input = await showDialog<double>(
+        context: context,
+        builder: (context) {
+          double amount = _totalAfterDiscount;
+          return AlertDialog(
+            title: const Text('Money Received'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Total to pay: Rp ${numberFormat.format(_totalAfterDiscount)}'),
+                const SizedBox(height: 16),
+                TextField(
+                  autofocus: true,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Amount Received',
+                    prefixText: 'Rp ',
+                  ),
+                  onChanged: (value) {
+                    amount = double.tryParse(value) ?? 0;
+                  },
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [100000, 50000, 20000, 10000, 5000, 2000, 1000].map((pecahan) {
+                    return ActionChip(
+                      label: Text(numberFormat.format(pecahan)),
+                      onPressed: () {
+                        // This is a quick fix, ideally it should update the TextField
+                        // But for now we just return it if they click
+                        Navigator.pop(context, pecahan.toDouble());
+                      },
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+              TextButton(onPressed: () => Navigator.pop(context, amount), child: const Text('Process')),
+            ],
+          );
+        },
+      );
+
+      if (input == null) return;
+      moneyReceived = input;
+      changeAmount = moneyReceived - _totalAfterDiscount;
+      if (changeAmount < 0) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Amount received is less than total')));
+        return;
+      }
+    }
+
     try {
       if (_selectedEmployee == null) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an employee first')));
@@ -454,12 +514,16 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           'employee_ids': item['employee_ids'],
           'quantity': item['quantity'],
         }).toList(),
+        'total_amount': _totalBeforeDiscount,
         'discount_amount': _discountAmount,
         'discount_id': _selectedDiscount?['id'],
+        'final_amount': _totalAfterDiscount,
         'payments': [
           {
             'payment_method': paymentMethod,
             'amount': _totalAfterDiscount,
+            'money_received': moneyReceived,
+            'change_amount': changeAmount,
           }
         ],
       };
