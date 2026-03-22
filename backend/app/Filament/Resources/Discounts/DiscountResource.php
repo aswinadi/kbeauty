@@ -1,51 +1,57 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\Discounts;
 
-use App\Filament\Resources\PaymentTypeResource\Pages\ManagePaymentTypes;
-use App\Models\PaymentType;
+use App\Filament\Resources\Discounts\Pages\ManageDiscounts;
+use App\Models\Discount;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use BackedEnum;
 
-class PaymentTypeResource extends Resource
+class DiscountResource extends Resource
 {
-    protected static ?string $model = PaymentType::class;
+    protected static ?string $model = Discount::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-credit-card';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-ticket';
 
     public static function getNavigationGroup(): ?string
     {
         return 'POS';
     }
 
-    public static function getModelLabel(): string
-    {
-        return 'Payment Type';
-    }
-
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                Section::make('Payment Type Details')
+                Section::make('Discount Details')
                     ->components([
                         TextInput::make('name')
                             ->required()
                             ->maxLength(255),
+                        Select::make('type')
+                            ->options([
+                                'fixed' => 'Fixed Amount',
+                                'percentage' => 'Percentage',
+                            ])
+                            ->required(),
+                        TextInput::make('value')
+                            ->numeric()
+                            ->required(),
                         Toggle::make('is_active')
                             ->required()
                             ->default(true),
-                    ])->columns(1),
+                    ])->columns(2),
             ]);
     }
 
@@ -54,8 +60,12 @@ class PaymentTypeResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('type')
+                    ->formatStateUsing(fn (string $state): string => ucfirst($state)),
+                TextColumn::make('value')
+                    ->formatStateUsing(fn ($state, $record) => $record->type === 'percentage' ? $state . '%' : 'Rp ' . number_format($state, 0, ',', '.')),
                 IconColumn::make('is_active')
                     ->boolean()
                     ->sortable(),
@@ -69,6 +79,7 @@ class PaymentTypeResource extends Resource
             ])
             ->recordActions([
                 EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -80,7 +91,7 @@ class PaymentTypeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ManagePaymentTypes::route('/'),
+            'index' => ManageDiscounts::route('/'),
         ];
     }
 }
