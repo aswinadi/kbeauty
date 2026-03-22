@@ -9,7 +9,7 @@ class AppTheme {
 
   static ThemeData get lightTheme {
     return ThemeData(
-      useMaterial3: true,
+      useMaterial3: false,
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryColor,
         primary: primaryColor,

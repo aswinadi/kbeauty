@@ -330,19 +330,21 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                _buildSearchBar(),
-                _buildCategoryTabs(),
-                Expanded(
-                  child: Row(
-                    children: [
-                      _buildItemGrid(),
-                      _buildCartView(),
-                    ],
+          : FocusScope(
+              child: Column(
+                children: [
+                  _buildSearchBar(),
+                  _buildCategoryTabs(),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        _buildItemGrid(),
+                        _buildCartView(),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
     );
   }
