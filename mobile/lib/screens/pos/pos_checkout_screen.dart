@@ -224,6 +224,10 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     });
   }
 
+  double get _totalBeforeDiscount {
+    return _cart.fold(0, (sum, item) => sum + (double.parse(item['price'].toString()) * item['quantity']));
+  }
+
   double get _discountAmount {
     if (_selectedDiscount == null) return 0;
     if (_selectedDiscount!['type'] == 'percentage') {

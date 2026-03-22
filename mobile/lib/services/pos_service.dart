@@ -411,10 +411,9 @@ class PosService {
         return jsonDecode(response.body);
       }
       return null;
-    } catch (e) {
-      print('Error saving master service: $e');
-      return null;
     }
+  }
+
   Future<Map<String, dynamic>?> getSettings() async {
     try {
       final token = await _authService.getToken();
