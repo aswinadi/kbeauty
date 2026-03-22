@@ -45,7 +45,7 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
     final priceController = TextEditingController(text: service?['price']?.toString() ?? '');
     final commValueController = TextEditingController(text: service?['commission_value']?.toString() ?? '');
     
-    int? selectedCategoryId = service?['service_category_id'];
+    int? selectedCategoryId = service?['service_category_id'] ?? _selectedCategoryId;
     String? commissionType = service?['commission_type'];
     bool isActive = service?['is_active'] == 1 || service?['is_active'] == true;
     bool deductStock = service?['deduct_stock'] == 1 || service?['deduct_stock'] == true;
