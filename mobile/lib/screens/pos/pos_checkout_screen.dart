@@ -131,6 +131,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           'service_variant_id': variantId,
           'quantity': 1,
           'employee_ids': _selectedEmployee != null ? [_selectedEmployee!['id']] : [],
+          'employees': _selectedEmployee != null ? [_selectedEmployee!] : [],
         });
       }
     });
@@ -716,7 +717,19 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         child: Row(
                           children: [
-                            Expanded(child: Text(item['name'])),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(item['name']),
+                                  if (item['employees'] != null && (item['employees'] as List).isNotEmpty)
+                                    Text(
+                                      '(${(item['employees'] as List).map((e) => e['name']).join(', ')})',
+                                      style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                    ),
+                                ],
+                              ),
+                            ),
                             Text('${item['quantity']} x ${_currencyFormat.format(double.parse(item['price'].toString()))}'),
                           ],
                         ),

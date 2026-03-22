@@ -96,8 +96,12 @@ class ReceiptHelper {
     
     for (var item in transaction['items']) {
       final name = item['item'] != null ? (item['item']['name'] ?? 'Item') : (item['name'] ?? 'Item');
-      message += "$name x ${item['quantity']}\n";
       final subtotal = item['subtotal'] ?? (double.parse(item['price'].toString()) * (item['quantity'] ?? 1));
+      
+      final employees = (item['employees'] as List?)?.map((e) => e['name']).join(', ') ?? '';
+      String itemLine = "$name x ${item['quantity']}";
+      if (employees.isNotEmpty) itemLine += " ($employees)";
+      message += "$itemLine\n";
       message += "${_currencyFormat.format(double.parse(subtotal.toString()))}\n";
     }
     
