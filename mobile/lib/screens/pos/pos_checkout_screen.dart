@@ -103,7 +103,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           'name': variant != null ? "${item['name']} - ${variant['name']}" : item['name'],
           'service_variant_id': variantId,
           'quantity': 1,
-          'employee_id': _selectedEmployee != null ? _selectedEmployee!['id'] : (_employees.isNotEmpty ? _employees[0]['id'] : null),
+          'employee_ids': _selectedEmployee != null ? [_selectedEmployee!['id']] : (_employees.isNotEmpty ? [_employees[0]['id']] : []),
         });
       }
     });
@@ -179,12 +179,60 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       // Automatically assign this employee to all items in cart if they don't have one
       setState(() {
         for (var i = 0; i < _cart.length; i++) {
-          if (_cart[i]['employee_id'] == null) {
-            _cart[i]['employee_id'] = employee['id'];
+          if (_cart[i]['employee_ids'] == null || (_cart[i]['employee_ids'] as List).isEmpty) {
+            _cart[i]['employee_ids'] = [employee['id']];
           }
         }
       });
     }
+  }
+
+  void _selectEmployeesForItem(int index) async {
+    final item = _cart[index];
+    final List<int> selectedIds = List<int>.from(item['employee_ids'] ?? []);
+    
+    await showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Assign Nailists'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: _employees.length,
+              itemBuilder: (context, i) {
+                final e = _employees[i];
+                final isSelected = selectedIds.contains(e['id']);
+                return CheckboxListTile(
+                  title: Text(e['name']),
+                  value: isSelected,
+                  onChanged: (val) {
+                    setDialogState(() {
+                      if (val == true) {
+                        selectedIds.add(e['id']);
+                      } else {
+                        selectedIds.remove(e['id']);
+                      }
+                    });
+                  },
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: () {
+                setState(() => _cart[index]['employee_ids'] = selectedIds);
+                Navigator.pop(context);
+              },
+              child: const Text('Confirm'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _processCheckout() async {
@@ -220,7 +268,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           'item_id': item['id'],
           'item_type': item['type'],
           'service_variant_id': item['service_variant_id'],
-          'employee_id': item['employee_id'],
+          'employee_ids': item['employee_ids'],
           'quantity': item['quantity'],
         }).toList(),
         'discount_amount': _discountAmount,
@@ -361,6 +409,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
             ),
           IconButton(
             icon: const Icon(Icons.badge),
+            tooltip: 'General Designated Employee',
             onPressed: () => _selectEmployee(),
           ),
           if (_selectedEmployee != null)
@@ -539,13 +588,9 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('${_currencyFormat.format(double.parse(item['price'].toString()))} x ${item['quantity']}'),
-                        PopupMenuButton<int>(
-                          initialValue: item['employee_id'],
-                          itemBuilder: (context) => _employees.map((e) => PopupMenuItem(
-                            value: e['id'] as int,
-                            child: Text(e['name']),
-                          )).toList(),
-                          onSelected: (val) => setState(() => _cart[index]['employee_id'] = val),
+                        const SizedBox(height: 4),
+                        InkWell(
+                          onTap: () => _selectEmployeesForItem(index),
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                             decoration: BoxDecoration(
@@ -556,8 +601,13 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  _employees.firstWhere((e) => e['id'] == item['employee_id'], orElse: () => {'name': 'Assign'})['name'],
-                                  style: const TextStyle(fontSize: 12),
+                                  (item['employee_ids'] as List).isEmpty
+                                      ? 'Assign'
+                                      : _employees
+                                          .where((e) => (item['employee_ids'] as List).contains(e['id']))
+                                          .map((e) => e['name'])
+                                          .join(', '),
+                                  style: const TextStyle(fontSize: 11),
                                 ),
                                 const Icon(Icons.arrow_drop_down, size: 16),
                               ],

@@ -148,7 +148,8 @@ class PosController extends Controller
             'items.*.item_id' => 'required',
             'items.*.item_type' => 'required|in:service,product,bundle',
             'items.*.service_variant_id' => 'nullable|exists:service_variants,id',
-            'items.*.employee_id' => 'required|exists:employees,id',
+            'items.*.employee_ids' => 'required|array|min:1',
+            'items.*.employee_ids.*' => 'exists:employees,id',
             'items.*.quantity' => 'required|integer|min:1',
             'discount_amount' => 'nullable|numeric|min:0',
             'payments' => 'required|array|min:1',
@@ -193,7 +194,8 @@ class PosController extends Controller
                     'item_id' => $i['item_id'],
                     'item_type' => $modelClass,
                     'service_variant_id' => $i['service_variant_id'] ?? null,
-                    'employee_id' => $i['employee_id'],
+                    'employee_id' => $i['employee_ids'][0], // Store first one as primary
+                    'employee_ids' => $i['employee_ids'], // Temporarily store for pivot
                     'quantity' => $i['quantity'],
                     'price' => $price,
                     'subtotal' => $subtotal,
@@ -223,7 +225,10 @@ class PosController extends Controller
             }
 
             foreach ($transactionItems as $ti) {
+                $employeeIds = $ti['employee_ids'];
+                unset($ti['employee_ids']);
                 $item = $transaction->items()->create($ti);
+                $item->employees()->attach($employeeIds);
                 $this->processItemStock($item);
             }
 
@@ -296,7 +301,10 @@ class PosController extends Controller
         $fromDate = $request->from_date ?? now()->startOfMonth()->toDateString();
         $toDate = $request->to_date ?? now()->endOfMonth()->toDateString();
 
-        $items = PosTransactionItem::where('employee_id', $employeeId)
+        $items = PosTransactionItem::where(function($q) use ($employeeId) {
+                $q->where('employee_id', $employeeId)
+                  ->orWhereHas('employees', fn($sq) => $sq->where('employee_id', $employeeId));
+            })
             ->whereHas('posTransaction', function ($q) use ($fromDate, $toDate) {
                 $q->whereBetween('created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
             })

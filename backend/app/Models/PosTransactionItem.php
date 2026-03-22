@@ -22,6 +22,11 @@ class PosTransactionItem extends Model
         return $this->belongsTo(ServiceVariant::class, 'service_variant_id');
     }
 
+    public function employees()
+    {
+        return $this->belongsToMany(Employee::class, 'pos_transaction_item_employee');
+    }
+
     public function posTransaction()
     {
         return $this->belongsTo(PosTransaction::class);
