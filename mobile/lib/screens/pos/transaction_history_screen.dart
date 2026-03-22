@@ -288,6 +288,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         ],
       ),
     );
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();

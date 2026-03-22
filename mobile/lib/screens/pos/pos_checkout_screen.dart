@@ -23,6 +23,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   Map<String, dynamic>? _selectedCustomer;
   Map<String, dynamic>? _selectedEmployee;
   final _searchController = TextEditingController();
+  Map<String, dynamic>? _settings;
 
   List<Map<String, dynamic>> _discounts = [];
   Map<String, dynamic>? _selectedDiscount;
@@ -61,9 +62,9 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       _discounts = (results[3] as List).map((e) => e as Map<String, dynamic>).toList();
       _filteredItems = _allItems;
       
-      final settings = results[2] as Map<String, dynamic>?;
-      if (settings != null) {
-        _posItemLayout = settings['pos_item_layout'] ?? 'grid';
+      _settings = results[2] as Map<String, dynamic>?;
+      if (_settings != null) {
+        _posItemLayout = _settings!['pos_item_layout'] ?? 'grid';
       }
 
       final cats = _allItems.map((e) => (e['category'] ?? 'Uncategorized').toString()).toSet().toList();
