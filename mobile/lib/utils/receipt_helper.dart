@@ -50,7 +50,8 @@ class ReceiptHelper {
       }
 
       final qtyPrice = "${item['quantity']} x ${_currencyFormat.format(double.parse(item['price'].toString()))}";
-      final subtotal = _currencyFormat.format(double.parse(item['subtotal'].toString()));
+      final subtotalValue = item['subtotal'] ?? (double.parse(item['price'].toString()) * (item['quantity'] ?? 1));
+      final subtotal = _currencyFormat.format(double.parse(subtotalValue.toString()));
       bluetooth.write(_alignRow(qtyPrice, subtotal) + "\n");
     }
 

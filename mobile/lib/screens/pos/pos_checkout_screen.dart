@@ -654,12 +654,10 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(child: Text(item['name'])),
-                            Text('${item['quantity']} x ${_currencyFormat.format(item['price'])}'),
+                            Text('${item['quantity']} x ${_currencyFormat.format(double.parse(item['price'].toString()))}'),
                           ],
-                        ),
                       );
                     }).toList(),
                   ),
@@ -1162,7 +1160,9 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
-          discount?['name'] ?? 'None',
+          discount == null 
+              ? 'None' 
+              : "${discount['name']} (${discount['type'] == 'percentage' ? '${discount['value']}%' : _currencyFormat.format(double.parse(discount['value'].toString()))})",
           style: TextStyle(
             color: isSelected ? Colors.white : Colors.black87,
             fontWeight: FontWeight.bold,
