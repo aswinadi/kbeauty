@@ -1,5 +1,24 @@
 # Project Changelog
 
+## [1.7.0] - 2026-03-23
+
+### Added
+- **Bluetooth Printer Configuration (Mobile)**: 
+  - New **Printer Settings** screen in Profile for scanning and connecting thermal printers.
+  - Integrated `permission_handler` for secure Bluetooth/Location access on Android/iOS.
+  - Added **Test Print** functionality to verify hardware readiness.
+- **Customizable Bill Footer**:
+  - New **Bill Footer Message** field in POS General Settings (Dashboard).
+  - Footer now appears on Printed Receipts, WhatsApp shares, and Checkout Previews.
+- **Receipt Enhancements**:
+  - **Dynamic Layout**: Moved Store Address and Phone to the receipt header for better professional framing.
+  - **WhatsApp Resend**: Direct button in Transaction History to re-share past receipts easily.
+
+### Fixed
+- **Nailist Data Stability**: Hardened employee name mapping to prevent `null` or `(null)` from appearing in receipts; defaults to "Staff" if data is missing.
+- **Filament Action Namespaces**: Resolved technical "Class Not Found" errors by correcting `CreateAction` and `DeleteAction` namespaces across multiple resources.
+- **Mobile Dependencies**: Corrected `blue_thermal_printer` implementation to gracefully handle disconnection states.
+
 ## [1.6.0] - 2026-03-20
 
 ### Added
