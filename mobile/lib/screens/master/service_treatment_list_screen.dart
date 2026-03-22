@@ -61,157 +61,135 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
     await showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.7,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(service == null ? 'Add Treatment' : 'Edit Treatment'),
+          content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(service == null ? 'Add Treatment' : 'Edit Treatment', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                Flexible(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SwitchListTile(
-                          title: const Text('Active Status'),
-                          value: isActive,
-                          onChanged: (val) => setDialogState(() => isActive = val),
-                          dense: true,
-                        ),
-                        const SizedBox(height: 16),
-                        DropdownButtonFormField<int>(
-                          value: selectedCategoryId,
-                          hint: const Text('Select Category'),
-                          items: _categories.map((c) => DropdownMenuItem(
-                            value: c['id'] as int,
-                            child: Text(c['name']),
-                          )).toList(),
-                          onChanged: (val) => setDialogState(() => selectedCategoryId = val),
-                          decoration: const InputDecoration(labelText: 'Service Category'),
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          controller: nameController,
-                          decoration: const InputDecoration(labelText: 'Name *'),
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          controller: priceController,
-                          decoration: const InputDecoration(labelText: 'Price (Rp) *'),
-                          keyboardType: TextInputType.number,
-                        ),
-                        const SizedBox(height: 16),
-                        const Divider(),
-                        const SizedBox(height: 16),
-                        const Text('Commission & Stock', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                        const SizedBox(height: 8),
-                        DropdownButtonFormField<String>(
-                          value: commissionType,
-                          hint: const Text('Commission type'),
-                          items: const [
-                            DropdownMenuItem(value: 'fixed', child: Text('Fixed Amount')),
-                            DropdownMenuItem(value: 'percentage', child: Text('Percentage')),
-                          ],
-                          onChanged: (val) => setDialogState(() => commissionType = val),
-                          decoration: const InputDecoration(labelText: 'Commission type'),
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          controller: commValueController,
-                          decoration: const InputDecoration(labelText: 'Commission (Rp/%)'),
-                          keyboardType: TextInputType.number,
-                        ),
-                        const SizedBox(height: 16),
-                        SwitchListTile(
-                          title: const Text('Deduct Stock from Inventory'),
-                          value: deductStock,
-                          onChanged: (val) => setDialogState(() => deductStock = val),
-                          dense: true,
-                        ),
-                        const SizedBox(height: 16),
-                        const Divider(),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Variants', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                            TextButton.icon(
-                              onPressed: () => _showAddVariantDialog(setDialogState, variants),
-                              icon: const Icon(Icons.add, size: 18),
-                              label: const Text('Add Variant'),
-                            ),
-                          ],
-                        ),
-                        if (variants.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8),
-                            child: Text('No variants added.', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                          ),
-                        ...variants.asMap().entries.map((entry) {
-                          final idx = entry.key;
-                          final v = entry.value;
-                          return ListTile(
-                            title: Text(v['name']),
-                            subtitle: Text(_currencyFormat.format(double.parse(v['price'].toString()))),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-                              onPressed: () => setDialogState(() => variants.removeAt(idx)),
-                            ),
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                          );
-                        }).toList(),
-                      ],
-                    ),
-                  ),
+                SwitchListTile(
+                  title: const Text('Active Status'),
+                  value: isActive,
+                  onChanged: (val) => setDialogState(() => isActive = val),
+                  dense: true,
                 ),
                 const SizedBox(height: 16),
+                DropdownButtonFormField<int>(
+                  value: selectedCategoryId,
+                  hint: const Text('Select Category'),
+                  items: _categories.map((c) => DropdownMenuItem(
+                    value: c['id'] as int,
+                    child: Text(c['name']),
+                  )).toList(),
+                  onChanged: (val) => setDialogState(() => selectedCategoryId = val),
+                  decoration: const InputDecoration(labelText: 'Service Category'),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Name *'),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: priceController,
+                  decoration: const InputDecoration(labelText: 'Price (Rp) *'),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 16),
+                const Text('Commission & Stock', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  value: commissionType,
+                  hint: const Text('Commission type'),
+                  items: const [
+                    DropdownMenuItem(value: 'fixed', child: Text('Fixed Amount')),
+                    DropdownMenuItem(value: 'percentage', child: Text('Percentage')),
+                  ],
+                  onChanged: (val) => setDialogState(() => commissionType = val),
+                  decoration: const InputDecoration(labelText: 'Commission type'),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: commValueController,
+                  decoration: const InputDecoration(labelText: 'Commission (Rp/%)'),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  title: const Text('Deduct Stock from Inventory'),
+                  value: deductStock,
+                  onChanged: (val) => setDialogState(() => deductStock = val),
+                  dense: true,
+                ),
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 16),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: () async {
-                        if (nameController.text.isEmpty || priceController.text.isEmpty || selectedCategoryId == null) {
-                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all mandatory fields (*)')));
-                           return;
-                        }
-                        final data = {
-                          'name': nameController.text,
-                          'price': double.parse(priceController.text),
-                          'service_category_id': selectedCategoryId,
-                          'is_active': isActive,
-                           if (commissionType != null) 'commission_type': commissionType,
-                           if (commValueController.text.isNotEmpty) 'commission_value': double.parse(commValueController.text),
-                          'deduct_stock': deductStock,
-                          'variants': variants,
-                        };
-                        final result = await _posService.saveMasterService(data, id: service?['id']);
-                        if (result != null) {
-                          _loadData();
-                          Navigator.pop(context);
-                        }
-                      },
-                      child: const Text('Save'),
+                    const Text('Variants', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    TextButton.icon(
+                      onPressed: () => _showAddVariantDialog(setDialogState, variants),
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text('Add Variant'),
                     ),
                   ],
                 ),
+                if (variants.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Text('No variants added.', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  ),
+                ...variants.asMap().entries.map((entry) {
+                  final idx = entry.key;
+                  final v = entry.value;
+                  return ListTile(
+                    title: Text(v['name']),
+                    subtitle: Text(_currencyFormat.format(double.parse(v['price'].toString()))),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                      onPressed: () => setDialogState(() => variants.removeAt(idx)),
+                    ),
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                  );
+                }).toList(),
               ],
             ),
           ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
+            ElevatedButton(
+              onPressed: () async {
+                if (nameController.text.isEmpty || priceController.text.isEmpty || selectedCategoryId == null) {
+                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all mandatory fields (*)')));
+                   return;
+                }
+                final data = {
+                  'name': nameController.text,
+                  'price': double.parse(priceController.text),
+                  'service_category_id': selectedCategoryId,
+                  'is_active': isActive,
+                   if (commissionType != null) 'commission_type': commissionType,
+                   if (commValueController.text.isNotEmpty) 'commission_value': double.parse(commValueController.text),
+                  'deduct_stock': deductStock,
+                  'variants': variants,
+                };
+                final result = await _posService.saveMasterService(data, id: service?['id']);
+                if (result != null) {
+                  _loadData();
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Future<void> _showAddVariantDialog(StateSetter setDialogState, List<Map<String, dynamic>> variants) async {
     final vNameController = TextEditingController();
