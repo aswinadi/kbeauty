@@ -512,6 +512,27 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     );
   }
 
+  Widget _paymentButton(BuildContext context, String label, IconData icon, Color color) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color.withOpacity(0.05),
+        foregroundColor: color,
+        side: BorderSide(color: color.withOpacity(0.2)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 0,
+      ),
+      onPressed: () => Navigator.pop(context, label.toLowerCase()),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 28),
+          const SizedBox(height: 8),
+          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSearchBar() {
     return Padding(
       key: const ValueKey('pos_search_bar_container'),
