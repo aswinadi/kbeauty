@@ -447,38 +447,40 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           double amount = _totalAfterDiscount;
           return AlertDialog(
             title: const Text('Money Received'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Total to pay: ${_currencyFormat.format(_totalAfterDiscount)}'),
-                const SizedBox(height: 16),
-                TextField(
-                  autofocus: true,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Amount Received',
-                    prefixText: 'Rp ',
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Total to pay: ${_currencyFormat.format(_totalAfterDiscount)}'),
+                  const SizedBox(height: 16),
+                  TextField(
+                    autofocus: true,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Amount Received',
+                      prefixText: 'Rp ',
+                    ),
+                    onChanged: (value) {
+                      amount = double.tryParse(value) ?? 0;
+                    },
                   ),
-                  onChanged: (value) {
-                    amount = double.tryParse(value) ?? 0;
-                  },
-                ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [100000, 50000, 20000, 10000, 5000, 2000, 1000].map((pecahan) {
-                    return ActionChip(
-                      label: Text(_currencyFormat.format(pecahan)),
-                      onPressed: () {
-                        // This is a quick fix, ideally it should update the TextField
-                        // But for now we just return it if they click
-                        Navigator.pop(context, pecahan.toDouble());
-                      },
-                    );
-                  }).toList(),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [100000, 50000, 20000, 10000, 5000, 2000, 1000].map((pecahan) {
+                      return ActionChip(
+                        label: Text(_currencyFormat.format(pecahan)),
+                        onPressed: () {
+                          // This is a quick fix, ideally it should update the TextField
+                          // But for now we just return it if they click
+                          Navigator.pop(context, pecahan.toDouble());
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
             ),
             actions: [
               TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
