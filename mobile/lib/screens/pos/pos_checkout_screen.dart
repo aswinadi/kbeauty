@@ -683,6 +683,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                             Expanded(child: Text(item['name'])),
                             Text('${item['quantity']} x ${_currencyFormat.format(double.parse(item['price'].toString()))}'),
                           ],
+                        ),
                       );
                     }).toList(),
                   ),
