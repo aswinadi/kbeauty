@@ -113,8 +113,8 @@ class ReceiptHelper {
     message += "--------------------------------\n";
     message += "*Grand Total: ${_currencyFormat.format(double.parse(transaction['final_amount'].toString()))}*\n\n";
     message += "Thank you for visiting us!\n";
-    message += "_$storeAddress_\n";
-    if (storePhone.isNotEmpty) message += "_Tel: $storePhone_\n";
+    message += "_${storeAddress}_\n";
+    if (storePhone.isNotEmpty) message += "_Tel: ${storePhone}_\n";
 
     final url = "whatsapp://send?phone=$phone&text=${Uri.encodeComponent(message)}";
     try {

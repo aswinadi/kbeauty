@@ -145,9 +145,33 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
               itemCount: portfolios.length,
               itemBuilder: (context, index) {
                 final p = portfolios[index];
+                final media = p['media'] as List?;
+                final imageUrl = (media != null && media.isNotEmpty)
+                    ? media[0]['original_url'].toString()
+                    : '${AppConfig.apiBaseUrl.replaceAll('/api', '')}/storage/${p['image_path']}';
+
                 return GestureDetector(
                   onTap: () {
-                    // Show full image logic
+                    showDialog(
+                      context: context,
+                      builder: (context) => Dialog(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.network(
+                              imageUrl,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.broken_image, size: 100)),
+                            ),
+                            if (p['notes'] != null)
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(p['notes']),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
                   },
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
@@ -155,7 +179,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
                       fit: StackFit.expand,
                       children: [
                         Image.network(
-                          '${AppConfig.apiBaseUrl.replaceAll('/api', '')}/storage/${p['image_path']}',
+                          imageUrl,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => Container(color: Colors.grey[200], child: const Icon(Icons.broken_image)),
                         ),
