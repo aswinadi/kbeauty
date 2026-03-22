@@ -32,6 +32,7 @@ class CustomerPortfolioForm
                             ->collection('portfolio_images')
                             ->multiple()
                             ->image()
+                            ->openable()
                             ->label('Photos')
                             ->columnSpanFull(),
                         Textarea::make('notes')
