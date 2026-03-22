@@ -601,6 +601,15 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
               ),
             ),
           IconButton(
+            icon: Icon(_posItemLayout == 'grid' ? Icons.view_list : Icons.grid_view),
+            tooltip: 'Toggle Layout',
+            onPressed: () {
+              setState(() {
+                _posItemLayout = _posItemLayout == 'grid' ? 'list' : 'grid';
+              });
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.badge),
             tooltip: 'General Designated Employee',
             onPressed: () => _selectEmployee(),
