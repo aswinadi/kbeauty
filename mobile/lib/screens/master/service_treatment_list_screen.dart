@@ -63,9 +63,11 @@ class _ServiceTreatmentListScreenState extends State<ServiceTreatmentListScreen>
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => Dialog(
           insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
