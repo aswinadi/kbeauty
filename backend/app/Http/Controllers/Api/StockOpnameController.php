@@ -38,10 +38,16 @@ class StockOpnameController extends Controller
 
     public function stats()
     {
+        $today = now()->toDateString();
+        $startOfMonth = now()->startOfMonth()->toDateTimeString();
+        $endOfMonth = now()->endOfMonth()->toDateTimeString();
+
         return response()->json([
             'total_products' => Product::count(),
             'total_movements' => InventoryMovement::count(),
             'total_locations' => Location::count(),
+            'today_sales' => \App\Models\PosTransaction::whereDate('created_at', $today)->sum('final_amount'),
+            'mtd_sales' => \App\Models\PosTransaction::whereBetween('created_at', [$startOfMonth, $endOfMonth])->sum('final_amount'),
         ]);
     }
 
