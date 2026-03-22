@@ -475,6 +475,22 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
+                      if (amount > _totalAfterDiscount)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Change:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                              Text(_currencyFormat.format(amount - _totalAfterDiscount), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 18)),
+                            ],
+                          ),
+                        ),
+                      const SizedBox(height: 16),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -601,6 +617,16 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
             const Text('Transaction Successful!', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 8),
             Text('Number: ${transaction['transaction_number']}'),
+            if (transaction['payments'] != null && (transaction['payments'] as List).isNotEmpty)
+              ... (transaction['payments'] as List).where((p) => double.parse((p['change_amount'] ?? 0).toString()) > 0).map((p) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    'Change: ${_currencyFormat.format(double.parse(p['change_amount'].toString()))}',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.green),
+                  ),
+                );
+              }).toList(),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
