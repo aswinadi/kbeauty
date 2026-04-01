@@ -27,7 +27,7 @@ class AuthController extends Controller
         }
 
         $user->load('roles');
-        $user->permissions = $user->getAllPermissions()->pluck('name');
+        $user->permissions = $user->roles->flatMap->permissions->pluck('name')->unique()->values();
 
         return response()->json([
             'user' => $user,
@@ -45,7 +45,7 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         $user = $request->user()->load(['roles', 'employee.office']);
-        $user->permissions = $user->getAllPermissions()->pluck('name');
+        $user->permissions = $user->roles->flatMap->permissions->pluck('name')->unique()->values();
         return response()->json($user);
     }
 

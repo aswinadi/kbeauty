@@ -11,7 +11,7 @@ class UserPolicy
     
     public function viewAny(AuthUser $authUser): bool
     {
-        return $authUser->can('ViewAny:User');
+        return $authUser->hasRole('super_admin');
     }
 
     public function view(AuthUser $authUser): bool

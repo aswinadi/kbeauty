@@ -14,7 +14,7 @@ class RolePolicy
     
     public function viewAny(AuthUser $authUser): bool
     {
-        return $authUser->can('ViewAny:Role');
+        return $authUser->hasRole('super_admin');
     }
 
     public function view(AuthUser $authUser, Role $role): bool
