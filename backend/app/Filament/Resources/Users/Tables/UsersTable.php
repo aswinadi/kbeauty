@@ -44,7 +44,8 @@ class UsersTable
             ])
             ->recordActions([
                 EditAction::make(),
-                \STS\FilamentImpersonate\Actions\Impersonate::make(),
+                \STS\FilamentImpersonate\Actions\Impersonate::make()
+                    ->redirectTo(fn () => route('filament.admin.pages.dashboard')),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

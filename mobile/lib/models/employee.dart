@@ -2,18 +2,18 @@ import 'office.dart';
 
 class Employee {
   final int id;
-  final int officeId;
+  final int? officeId;
   final String? fullName;
-  final String nik;
+  final String? nik;
   final String? phone;
   final Office? office;
   final String? photoUrl;
 
   Employee({
     required this.id,
-    required this.officeId,
+    this.officeId,
     this.fullName,
-    required this.nik,
+    this.nik,
     this.phone,
     this.office,
     this.photoUrl,

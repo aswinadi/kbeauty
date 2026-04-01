@@ -23,10 +23,12 @@ class ImpersonateController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        // Get users who do NOT have any administrative roles
+        // We use a direct DB check to avoid guard-related filtering issues
         $users = User::whereDoesntHave('roles', function ($query) {
-            $query->whereIn('name', ['super_admin', 'Super Admin', 'super-admin']);
+            $query->whereIn('roles.name', ['super_admin', 'Super Admin', 'super-admin']);
         })
-        ->with(['roles', 'employee'])
+        ->with(['roles', 'employee', 'employee.office'])
         ->get();
 
         return response()->json($users);
