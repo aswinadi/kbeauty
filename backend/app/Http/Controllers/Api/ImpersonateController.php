@@ -17,7 +17,7 @@ class ImpersonateController extends Controller
         /** @var User $user */
         $user = $request->user();
         
-        $isAdmin = $user->roles->whereIn('name', ['super_admin', 'Super Admin', 'super-admin'])->isNotEmpty();
+        $isAdmin = $user->roles()->whereIn('roles.name', ['super_admin', 'Super Admin', 'super-admin'])->exists();
 
         if (!$isAdmin) {
             return response()->json(['message' => 'Unauthorized'], 403);
@@ -41,7 +41,7 @@ class ImpersonateController extends Controller
         /** @var User $currentUser */
         $currentUser = $request->user();
 
-        $isAdmin = $currentUser->roles->whereIn('name', ['super_admin', 'Super Admin', 'super-admin'])->isNotEmpty();
+        $isAdmin = $currentUser->roles()->whereIn('roles.name', ['super_admin', 'Super Admin', 'super-admin'])->exists();
 
         if (!$isAdmin) {
             return response()->json([
