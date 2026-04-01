@@ -85,12 +85,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     }
 
-    final isNailist = _user?.roles.contains('nailist') ?? false;
-
     bool hasPermission(String permission) {
-      if (_user?.roles.contains('super_admin') ?? false) return true;
+      if (_user?.roles.any((r) => r.toLowerCase() == 'super_admin') ?? false) return true;
       return _user?.permissions.contains(permission) ?? false;
     }
+
+    final hasAnyAttendance = hasPermission('ViewAny:Attendance');
+    final hasAnyPOS = hasPermission('Create:PosTransaction') || hasPermission('ViewAny:PosTransaction') || hasPermission('ViewAny:Customer') || hasPermission('ViewAny:Appointment');
+    final hasAnyMaster = hasPermission('ViewAny:ServiceCategory') || hasPermission('ViewAny:Service');
+    final hasAnyInventory = hasPermission('ViewAny:Product') || hasPermission('ViewAny:InventoryTransaction') || hasPermission('ViewAny:InventoryMovement') || hasPermission('ViewAny:StockOpname');
 
     return Scaffold(
       appBar: AppBar(
@@ -149,39 +152,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     }),
                 ],
               ),
-              const SizedBox(height: 12),
-              const Text('Point of Sales', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              GridView.extent(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                maxCrossAxisExtent: 110,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 1.0,
-                children: [
-                  if (hasPermission('Create:PosTransaction'))
-                    _buildActionCard('POS', Icons.point_of_sale, () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const PosCheckoutScreen()));
+              if (hasAnyPOS) ...[
+                const SizedBox(height: 12),
+                const Text('Point of Sales', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                GridView.extent(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  maxCrossAxisExtent: 110,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 1.0,
+                  children: [
+                    if (hasPermission('Create:PosTransaction'))
+                      _buildActionCard('POS', Icons.point_of_sale, () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const PosCheckoutScreen()));
+                      }),
+                    _buildActionCard('Comm', Icons.account_balance_wallet_outlined, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const NailistPerformanceScreen()));
                     }),
-                  _buildActionCard('Comm', Icons.account_balance_wallet_outlined, () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const NailistPerformanceScreen()));
-                  }),
-                  if (hasPermission('ViewAny:Customer'))
-                    _buildActionCard('CRM', Icons.group_outlined, () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerListScreen()));
-                    }),
-                  if (hasPermission('ViewAny:Appointment'))
-                    _buildActionCard('Appt', Icons.calendar_month_outlined, () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const AppointmentCalendarScreen()));
-                    }),
-                  if (hasPermission('ViewAny:PosTransaction'))
-                    _buildActionCard('History', Icons.receipt_long, () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const TransactionHistoryScreen()));
-                    }),
-                ],
-              ),
-              if (hasPermission('ViewAny:ServiceCategory') || hasPermission('ViewAny:Service')) ...[
+                    if (hasPermission('ViewAny:Customer'))
+                      _buildActionCard('CRM', Icons.group_outlined, () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerListScreen()));
+                      }),
+                    if (hasPermission('ViewAny:Appointment'))
+                      _buildActionCard('Appt', Icons.calendar_month_outlined, () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const AppointmentCalendarScreen()));
+                      }),
+                    if (hasPermission('ViewAny:PosTransaction'))
+                      _buildActionCard('History', Icons.receipt_long, () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const TransactionHistoryScreen()));
+                      }),
+                  ],
+                ),
+              ],
+              if (hasAnyMaster) ...[
                 const SizedBox(height: 12),
                 const Text('Master Data', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
@@ -204,43 +209,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ],
                 ),
               ],
-              const SizedBox(height: 12),
-              const Text('Inventory', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              GridView.extent(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                maxCrossAxisExtent: 110,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 1.0,
-                children: [
-                  if (hasPermission('ViewAny:Product'))
-                    _buildActionCard('Catalog', Icons.grid_view, () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductBrowserScreen()));
-                    }),
-                  if (hasPermission('ViewAny:InventoryTransaction')) ...[
-                    _buildActionCard('In', Icons.add_circle_outline, () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const InventoryTransactionScreen(type: 'in')));
-                    }),
-                    _buildActionCard('Out', Icons.remove_circle_outline, () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const InventoryTransactionScreen(type: 'out')));
-                    }),
+              if (hasAnyInventory) ...[
+                const SizedBox(height: 12),
+                const Text('Inventory', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                GridView.extent(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  maxCrossAxisExtent: 110,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 1.0,
+                  children: [
+                    if (hasPermission('ViewAny:Product'))
+                      _buildActionCard('Catalog', Icons.grid_view, () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductBrowserScreen()));
+                      }),
+                    if (hasPermission('ViewAny:InventoryTransaction')) ...[
+                      _buildActionCard('In', Icons.add_circle_outline, () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const InventoryTransactionScreen(type: 'in')));
+                      }),
+                      _buildActionCard('Out', Icons.remove_circle_outline, () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const InventoryTransactionScreen(type: 'out')));
+                      }),
+                    ],
+                    if (hasPermission('ViewAny:InventoryMovement'))
+                      _buildActionCard('Move', Icons.swap_horiz, () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const StockMovementScreen()));
+                      }),
+                    if (hasPermission('ViewAny:StockOpname'))
+                      _buildActionCard('Opname', Icons.fact_check_outlined, () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const StockOpnameScreen()));
+                      }),
+                    if (hasPermission('ViewAny:Product')) // Using Product view as balance check
+                      _buildActionCard('Balance', Icons.account_balance, () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const StockBalanceScreen()));
+                      }),
                   ],
-                  if (hasPermission('ViewAny:InventoryMovement'))
-                    _buildActionCard('Move', Icons.swap_horiz, () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const StockMovementScreen()));
-                    }),
-                  if (hasPermission('ViewAny:StockOpname'))
-                    _buildActionCard('Opname', Icons.fact_check_outlined, () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const StockOpnameScreen()));
-                    }),
-                  if (hasPermission('ViewAny:Product')) // Using Product view as balance check
-                    _buildActionCard('Balance', Icons.account_balance, () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const StockBalanceScreen()));
-                    }),
-                ],
-              ),
+                ),
+              ],
               const SizedBox(height: 24),
               Center(
                 child: Text('v$_appVersion (${AppConfig.env.toUpperCase()})', style: const TextStyle(fontSize: 10, color: Colors.grey)),
