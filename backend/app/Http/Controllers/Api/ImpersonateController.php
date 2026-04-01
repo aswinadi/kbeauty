@@ -51,10 +51,7 @@ class ImpersonateController extends Controller
             ], 403);
         }
 
-        $isDestAdmin = $user->roles->any(function ($role) {
-            $name = strtolower($role->name);
-            return $name === 'super admin' || $name === 'super_admin';
-        });
+        $isDestAdmin = $user->roles()->whereIn('roles.name', ['super_admin', 'Super Admin', 'super-admin'])->exists();
 
         if ($isDestAdmin) {
             return response()->json([
