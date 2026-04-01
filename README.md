@@ -14,7 +14,11 @@ A comprehensive inventory management system with a Laravel/Filament backend and 
 - **Stock Opname**: Mobile-first stock counting with support for dual-unit entry. Automatically calculates totals based on conversion ratios.
 - **Stock Balance**: Real-time stock visibility per location with intuitive unit breakdowns (e.g., "1 Box 5 Pcs").
 - **Movement Tracking**: Logging of stock-in, stock-out, and internal movements (Card Report).
-- **Secure Attendance**: Geofenced check-in/out with **Advanced Face Recognition** (Triple-lock landmark detection + RGB similarity scoring).
+### 🔐 Security & Impersonation
+- **Advanced Face Verification**: Geofenced check-in/out with **Advanced Face Recognition** (Triple-lock landmark detection + RGB similarity scoring).
+- **Cross-Platform Impersonation**: Super Admins can impersonate users on both Web (Filament) and Mobile (API) for remote troubleshooting.
+- **Permission-Based Menu (Mobile)**: Dashboard menus are dynamically hidden/shown based on **Filament Shield** permissions across the `web` and `sanctum` guards.
+- **Admin Panel Control**: Strictly restricted Role and User management, ensuring only a genuine `super_admin` can manage security settings.
 - **Responsive Layouts**: Mobile app is optimized with `SafeArea` to ensure full visibility on all device types (notches, guesture bars, etc.).
 
 ### 📊 Reporting & Exports

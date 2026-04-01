@@ -1,5 +1,23 @@
 # Project Changelog
 
+## [1.8.0] - 2026-04-01
+
+### Added
+- **Permission-Based Menu Visibility (Mobile)**: 
+  - Integrated **Filament Shield** permissions directly into the mobile dashboard.
+  - Menus are now dynamically hidden/shown based on the user's specific permissions (e.g., `ViewAny:ServiceCategory`, `Create:PosTransaction`).
+  - **Dynamic Sections**: Entire dashboard sections (Inventory, Master Data, etc.) now hide completely if the user has no authorized menus inside them.
+- **Cross-Guard Permission Support**: Modified API to bridge the gap between Filament (`web` guard) and Mobile (`sanctum` guard), ensuring consistent authorization across all platforms.
+
+### Fixed
+- **Mobile Impersonation Stability**:
+  - Resolved "No users found" issue by hardening JSON parsing to handle null/missing employee profile data (NIK, Office ID).
+  - Fixed "Failed to impersonate" error by making backend authorization checks guard-agnostic.
+- **Admin Security (Web)**: 
+  - Strictly restricted **Roles** and **Users** management to the `super_admin` role only, preventing unauthorized access during impersonation sessions.
+- **Filament Redirection**: Corrected the impersonation flow to ensure admins remain within the Filament dashboard after switching users.
+- **Bug Fix**: Resolved a parsing crash in `employee.dart` for incomplete user records.
+
 ## [1.7.0] - 2026-03-23
 
 ### Added
