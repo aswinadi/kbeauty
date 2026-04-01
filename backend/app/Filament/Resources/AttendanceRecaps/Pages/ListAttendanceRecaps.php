@@ -5,6 +5,7 @@ namespace App\Filament\Resources\AttendanceRecaps\Pages;
 use App\Filament\Resources\AttendanceRecaps\AttendanceRecapResource;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Actions\Action;
+use App\Models\Holiday;
 
 class ListAttendanceRecaps extends ListRecords
 {
@@ -81,9 +82,26 @@ class ListAttendanceRecaps extends ListRecords
         $current = \Carbon\Carbon::parse($fromDate);
         $end = \Carbon\Carbon::parse($toDate);
         
+        // Get all holidays within the range
+        $holidays = Holiday::where('end_date', '>=', $fromDate)
+            ->where('start_date', '<=', $toDate)
+            ->get();
+
         // Build Cartesian Product (Date x Employee)
         while ($current <= $end) {
             $dateStr = $current->toDateString();
+
+            // Skip holidays
+            $isHoliday = $holidays->contains(function ($holiday) use ($current) {
+                return $current->greaterThanOrEqualTo($holiday->start_date) && 
+                       $current->lessThanOrEqualTo($holiday->end_date);
+            });
+
+            if ($isHoliday) {
+                $current->addDay();
+                continue;
+            }
+
             foreach ($employees as $employee) {
                 $recap = $records[$dateStr][$employee->id][0] ?? null;
                 

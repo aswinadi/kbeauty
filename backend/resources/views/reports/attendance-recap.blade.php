@@ -45,7 +45,6 @@
     <table>
         <thead>
             <tr>
-                <th>Tanggal</th>
                 <th>Karyawan</th>
                 <th>Kantor</th>
                 <th>Tipe</th>
@@ -55,9 +54,15 @@
             </tr>
         </thead>
         <tbody>
+            @php $currentDate = null; @endphp
             @foreach($records as $record)
+                @if($currentDate != $record->date)
+                    @php $currentDate = $record->date; @endphp
+                    <tr style="background-color: #edf2f7; font-weight: bold;">
+                        <td colspan="6">{{ \Carbon\Carbon::parse($currentDate)->translatedFormat('l, d F Y') }}</td>
+                    </tr>
+                @endif
                 <tr>
-                    <td>{{ \Carbon\Carbon::parse($record->date)->format('d/m/Y') }}</td>
                     <td><strong>{{ $record->employee?->full_name }}</strong></td>
                     <td>{{ $record->office?->name }}</td>
                     <td>

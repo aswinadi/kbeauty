@@ -39,22 +39,48 @@ class AttendanceRecapExport implements FromCollection, WithHeadings, WithMapping
 
     public function map($recap): array
     {
+        if (isset($recap->is_header) && $recap->is_header) {
+            return [
+                \Carbon\Carbon::parse($recap->date)->translatedFormat('l, d F Y'),
+                '', '', '', '', '', ''
+            ];
+        }
+
         return [
-            $recap->date,
+            \Carbon\Carbon::parse($recap->date)->format('d/m/Y'),
             $recap->employee?->full_name,
             $recap->office?->name,
             $this->formatType($recap->type),
-            $recap->check_in,
-            $recap->check_out,
+            $recap->check_in ? \Carbon\Carbon::parse($recap->check_in)->format('H:i') : '-',
+            $recap->check_out ? \Carbon\Carbon::parse($recap->check_out)->format('H:i') : '-',
             $recap->remark,
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
-        return [
-            1 => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']], 'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4A5568']]],
+        $styles = [
+            1 => [
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4A5568']]
+            ],
         ];
+
+        // Track header row styles
+        $rowIndex = 2; // Data starts at row 2
+        foreach ($this->data as $record) {
+            if (isset($record->is_header) && $record->is_header) {
+                $styles[$rowIndex] = [
+                    'font' => ['bold' => true],
+                    'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => 'EDF2F7']]
+                ];
+                // Merge cells for the header
+                $sheet->mergeCells("A{$rowIndex}:G{$rowIndex}");
+            }
+            $rowIndex++;
+        }
+
+        return $styles;
     }
 
     protected function formatType($type)

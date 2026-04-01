@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Exports\AttendanceRecapExport;
 use App\Models\AttendanceRecap;
 use App\Models\Employee;
+use App\Models\Holiday;
 use App\Models\Office;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -202,16 +203,33 @@ class AttendanceReport extends Page implements HasForms, HasTable
 
     public function exportExcel()
     {
-        $query = $this->getFilteredTableQuery();
+        $data = $this->getRecapData();
+        
+        // Grouping logic for Excel: Insert header rows
+        $groupedData = collect();
+        $currentDate = null;
+        
+        foreach ($data as $record) {
+            if ($currentDate !== $record->date) {
+                $currentDate = $record->date;
+                // Add a "Header Row" object (or a special record)
+                $groupedData->push((object)[
+                    'is_header' => true,
+                    'date' => $currentDate,
+                ]);
+            }
+            $groupedData->push($record);
+        }
+
         return Excel::download(
-            new AttendanceRecapExport($query), 
+            new AttendanceRecapExport($groupedData), 
             'attendance-recap-' . now()->format('Y-m-d') . '.xlsx'
         );
     }
 
     public function exportPdf()
     {
-        $records = $this->getFilteredTableQuery()->get();
+        $records = $this->getRecapData();
         
         $period = 'Semua Waktu';
         if ($this->start_date || $this->end_date) {
@@ -229,5 +247,80 @@ class AttendanceReport extends Page implements HasForms, HasTable
             fn () => print($pdf->output()),
             'attendance-recap-' . now()->format('Y-m-d') . '.pdf'
         );
+    }
+
+    protected function getRecapData()
+    {
+        // Define date range
+        $fromDate = $this->start_date ?? now()->startOfMonth()->toDateString();
+        $toDate = $this->end_date ?? now()->toDateString();
+
+        // Get all holidays within the range
+        $holidays = Holiday::where('end_date', '>=', $fromDate)
+            ->where('start_date', '<=', $toDate)
+            ->get();
+        
+        // Get all active employees (excluding super admin)
+        $employees = Employee::whereHas('user', function ($q) {
+            $q->whereDoesntHave('roles', function ($q) {
+                $q->where('name', 'super_admin');
+            });
+        })->with(['user', 'office'])->get();
+        
+        // Fetch actual attendance records for the range
+        $records = AttendanceRecap::query()
+            ->when($this->employee_id, fn($q) => $q->where('employee_id', $this->employee_id))
+            ->whereDate('date', '>=', $fromDate)
+            ->whereDate('date', '<=', $toDate)
+            ->with(['employee', 'office'])
+            ->get()
+            ->groupBy(['date', 'employee_id']);
+        
+        $data = collect();
+        $current = Carbon::parse($fromDate);
+        $end = Carbon::parse($toDate);
+        
+        // Build Cartesian Product (Date x Employee)
+        while ($current <= $end) {
+            $dateStr = $current->toDateString();
+
+            // Skip holidays
+            $isHoliday = $holidays->contains(function ($holiday) use ($current) {
+                return $current->greaterThanOrEqualTo($holiday->start_date) && 
+                       $current->lessThanOrEqualTo($holiday->end_date);
+            });
+
+            if ($isHoliday) {
+                $current->addDay();
+                continue;
+            }
+            
+            // If employee_id is specifically filtered, only show that employee
+            $targetEmployees = $this->employee_id 
+                ? Employee::where('id', $this->employee_id)->with(['user', 'office'])->get()
+                : $employees;
+
+            foreach ($targetEmployees as $employee) {
+                $recap = $records[$dateStr][$employee->id][0] ?? null;
+                
+                if ($recap) {
+                    $data->push($recap);
+                } else {
+                    // Create a placeholder record for the "left join" effect
+                    $data->push(new \App\Models\AttendanceRecap([
+                        'date' => $dateStr,
+                        'employee_id' => $employee->id,
+                        'type' => 'absent',
+                        'check_in' => null,
+                        'check_out' => null,
+                        'remark' => '-',
+                    ])->setRelation('employee', $employee)
+                      ->setRelation('office', $employee->office));
+                }
+            }
+            $current->addDay();
+        }
+        
+        return $data->sortBy([['date', 'asc'], ['employee.full_name', 'asc']]);
     }
 }

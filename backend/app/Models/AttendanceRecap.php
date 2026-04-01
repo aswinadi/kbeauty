@@ -8,6 +8,7 @@ class AttendanceRecap extends Model
 {
     public $incrementing = false;
     protected $table = 'attendance_recaps';
+    protected $guarded = [];
     
     public function employee()
     {
