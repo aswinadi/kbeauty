@@ -87,6 +87,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final isNailist = _user?.roles.contains('nailist') ?? false;
 
+    bool hasPermission(String permission) {
+      if (_user?.roles.contains('super_admin') ?? false) return true;
+      return _user?.permissions.contains(permission) ?? false;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('K-Beauty House', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -138,9 +143,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _buildActionCard('Check In/Out', Icons.location_on_outlined, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen()));
                   }),
-                  _buildActionCard('History', Icons.history, () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceHistoryScreen()));
-                  }),
+                  if (hasPermission('ViewAny:Attendance'))
+                    _buildActionCard('History', Icons.history, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceHistoryScreen()));
+                    }),
                 ],
               ),
               const SizedBox(height: 12),
@@ -154,42 +160,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 mainAxisSpacing: 8,
                 childAspectRatio: 1.0,
                 children: [
-                  _buildActionCard('POS', Icons.point_of_sale, () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const PosCheckoutScreen()));
-                  }),
+                  if (hasPermission('Create:PosTransaction'))
+                    _buildActionCard('POS', Icons.point_of_sale, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const PosCheckoutScreen()));
+                    }),
                   _buildActionCard('Comm', Icons.account_balance_wallet_outlined, () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const NailistPerformanceScreen()));
                   }),
-                  _buildActionCard('CRM', Icons.group_outlined, () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerListScreen()));
-                  }),
-                  _buildActionCard('Appt', Icons.calendar_month_outlined, () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const AppointmentCalendarScreen()));
-                  }),
-                  _buildActionCard('History', Icons.receipt_long, () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const TransactionHistoryScreen()));
-                  }),
+                  if (hasPermission('ViewAny:Customer'))
+                    _buildActionCard('CRM', Icons.group_outlined, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerListScreen()));
+                    }),
+                  if (hasPermission('ViewAny:Appointment'))
+                    _buildActionCard('Appt', Icons.calendar_month_outlined, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const AppointmentCalendarScreen()));
+                    }),
+                  if (hasPermission('ViewAny:PosTransaction'))
+                    _buildActionCard('History', Icons.receipt_long, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const TransactionHistoryScreen()));
+                    }),
                 ],
               ),
-              const SizedBox(height: 12),
-              const Text('Master Data', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              GridView.extent(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                maxCrossAxisExtent: 110,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 1.0,
-                children: [
-                   _buildActionCard('Tr. Category', Icons.category, () {
-                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceCategoryListScreen()));
-                   }),
-                   _buildActionCard('Treatments', Icons.spa, () {
-                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceTreatmentListScreen()));
-                   }),
-                ],
-              ),
+              if (hasPermission('ViewAny:ServiceCategory') || hasPermission('ViewAny:Service')) ...[
+                const SizedBox(height: 12),
+                const Text('Master Data', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                GridView.extent(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  maxCrossAxisExtent: 110,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 1.0,
+                  children: [
+                    if (hasPermission('ViewAny:ServiceCategory'))
+                      _buildActionCard('Tr. Category', Icons.category, () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceCategoryListScreen()));
+                      }),
+                    if (hasPermission('ViewAny:Service'))
+                      _buildActionCard('Treatments', Icons.spa, () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const ServiceTreatmentListScreen()));
+                      }),
+                  ],
+                ),
+              ],
               const SizedBox(height: 12),
               const Text('Inventory', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
@@ -201,22 +215,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 mainAxisSpacing: 8,
                 childAspectRatio: 1.0,
                 children: [
-                  _buildActionCard('Catalog', Icons.grid_view, () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductBrowserScreen()));
-                  }),
-                  _buildActionCard('In', Icons.add_circle_outline, () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const InventoryTransactionScreen(type: 'in')));
-                  }),
-                  _buildActionCard('Out', Icons.remove_circle_outline, () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const InventoryTransactionScreen(type: 'out')));
-                  }),
-                  _buildActionCard('Move', Icons.swap_horiz, () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const StockMovementScreen()));
-                  }),
-                  _buildActionCard('Opname', Icons.fact_check_outlined, () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const StockOpnameScreen()));
-                  }),
-                  if (!isNailist)
+                  if (hasPermission('ViewAny:Product'))
+                    _buildActionCard('Catalog', Icons.grid_view, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductBrowserScreen()));
+                    }),
+                  if (hasPermission('ViewAny:InventoryTransaction')) ...[
+                    _buildActionCard('In', Icons.add_circle_outline, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const InventoryTransactionScreen(type: 'in')));
+                    }),
+                    _buildActionCard('Out', Icons.remove_circle_outline, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const InventoryTransactionScreen(type: 'out')));
+                    }),
+                  ],
+                  if (hasPermission('ViewAny:InventoryMovement'))
+                    _buildActionCard('Move', Icons.swap_horiz, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const StockMovementScreen()));
+                    }),
+                  if (hasPermission('ViewAny:StockOpname'))
+                    _buildActionCard('Opname', Icons.fact_check_outlined, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const StockOpnameScreen()));
+                    }),
+                  if (hasPermission('ViewAny:Product')) // Using Product view as balance check
                     _buildActionCard('Balance', Icons.account_balance, () {
                       Navigator.push(context, MaterialPageRoute(builder: (_) => const StockBalanceScreen()));
                     }),

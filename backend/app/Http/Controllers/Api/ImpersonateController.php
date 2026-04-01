@@ -62,9 +62,12 @@ class ImpersonateController extends Controller
         // Generate token for the target user
         $token = $user->createToken('mobile-impersonation')->plainTextToken;
 
+        $user->load('roles');
+        $user->permissions = $user->getAllPermissions()->pluck('name');
+
         return response()->json([
             'message' => "Successfully impersonating {$user->name}",
-            'user' => $user->load('roles'),
+            'user' => $user,
             'token' => $token,
         ]);
     }

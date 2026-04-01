@@ -26,8 +26,11 @@ class AuthController extends Controller
             ]);
         }
 
+        $user->load('roles');
+        $user->permissions = $user->getAllPermissions()->pluck('name');
+
         return response()->json([
-            'user' => $user->load('roles'),
+            'user' => $user,
             'token' => $user->createToken($request->device_name)->plainTextToken,
         ]);
     }
@@ -41,7 +44,9 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return response()->json($request->user()->load(['roles', 'employee.office']));
+        $user = $request->user()->load(['roles', 'employee.office']);
+        $user->permissions = $user->getAllPermissions()->pluck('name');
+        return response()->json($user);
     }
 
     public function changePassword(Request $request)

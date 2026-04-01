@@ -7,6 +7,7 @@ class User {
   final String? email;
   final String? token;
   final List<String> roles;
+  final List<String> permissions;
   final Employee? employee;
 
   User({
@@ -16,6 +17,7 @@ class User {
     this.email,
     this.token,
     this.roles = const [],
+    this.permissions = const [],
     this.employee,
   });
 
@@ -27,6 +29,13 @@ class User {
       }
     }
 
+    List<String> permissions = [];
+    if (json['permissions'] != null) {
+      if (json['permissions'] is List) {
+        permissions = (json['permissions'] as List).map((p) => p.toString()).toList();
+      }
+    }
+
     return User(
       id: json['id'],
       name: json['name'],
@@ -34,6 +43,7 @@ class User {
       email: json['email'],
       token: token,
       roles: roles,
+      permissions: permissions,
       employee: json['employee'] != null ? Employee.fromJson(json['employee']) : null,
     );
   }
@@ -45,6 +55,7 @@ class User {
       'username': username,
       'email': email,
       'roles': roles.map((r) => {'name': r}).toList(),
+      'permissions': permissions,
       'employee': employee?.toJson(),
     };
   }
