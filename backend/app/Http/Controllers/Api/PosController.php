@@ -150,9 +150,10 @@ class PosController extends Controller
         return response()->json(
             Employee::with('user:id,name')
                 ->whereHas('user', function ($q) {
-                    $q->whereDoesntHave('roles', function ($q) {
-                        $q->where('name', 'super_admin');
-                    });
+                    $q->where('is_active', true)
+                      ->whereHas('roles', function ($q) {
+                          $q->where('name', 'staff');
+                      });
                 })
                 ->get()
                 ->map(function ($employee) {
