@@ -29,6 +29,7 @@ jobs:
             echo "Pulling latest code..."
             git fetch origin main
             git reset --hard origin/main
+            rm -rf .docs
             
             echo "Setting up Backend..."
             cd backend
