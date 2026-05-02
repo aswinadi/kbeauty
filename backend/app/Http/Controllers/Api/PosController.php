@@ -151,8 +151,8 @@ class PosController extends Controller
             Employee::with('user:id,name')
                 ->whereHas('user', function ($q) {
                     $q->where('is_active', true)
-                      ->whereHas('roles', function ($q) {
-                          $q->where('name', 'staff');
+                      ->whereDoesntHave('roles', function ($q) {
+                          $q->where('name', 'super_admin');
                       });
                 })
                 ->get()
