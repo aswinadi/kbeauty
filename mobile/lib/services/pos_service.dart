@@ -8,6 +8,25 @@ class PosService {
   static const String baseUrl = AppConfig.apiBaseUrl;
   final _authService = AuthService();
 
+  Future<Map<String, dynamic>?> checkAppVersion() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/app/version'),
+        headers: {
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Error checking app version: $e');
+      return null;
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getItems() async {
     try {
       final token = await _authService.getToken();

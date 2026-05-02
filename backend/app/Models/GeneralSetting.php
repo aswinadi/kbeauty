@@ -14,6 +14,9 @@ class GeneralSetting extends Model
         'store_phone',
         'pos_item_layout',
         'bill_footer',
+        'latest_version',
+        'apk_url',
+        'is_mandatory_update',
     ];
 
     public function posDisplayLocation()

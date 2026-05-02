@@ -89,6 +89,24 @@ class ManageGeneralSettings extends Page implements HasForms
                             ->searchable()
                             ->preload(),
                     ])->columns(2),
+
+                Section::make('App Versioning')
+                    ->description('Manage mobile app updates and mandatory versioning.')
+                    ->schema([
+                        \Filament\Forms\Components\TextInput::make('latest_version')
+                            ->label('Latest App Version')
+                            ->placeholder('e.g., 1.2.0')
+                            ->helperText('The current latest version of the mobile app.'),
+                        \Filament\Forms\Components\TextInput::make('apk_url')
+                            ->label('APK Download URL')
+                            ->url()
+                            ->placeholder('e.g., https://example.com/app-latest.apk')
+                            ->helperText('Direct link to download the latest APK file.'),
+                        \Filament\Forms\Components\Toggle::make('is_mandatory_update')
+                            ->label('Is Mandatory Update')
+                            ->default(false)
+                            ->helperText('If enabled, users will be forced to update to use the app.'),
+                    ])->columns(2),
             ])
             ->statePath('data');
     }

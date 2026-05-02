@@ -5,6 +5,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/app/version', function() {
+    $settings = \App\Models\GeneralSetting::first();
+    return response()->json([
+        'latest_version' => $settings?->latest_version,
+        'apk_url' => $settings?->apk_url,
+        'is_mandatory_update' => (bool)$settings?->is_mandatory_update,
+    ]);
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'me']);
