@@ -121,8 +121,10 @@ class _ProductBrowserScreenState extends State<ProductBrowserScreen> {
                           itemCount: _products.length,
                           itemBuilder: (context, index) {
                             final product = _products[index];
-                            return Container(
-                              decoration: BoxDecoration(
+                            return Opacity(
+                              opacity: product.isActive ? 1.0 : 0.5,
+                              child: Container(
+                                decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: Colors.grey[200]!),
@@ -160,17 +162,32 @@ class _ProductBrowserScreenState extends State<ProductBrowserScreen> {
                                           color: Colors.grey[100],
                                           borderRadius: BorderRadius.circular(8),
                                         ),
-                                        child: product.imageUrl != null && product.imageUrl!.isNotEmpty
-                                            ? ClipRRect(
-                                                borderRadius: BorderRadius.circular(8),
-                                                child: Image.network(
-                                                  product.imageUrl!,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (context, error, stackTrace) =>
-                                                      Icon(Icons.image_not_supported, color: Colors.grey[400]),
+                                        child: Stack(
+                                          fit: StackFit.expand,
+                                          children: [
+                                            product.imageUrl != null && product.imageUrl!.isNotEmpty
+                                                ? ClipRRect(
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    child: Image.network(
+                                                      product.imageUrl!,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder: (context, error, stackTrace) =>
+                                                          Icon(Icons.image_not_supported, color: Colors.grey[400]),
+                                                    ),
+                                                  )
+                                                : Icon(Icons.image, color: Colors.grey[400]),
+                                            if (!product.isActive)
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.black.withOpacity(0.2),
+                                                  borderRadius: BorderRadius.circular(8),
                                                 ),
-                                              )
-                                            : Icon(Icons.image, color: Colors.grey[400]),
+                                                child: const Center(
+                                                  child: Icon(Icons.block, color: Colors.white, size: 24),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
                                       ),
                                       const SizedBox(width: 16),
                                       // Product Details

@@ -33,6 +33,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   bool _isLoading = false;
   bool _isSaving = false;
   bool _isSuperAdmin = false;
+  bool _isActive = true;
 
   List<Category> _categories = [];
   List<Unit> _units = [];
@@ -51,6 +52,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     _selectedCategoryId = widget.product?.categoryId;
     _selectedUnitId = widget.product?.unitId;
     _selectedSecondaryUnitId = widget.product?.secondaryUnitId;
+    _isActive = widget.product?.isActive ?? true;
     _loadMetadata();
   }
 
@@ -141,6 +143,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         secondaryUnitId: _selectedSecondaryUnitId,
         conversionRatio: double.tryParse(_conversionRatioController.text),
         imageFile: _imageFile,
+        isActive: _isActive,
       );
     } else {
       success = await _productService.createProduct(
@@ -152,6 +155,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         secondaryUnitId: _selectedSecondaryUnitId,
         conversionRatio: double.tryParse(_conversionRatioController.text),
         imageFile: _imageFile,
+        isActive: _isActive,
       );
     }
 
@@ -267,6 +271,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       onChanged: (val) => setState(() => _selectedCategoryId = val),
                       decoration: const InputDecoration(labelText: 'Category'),
                       validator: (val) => val == null ? 'Required' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    SwitchListTile(
+                      title: const Text('Produk Aktif', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                      subtitle: const Text('Matikan jika produk tidak lagi tersedia', style: TextStyle(fontSize: 12)),
+                      value: _isActive,
+                      activeColor: AppTheme.accentColor,
+                      contentPadding: EdgeInsets.zero,
+                      onChanged: (val) => setState(() => _isActive = val),
                     ),
                     const SizedBox(height: 16),
                     

@@ -14,9 +14,11 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: Colors.white,
+    return Opacity(
+      opacity: product.isActive ? 1.0 : 0.6,
+      child: Card(
+        elevation: 0,
+        color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: Colors.grey[100]!),
@@ -34,17 +36,43 @@ class ProductCard extends StatelessWidget {
                   color: AppTheme.primaryColor.withValues(alpha: 0.05),
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                 ),
-                child: product.imageUrl != null && product.imageUrl!.isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                        child: Image.network(
-                          product.imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.image_not_supported, color: AppTheme.primaryColor),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    product.imageUrl != null && product.imageUrl!.isNotEmpty
+                        ? ClipRRect(
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                            child: Image.network(
+                              product.imageUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.image_not_supported, color: AppTheme.primaryColor),
+                            ),
+                          )
+                        : const Icon(Icons.image, color: AppTheme.primaryColor),
+                    if (!product.isActive)
+                      Center(
+                        child: RotationTransition(
+                          turns: const AlwaysStoppedAnimation(-15 / 360),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.8),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              'NON-AKTIF',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ),
-                      )
-                    : const Icon(Icons.image, color: AppTheme.primaryColor),
+                      ),
+                  ],
+                ),
               ),
             ),
             Padding(

@@ -41,6 +41,7 @@ class ProductController extends Controller
                 'category_id' => $product->category_id,
                 'category_name' => $product->category?->name,
                 'image_url' => $product->getFirstMediaUrl('product_images') ?: null,
+                'is_active' => (bool) $product->is_active,
             ];
         });
 
@@ -57,6 +58,7 @@ class ProductController extends Controller
             'secondary_unit_id' => 'nullable|exists:units,id',
             'conversion_ratio' => 'nullable|numeric',
             'image' => 'nullable|image|max:2048',
+            'is_active' => 'nullable|boolean',
         ]);
 
         $product = Product::create($request->only([
@@ -66,7 +68,8 @@ class ProductController extends Controller
             'category_id',
             'unit_id',
             'secondary_unit_id',
-            'conversion_ratio'
+            'conversion_ratio',
+            'is_active'
         ]));
 
         if ($request->hasFile('image')) {
@@ -90,6 +93,7 @@ class ProductController extends Controller
                 'category_id' => $product->category_id,
                 'category_name' => $product->category?->name,
                 'image_url' => $product->getFirstMediaUrl('product_images') ?: null,
+                'is_active' => (bool) $product->is_active,
             ],
         ], 201);
     }
@@ -106,6 +110,7 @@ class ProductController extends Controller
             'secondary_unit_id' => 'nullable|exists:units,id',
             'conversion_ratio' => 'nullable|numeric',
             'image' => 'nullable|image|max:2048',
+            'is_active' => 'nullable|boolean',
         ]);
 
         $product->update($request->only([
@@ -115,7 +120,8 @@ class ProductController extends Controller
             'category_id',
             'unit_id',
             'secondary_unit_id',
-            'conversion_ratio'
+            'conversion_ratio',
+            'is_active'
         ]));
 
         if ($request->hasFile('image')) {
@@ -140,6 +146,7 @@ class ProductController extends Controller
                 'category_id' => $product->category_id,
                 'category_name' => $product->category?->name,
                 'image_url' => $product->getFirstMediaUrl('product_images') ?: null,
+                'is_active' => (bool) $product->is_active,
             ],
         ]);
     }

@@ -39,6 +39,7 @@ class Product {
   final int? categoryId;
   final String? categoryName;
   final String? imageUrl;
+  final bool isActive;
 
   Product({
     required this.id,
@@ -53,6 +54,7 @@ class Product {
     this.categoryId,
     this.categoryName,
     this.imageUrl,
+    this.isActive = true,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -71,6 +73,7 @@ class Product {
       categoryId: json['category_id'],
       categoryName: json['category_name'],
       imageUrl: json['image_url'],
+      isActive: json['is_active'] ?? true,
     );
   }
 }

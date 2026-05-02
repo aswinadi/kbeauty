@@ -89,6 +89,7 @@ class ProductService {
     int? secondaryUnitId,
     double? conversionRatio,
     File? imageFile,
+    bool isActive = true,
   }) async {
     try {
       final token = await _authService.getToken();
@@ -113,6 +114,7 @@ class ProductService {
       if (conversionRatio != null) {
         request.fields['conversion_ratio'] = conversionRatio.toString();
       }
+      request.fields['is_active'] = isActive ? '1' : '0';
 
       if (imageFile != null) {
         request.files.add(await http.MultipartFile.fromPath(
@@ -145,6 +147,7 @@ class ProductService {
     int? secondaryUnitId,
     double? conversionRatio,
     File? imageFile,
+    bool isActive = true,
   }) async {
     try {
       final token = await _authService.getToken();
@@ -169,6 +172,7 @@ class ProductService {
       if (conversionRatio != null) {
         request.fields['conversion_ratio'] = conversionRatio.toString();
       }
+      request.fields['is_active'] = isActive ? '1' : '0';
 
       if (imageFile != null) {
         request.files.add(await http.MultipartFile.fromPath(
