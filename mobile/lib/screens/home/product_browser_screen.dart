@@ -268,6 +268,7 @@ class _ProductBrowserScreenState extends State<ProductBrowserScreen> {
                                       ),
                                     ],
                                   ),
+                                  ),
                                 ),
                               ),
                             );
