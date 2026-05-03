@@ -9,7 +9,7 @@ This document provides a detailed technical prompt for reconstructuring the **K-
 
 **Backend**:
 - **Framework**: Laravel 11 (PHP 8.2+)
-- **Admin Panel**: Filament v3
+- **Admin Panel**: Filament v5
 - **Authentication**: Laravel Sanctum (API) & Web Session
 - **Permissions**: Spatie Laravel-Permission with Filament Shield
 - **Media**: Spatie Laravel-MediaLibrary
