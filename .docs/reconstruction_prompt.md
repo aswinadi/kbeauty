@@ -24,6 +24,13 @@ This document provides a detailed technical prompt for reconstructuring the **K-
   - `geolocator` (Geofencing)
   - `blue_thermal_printer` (Thermal Printing)
   - `package_info_plus` (Versioning)
+  - `url_launcher` (WhatsApp Integration)
+  - `flash` (UI Notifications)
+
+**Design Aesthetics**:
+- **Theme**: Premium "K-Beauty" aesthetic with Pink-primary color palette.
+- **Mobile UI**: Responsive grid-based dashboard using `GridView.extent` and `animations` package for smooth transitions.
+- **Safe Area**: Strict adherence to `SafeArea` for modern devices with notches.
 
 ---
 
@@ -36,7 +43,9 @@ The system requires the following entity relationships:
 
 **Crucial Logic**:
 - **Multi-UOM**: Products must support a `primary_unit` (smallest) and `secondary_unit` (bulk) with a `conversion_ratio`.
+- **Service Variants**: Services can have multiple variants (e.g., "Regular" vs "Premium") with distinct pricing.
 - **Polymorphic Transactions**: `inventory_movements` must link to `Product`, `Service` (materials), or `Bundle` items.
+- **Commissions**: `pos_transaction_items` must support linking multiple `employees` per item for shared commission splitting.
 
 ---
 
@@ -82,6 +91,7 @@ The system requires the following entity relationships:
 - **Stock Deduction**: When a Service is sold in POS, the system must check the Service's "Materials" list and automatically deduct the corresponding Products from the "POS Display Location".
 - **Permissions Bridge**: Ensure the Mobile API (`sanctum` guard) respects Filament Shield permissions (`web` guard) by mapping permission strings (e.g., `ViewAny:Product`).
 - **Face Embedding**: Store a 128-float array (JSON) in the `employees` table for face matching.
+- **Commission Split**: Logic to divide item commissions equally or by percentage among assigned staff.
 
 ---
 
