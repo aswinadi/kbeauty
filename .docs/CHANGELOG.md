@@ -1,5 +1,23 @@
 # Project Changelog
 
+## [1.9.0] - 2026-05-02
+
+### Added
+- **Mandatory App Update System**: 
+  - Integrated a complete version tracking system across backend and mobile.
+  - **Admin Control**: New "App Versioning" section in General Settings to manage `latest_version`, `apk_url`, and `is_mandatory_update`.
+  - **Mobile Enforcement**: App automatically checks for updates on startup and forces a redirect to the APK download if a mandatory update is required.
+- **Product Activity Management**:
+  - Added `is_active` toggle for products on both backend and mobile.
+  - **Visual Feedback**: Inactive products are now dimmed and marked with a "NON-AKTIF" badge in the mobile catalog and product browser.
+- **Designated Employee Filtering**:
+  - Enhanced POS employee selection to improve security and clarity.
+  - The list now automatically filters for **active users** only and strictly **excludes the super_admin role**.
+
+### Fixed
+- **Mobile UI Syntax**: Resolved build failures in `ProductCard` and `ProductBrowserScreen` by correcting widget nesting and parentheses.
+- **POS Logic**: Hardened the designated employee fetch to ensure real-time synchronization with user status changes.
+
 ## [1.8.0] - 2026-04-01
 
 ### Added

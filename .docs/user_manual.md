@@ -31,7 +31,14 @@ The web dashboard is the central hub for administrative tasks, reporting, and bu
 ### 📦 Product Management
 *   **Catalog**: View and search all products in the **Products** resource.
 *   **Creating Products**: Click "New Product" to add items. Ensure you specify the SKU, Category, and UOM settings.
+*   **Active Status**: Use the `Is Active` toggle to enable or disable products. Inactive products will be hidden from the standard POS selection but remain in the database for history.
 *   **UOM Configuration**: In the product form, define the `Primary Unit` and `Secondary Unit` (optional) along with the conversion ratio.
+
+### ⚙️ App Versioning & Updates
+Managed via **General Settings > App Versioning**:
+*   **Latest Version**: The version number (e.g., `1.2.0`) currently released.
+*   **APK URL**: The direct download link for the mobile app.
+*   **Mandatory Update**: If enabled, all mobile users will be forced to download the latest version before they can log in or use the dashboard.
 
 ### 🔄 Inventory Transactions
 *   **Stock In**: Use **Inventory Ins** to record new stock arrivals (e.g., from suppliers).
@@ -54,6 +61,12 @@ The dashboard provides a quick overview of total products and movements. Large a
 *   **Catalog**: Browse products and view detailed information.
 *   **Stock In / Out**: Quickly record transactions while physically handling items.
 *   **Stock Opname**: The primary tool for periodic stock counts.
+
+### 🛒 POS Operations
+*   **Catalog Browser**: Inactive products are visually dimmed with a "NON-AKTIF" badge to avoid confusion during checkout.
+*   **Designated Employee**: When processing a service, you must select a staff member.
+    *   **Filtering**: The system only shows **Active Users**.
+    *   **Security**: Administrators (`super_admin`) are automatically excluded from the selection list to ensure only operational staff are assigned to treatments.
 
 ### 🔍 Product Scanner
 Use the camera icon (if available) or the search bar in the Catalog to find products quickly by SKU or QR Code.

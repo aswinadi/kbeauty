@@ -155,6 +155,17 @@ To bump the app version, you can either:
 1. Update `version: 1.0.0+1` in `pubspec.yaml`
 2. Or override it during build: `--build-name=1.0.1 --build-number=2`
 
+### Step 7: Hosting the APK (Manual Updates)
+If you are distributing the app manually (not through the Play Store) using the **Mandatory Update** system:
+1.  After building the APK (Step 3), copy the file to a public directory on your server:
+    ```bash
+    mkdir -p /var/www/kbeauty/backend/public/downloads
+    cp build/app/outputs/flutter-apk/app-release.apk /var/www/kbeauty/backend/public/downloads/kbeauty-latest.apk
+    ```
+2.  In the Web Dashboard, go to **General Settings > App Versioning**.
+3.  Set the **Latest App Version** to match your `--build-name` (e.g., `1.0.1`).
+4.  Set the **APK Download URL** to `https://your-domain.com/downloads/kbeauty-latest.apk`.
+
 ---
 
 ## 3. Post-Deployment Maintenance
