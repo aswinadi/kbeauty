@@ -93,10 +93,14 @@ class ManageGeneralSettings extends Page implements HasForms
                 Section::make('App Versioning')
                     ->description('Manage mobile app updates and mandatory versioning.')
                     ->schema([
+                        \Filament\Forms\Components\Placeholder::make('current_app_version')
+                            ->label('Current Repository Version')
+                            ->content($this->getAppVersion())
+                            ->extraAttributes(['class' => 'text-primary-600 font-bold']),
                         \Filament\Forms\Components\TextInput::make('latest_version')
                             ->label('Latest App Version')
                             ->placeholder('e.g., 1.2.0')
-                            ->helperText('The current latest version of the mobile app.'),
+                            ->helperText('The version number that triggers an update prompt.'),
                         \Filament\Forms\Components\TextInput::make('apk_url')
                             ->label('APK Download URL')
                             ->url()
@@ -144,5 +148,21 @@ class ManageGeneralSettings extends Page implements HasForms
             ->success()
             ->title('Settings saved successfully.')
             ->send();
+    }
+
+    protected function getAppVersion(): string
+    {
+        try {
+            $pubspecPath = base_path('../mobile/pubspec.yaml');
+            if (file_exists($pubspecPath)) {
+                $content = file_get_contents($pubspecPath);
+                if (preg_match('/version:\s*([^\s]+)/', $content, $matches)) {
+                    return $matches[1];
+                }
+            }
+        } catch (\Exception $e) {
+            // Silently fail
+        }
+        return 'v1.1.0+2'; // Fallback to last known if file not found in production
     }
 }
