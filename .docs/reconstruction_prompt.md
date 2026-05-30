@@ -78,9 +78,10 @@ The system requires the following entity relationships:
   - Inactive products must be visually dimmed and badged "NON-AKTIF".
 - **POS System**:
   - Item selection (Services/Products/Bundles).
-  - **Designated Employee**: Multi-assignment for treatment commissions. Filter list for active users only (exclude super_admin).
+  - **Designated Employee**: Multi-assignment for treatment commissions. Filter list for active users only (exclude super_admin). Auto-prefills with the currently logged-in user.
+  - **Customer Selection**: Reusable, searchable customer picker dialog (filtering by name or phone number) that displays phone numbers inline to distinguish between duplicate names. Selection is mandatory for POS checkout.
   - **Checkout**: Support Tunai, Debit, Credit, and QRIS.
-  - **Receipts**: Thermal print via Bluetooth and Share via WhatsApp.
+  - **Receipts**: Thermal print via Bluetooth and Share via WhatsApp (automatically including the customer's name in the WhatsApp template).
 - **Mandatory Update**:
   - On startup, compare `package_info` version with backend `latest_version`.
   - Show a blocking dialog if `is_mandatory_update` is true.

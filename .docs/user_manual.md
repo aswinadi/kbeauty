@@ -65,8 +65,18 @@ The dashboard provides a quick overview of total products and movements. Large a
 ### 🛒 POS Operations
 *   **Catalog Browser**: Inactive products are visually dimmed with a "NON-AKTIF" badge to avoid confusion during checkout.
 *   **Designated Employee**: When processing a service, you must select a staff member.
+    *   **Auto-Initialization**: The app automatically sets the designated employee to the currently logged-in user session for convenience.
     *   **Filtering**: The system only shows **Active Users**.
     *   **Security**: Administrators (`super_admin`) are automatically excluded from the selection list to ensure only operational staff are assigned to treatments.
+*   **Customer Selection**: Select a customer prior to checking out. 
+    *   **Search & Cross-check**: Tapping the customer field opens a search dialog. You can search for customers by **Name** or **Phone Number**. Phone numbers are displayed next to names, helping you identify and cross-check duplicate customer names.
+    *   **Validation**: Because the system generates bills to be sent to WhatsApp, checkout requires a selected customer with a valid name.
+
+### 📅 Appointment Scheduler & CRM
+*   **Calendar**: View scheduled appointments in a visual calendar layout.
+*   **Creating Appointments**: Tap the add icon on the calendar to book a new appointment.
+    *   **Searchable Customer**: Similar to POS, you select a customer using the searchable dialog (filtered by name/phone) to avoid duplicates.
+*   **Customer Profiles & History**: From the customer detail screen, you can inspect a customer's detailed treatment transaction history (with accurate itemized service listings) and view the attached "Photos from this visit" taken during previous sessions.
 
 ### 🔍 Product Scanner
 Use the camera icon (if available) or the search bar in the Catalog to find products quickly by SKU or QR Code.

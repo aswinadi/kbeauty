@@ -1,5 +1,22 @@
 # Project Changelog
 
+## [1.10.0] - 2026-05-30
+
+### Added
+- **Searchable Customer Selection Dialog**: Added a reusable, searchable popup dialog for selecting customers across both the POS Checkout and Appointment Scheduler screens.
+  - Search by **Name** or **Phone Number**.
+  - Displays customer phone numbers inline for easy cross-checking of duplicate names.
+- **Enforced Customer Selection at POS Checkout**: Added validation to block checkouts without a selected customer, ensuring a customer profile is linked to send receipts via WhatsApp.
+- **WhatsApp Customer Name**: Automatically includes the customer's name in the generated WhatsApp billing/receipt messages.
+
+### Changed
+- **Auto-Populate Designated Employee**: The POS designated employee field is now automatically initialized using the currently logged-in user session for a smoother checkout workflow.
+
+### Fixed
+- **POS Checkout Employee Validation**: Fixed the validation issue where checkouts were blocked with "Please select an employee first" despite therapists being assigned to individual cart items.
+- **Customer Visit History Null Items**: Resolved an issue in the Customer Details screen where items in the history tab rendered as `null x1.00`.
+- **Customer History Photos (Emulator Localhost URLs)**: Fixed rendering of visit photos on the emulator by dynamically translating backend-generated `localhost` / `127.0.0.1` URLs to the emulator's loopback IP (`10.0.2.2`).
+
 ## [1.9.0] - 2026-05-02
 
 ### Added
