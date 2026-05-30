@@ -5,6 +5,7 @@ import '../../models/user.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/receipt_helper.dart';
 import '../crm/add_customer_portfolio_screen.dart';
+import '../../widgets/customer_selection_dialog.dart';
 import 'package:intl/intl.dart';
 
 class PosCheckoutScreen extends StatefulWidget {
@@ -1300,105 +1301,4 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   }
 }
 
-class CustomerSelectionDialog extends StatefulWidget {
-  const CustomerSelectionDialog({super.key});
 
-  @override
-  State<CustomerSelectionDialog> createState() => _CustomerSelectionDialogState();
-}
-
-class _CustomerSelectionDialogState extends State<CustomerSelectionDialog> {
-  final _posService = PosService();
-  String _query = '';
-  List<Map<String, dynamic>> _customers = [];
-  bool _isLoading = false;
-
-  void _search(String q) async {
-    setState(() {
-      _query = q;
-      _isLoading = true;
-    });
-    final results = await _posService.getCustomers(search: q);
-    setState(() {
-      _customers = results;
-      _isLoading = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Select Customer'),
-      content: SizedBox(
-        width: 400,
-        height: 500,
-        child: Column(
-          children: [
-            TextField(
-              onChanged: _search,
-              decoration: const InputDecoration(hintText: 'Search by name or phone...', prefixIcon: Icon(Icons.search)),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : ListView.builder(
-                      itemCount: _customers.length,
-                      itemBuilder: (context, index) {
-                        final c = _customers[index];
-                        return ListTile(
-                          title: Text(c['name']),
-                          subtitle: Text(c['phone'] ?? ''),
-                          onTap: () => Navigator.pop(context, c),
-                        );
-                      },
-                    ),
-            ),
-            ElevatedButton(
-              onPressed: () => _addNewCustomer(),
-              child: const Text('Add New Customer'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _addNewCustomer() async {
-    final nameController = TextEditingController();
-    final phoneController = TextEditingController();
-    
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('New Customer'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Name')),
-              TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Phone')),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-
-    if (result == true && nameController.text.isNotEmpty) {
-      final newCustomer = await _posService.registerCustomer({
-        'name': nameController.text,
-        'phone': phoneController.text,
-      });
-      if (newCustomer != null && mounted) {
-        Navigator.pop(context, newCustomer);
-      }
-    }
-  }
-}

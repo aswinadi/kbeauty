@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/pos_service.dart';
 import 'package:intl/intl.dart';
+import '../../widgets/customer_selection_dialog.dart';
 
 class AddAppointmentScreen extends StatefulWidget {
   final DateTime? initialDate;
@@ -16,10 +17,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
 
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
-  
   Map<String, dynamic>? _selectedCustomer;
-  List<Map<String, dynamic>> _customers = [];
-  bool _isLoadingCustomers = true;
   
   final _treatmentController = TextEditingController();
   final _paxController = TextEditingController(text: '1');
@@ -33,15 +31,6 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
     if (widget.initialDate != null) {
       _selectedDate = widget.initialDate!;
     }
-    _fetchCustomers();
-  }
-
-  Future<void> _fetchCustomers() async {
-    final customers = await _posService.getCustomers();
-    setState(() {
-      _customers = customers;
-      _isLoadingCustomers = false;
-    });
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -70,52 +59,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
     }
   }
 
-  Future<void> _showNewCustomerDialog() async {
-    final nameController = TextEditingController();
-    final phoneController = TextEditingController();
-    
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add New Customer'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Full Name'),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: phoneController,
-              decoration: const InputDecoration(labelText: 'Phone Number'),
-              keyboardType: TextInputType.phone,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () async {
-              if (nameController.text.isEmpty) return;
-              final newCust = await _posService.registerCustomer({
-                'full_name': nameController.text,
-                'phone': phoneController.text,
-              });
-              if (newCust != null) {
-                setState(() {
-                  _customers.insert(0, newCust);
-                  _selectedCustomer = newCust;
-                });
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('Add'),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate() || _selectedCustomer == null) {
@@ -160,39 +104,33 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
       appBar: AppBar(
         title: const Text('Add Appointment'),
       ),
-      body: _isLoadingCustomers
-          ? const Center(child: CircularProgressIndicator())
-          : Form(
+      body: Form(
               key: _formKey,
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<Map<String, dynamic>>(
-                          decoration: const InputDecoration(
-                            labelText: 'Customer',
-                            border: OutlineInputBorder(),
-                          ),
-                          value: _selectedCustomer,
-                          items: _customers.map((c) {
-                            return DropdownMenuItem(
-                              value: c,
-                              child: Text(c['full_name']),
-                            );
-                          }).toList(),
-                          onChanged: (val) => setState(() => _selectedCustomer = val),
-                          validator: (val) => val == null ? 'Required' : null,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        onPressed: _showNewCustomerDialog,
-                        icon: const Icon(Icons.person_add_alt_1, color: Colors.pink),
-                        tooltip: 'Add New Customer',
-                      ),
-                    ],
+                  TextFormField(
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Customer',
+                      border: OutlineInputBorder(),
+                      suffixIcon: Icon(Icons.search),
+                    ),
+                    controller: TextEditingController(
+                      text: _selectedCustomer != null 
+                          ? (_selectedCustomer!['full_name'] ?? _selectedCustomer!['name'] ?? '') 
+                          : '',
+                    ),
+                    onTap: () async {
+                      final customer = await showDialog<Map<String, dynamic>>(
+                        context: context,
+                        builder: (context) => const CustomerSelectionDialog(),
+                      );
+                      if (customer != null) {
+                        setState(() => _selectedCustomer = customer);
+                      }
+                    },
+                    validator: (val) => _selectedCustomer == null ? 'Required' : null,
                   ),
                   const SizedBox(height: 16),
                   ListTile(
