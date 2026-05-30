@@ -81,7 +81,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           (e) => e['id'] == user.employee!.id,
           orElse: () => {
             'id': user.employee!.id,
-            'name': user.employee!.name,
+            'name': user.employee!.fullName ?? user.name,
           },
         );
         _selectedEmployee = loggedInEmp;
