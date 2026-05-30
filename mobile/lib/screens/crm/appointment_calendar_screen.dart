@@ -235,7 +235,7 @@ class _AppointmentCalendarScreenState extends State<AppointmentCalendarScreen> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               image: DecorationImage(
-                image: NetworkImage(m['original_url']),
+                image: NetworkImage(AppConfig.formatUrl(m['original_url'])),
                 fit: BoxFit.cover,
               ),
             ),

@@ -146,9 +146,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
               itemBuilder: (context, index) {
                 final p = portfolios[index];
                 final media = p['media'] as List?;
-                final imageUrl = (media != null && media.isNotEmpty)
+                final imageUrl = AppConfig.formatUrl((media != null && media.isNotEmpty)
                     ? media[0]['original_url'].toString()
-                    : '${AppConfig.apiBaseUrl.replaceAll('/api', '')}/storage/${p['image_path']}';
+                    : '${AppConfig.apiBaseUrl.replaceAll('/api', '')}/storage/${p['image_path']}');
 
                 return GestureDetector(
                   onTap: () {
@@ -247,7 +247,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text('Items:', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                          ...items.map((it) => Text('• ${it['item_name']} x${it['quantity']}')),
+                          ...items.map((it) {
+                            final name = it['item'] != null ? (it['item']['name'] ?? 'Item') : (it['name'] ?? 'Item');
+                            return Text('• $name x${it['quantity']}');
+                          }),
                           const SizedBox(height: 8),
                           if (portfolios.isNotEmpty) ...[
                             const Text('Photos from this visit:', style: TextStyle(fontSize: 12, color: Colors.pink)),
@@ -269,7 +272,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(8),
                                         image: DecorationImage(
-                                          image: NetworkImage(m['original_url']),
+                                          image: NetworkImage(AppConfig.formatUrl(m['original_url'])),
                                           fit: BoxFit.cover,
                                         ),
                                       ),

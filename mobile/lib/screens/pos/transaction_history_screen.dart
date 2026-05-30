@@ -3,6 +3,7 @@ import '../../services/pos_service.dart';
 import 'package:intl/intl.dart';
 import '../crm/add_customer_portfolio_screen.dart';
 import '../../utils/receipt_helper.dart';
+import '../../config/app_config.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
@@ -129,7 +130,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                               decoration: BoxDecoration(
                                                 borderRadius: BorderRadius.circular(8),
                                                 image: DecorationImage(
-                                                  image: NetworkImage(m['original_url']),
+                                                  image: NetworkImage(AppConfig.formatUrl(m['original_url'])),
                                                   fit: BoxFit.cover,
                                                 ),
                                               ),
@@ -242,13 +243,13 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                         final p = (tx['portfolios'] as List)[pIdx];
                         final media = p['media'] as List? ?? [];
                         return Row(
-                          children: media.map((m) => Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(m['original_url'], height: 120, width: 120, fit: BoxFit.cover),
-                            ),
-                          )).toList(),
+                           children: media.map((m) => Padding(
+                             padding: const EdgeInsets.only(right: 8),
+                             child: ClipRRect(
+                               borderRadius: BorderRadius.circular(8),
+                               child: Image.network(AppConfig.formatUrl(m['original_url']), height: 120, width: 120, fit: BoxFit.cover),
+                             ),
+                           )).toList(),
                         );
                       },
                     ),
