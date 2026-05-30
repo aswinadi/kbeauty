@@ -574,6 +574,11 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     }
 
     try {
+      if (_selectedCustomer == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a customer first')));
+        return;
+      }
+
       int? transactionEmployeeId = _selectedEmployee?['id'];
       if (transactionEmployeeId == null) {
         // Fallback: Check if there is an employee assigned to any item in the cart
