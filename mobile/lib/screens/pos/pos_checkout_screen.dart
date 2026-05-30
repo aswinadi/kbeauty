@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/pos_service.dart';
+import '../../services/auth_service.dart';
+import '../../models/user.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/receipt_helper.dart';
 import '../crm/add_customer_portfolio_screen.dart';
@@ -55,6 +57,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       _posService.getEmployees(),
       _posService.getSettings(),
       _posService.getDiscounts(),
+      AuthService().getUser(),
     ]);
     setState(() {
       _allItems = (results[0] as List).map((e) => e as Map<String, dynamic>).where((item) => item['type'] == 'service').toList();
@@ -70,6 +73,19 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       final cats = _allItems.map((e) => (e['category'] ?? 'Uncategorized').toString()).toSet().toList();
       cats.sort();
       _categories = ['All', ...cats];
+
+      final user = results[4] as User?;
+      if (user != null && user.employee != null) {
+        // Find matching employee in _employees list to ensure correct format
+        final loggedInEmp = _employees.firstWhere(
+          (e) => e['id'] == user.employee!.id,
+          orElse: () => {
+            'id': user.employee!.id,
+            'name': user.employee!.name,
+          },
+        );
+        _selectedEmployee = loggedInEmp;
+      }
       
       _isLoading = false;
     });
@@ -558,14 +574,26 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     }
 
     try {
-      if (_selectedEmployee == null) {
+      int? transactionEmployeeId = _selectedEmployee?['id'];
+      if (transactionEmployeeId == null) {
+        // Fallback: Check if there is an employee assigned to any item in the cart
+        final itemWithEmployee = _cart.firstWhere(
+          (item) => item['employee_ids'] != null && (item['employee_ids'] as List).isNotEmpty,
+          orElse: () => <String, dynamic>{},
+        );
+        if (itemWithEmployee.isNotEmpty) {
+          transactionEmployeeId = (itemWithEmployee['employee_ids'] as List).first as int;
+        }
+      }
+
+      if (transactionEmployeeId == null) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an employee first')));
         return;
       }
 
       final transactionData = {
         'customer_id': _selectedCustomer?['id'],
-        'employee_id': _selectedEmployee?['id'],
+        'employee_id': transactionEmployeeId,
         'items': _cart.map((item) => {
           'item_id': item['id'],
           'item_type': item['type'],
