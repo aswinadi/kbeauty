@@ -102,6 +102,8 @@ class ReceiptHelper {
         : DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
         
     message += "Date: $dateStr\n";
+    final customerName = transaction['customer']?['name'] ?? 'Guest';
+    message += "Customer: $customerName\n";
     message += "--------------------------------\n";
     
     for (var item in transaction['items']) {
