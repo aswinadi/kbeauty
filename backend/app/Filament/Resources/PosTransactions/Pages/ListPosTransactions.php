@@ -4,6 +4,7 @@ namespace App\Filament\Resources\PosTransactions\Pages;
 
 use App\Filament\Resources\PosTransactions\PosTransactionResource;
 use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListPosTransactions extends ListRecords

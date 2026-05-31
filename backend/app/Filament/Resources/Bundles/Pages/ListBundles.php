@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Bundles\Pages;
 
 use App\Filament\Resources\Bundles\BundleResource;
 use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListBundles extends ListRecords
