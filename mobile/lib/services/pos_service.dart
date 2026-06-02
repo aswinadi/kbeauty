@@ -116,6 +116,30 @@ class PosService {
     }
   }
 
+  Future<Map<String, dynamic>?> updateCustomer(int customerId, Map<String, dynamic> data) async {
+    try {
+      final token = await _authService.getToken();
+      final response = await http.put(
+        Uri.parse('$baseUrl/pos/customers/$customerId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(data),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      print('Error updating customer: ${response.body}');
+      return null;
+    } catch (e) {
+      print('Error updating customer: $e');
+      return null;
+    }
+  }
+
   Future<Map<String, dynamic>?> submitTransaction(Map<String, dynamic> transactionData) async {
     try {
       final token = await _authService.getToken();

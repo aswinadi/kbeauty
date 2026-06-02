@@ -51,6 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/pos/customers', [\App\Http\Controllers\Api\PosController::class, 'customers']);
     Route::post('/pos/customers', [\App\Http\Controllers\Api\PosController::class, 'registerCustomer']);
     Route::get('/pos/customers/{customer}', [\App\Http\Controllers\Api\PosController::class, 'showCustomer']);
+    Route::put('/pos/customers/{customer}', [\App\Http\Controllers\Api\PosController::class, 'updateCustomer']);
     Route::get('/pos/customers/{customer}/portfolios', [\App\Http\Controllers\Api\PosController::class, 'customerPortfolios']);
     Route::get('/pos/customers/{customer}/history', [\App\Http\Controllers\Api\PosController::class, 'customerHistory']);
     Route::post('/pos/customers/{customer}/portfolios', [\App\Http\Controllers\Api\PosController::class, 'addCustomerPortfolio']);

@@ -145,6 +145,27 @@ class PosController extends Controller
         return response()->json($customer, 201);
     }
 
+    public function updateCustomer(Request $request, Customer $customer)
+    {
+        $request->validate([
+            'name'  => 'required|string|max:255',
+            'phone' => 'nullable|string|max:50',
+            'email' => 'nullable|email|max:255',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $customer->update([
+            'name'     => $request->name,
+            'phone'    => $request->phone,
+            'email'    => $request->email,
+            'metadata' => $request->notes
+                ? array_merge($customer->metadata ?? [], ['notes' => $request->notes])
+                : $customer->metadata,
+        ]);
+
+        return response()->json($customer->fresh()->load(['memberships', 'portfolios.media']));
+    }
+
     public function employees()
     {
         return response()->json(

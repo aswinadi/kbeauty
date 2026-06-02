@@ -12,37 +12,272 @@ class CustomerDetailScreen extends StatefulWidget {
   State<CustomerDetailScreen> createState() => _CustomerDetailScreenState();
 }
 
-class _CustomerDetailScreenState extends State<CustomerDetailScreen> with SingleTickerProviderStateMixin {
+class _CustomerDetailScreenState extends State<CustomerDetailScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _posService = PosService();
   Map<String, dynamic>? _fullDetails;
   List<Map<String, dynamic>> _history = [];
   bool _isLoading = true;
 
+  // Local mutable copy of customer name for AppBar
+  late String _customerName;
+
   @override
   void initState() {
     super.initState();
+    _customerName = widget.customer['name'] ?? '';
     _tabController = TabController(length: 4, vsync: this);
     _fetchData();
   }
 
   Future<void> _fetchData() async {
+    setState(() => _isLoading = true);
     final results = await Future.wait([
       _posService.getCustomerDetails(widget.customer['id']),
       _posService.getCustomerHistory(widget.customer['id']),
     ]);
     setState(() {
-      _fullDetails = (results[0] as Map<String, dynamic>);
+      _fullDetails = (results[0] as Map<String, dynamic>?);
       _history = (results[1] as List).cast<Map<String, dynamic>>();
+      if (_fullDetails != null) {
+        _customerName = _fullDetails!['name'] ?? _customerName;
+      }
       _isLoading = false;
     });
   }
+
+  // ─── Edit Bottom Sheet ────────────────────────────────────────────────────
+
+  void _openEditSheet() {
+    final nameCtrl = TextEditingController(text: _fullDetails?['name'] ?? '');
+    final phoneCtrl = TextEditingController(text: _fullDetails?['phone'] ?? '');
+    final emailCtrl = TextEditingController(text: _fullDetails?['email'] ?? '');
+    final notesCtrl = TextEditingController(
+      text: (_fullDetails?['metadata'] as Map?)?['notes']?.toString() ?? '',
+    );
+    final formKey = GlobalKey<FormState>();
+    bool isSaving = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(builder: (ctx, setSheetState) {
+          Future<void> save() async {
+            if (!formKey.currentState!.validate()) return;
+            setSheetState(() => isSaving = true);
+
+            final result = await _posService.updateCustomer(
+              widget.customer['id'],
+              {
+                'name': nameCtrl.text.trim(),
+                'phone': phoneCtrl.text.trim().isEmpty ? null : phoneCtrl.text.trim(),
+                'email': emailCtrl.text.trim().isEmpty ? null : emailCtrl.text.trim(),
+                'notes': notesCtrl.text.trim().isEmpty ? null : notesCtrl.text.trim(),
+              },
+            );
+
+            if (!mounted) return;
+            final messenger = ScaffoldMessenger.of(context);
+            final nav = Navigator.of(ctx);
+            nav.pop();
+
+            if (result != null) {
+              setState(() {
+                _fullDetails = result;
+                _customerName = result['name'] ?? _customerName;
+              });
+              messenger.showSnackBar(
+                const SnackBar(
+                  content: Text('Customer updated successfully'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            } else {
+              messenger.showSnackBar(
+                const SnackBar(
+                  content: Text('Failed to update customer. Please try again.'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
+
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            ),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Handle bar
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFCE4EC),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.edit_outlined, color: Color(0xFFE91E63), size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Edit Customer Info',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF3D0026),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Name field
+                    TextFormField(
+                      controller: nameCtrl,
+                      decoration: _inputDecoration('Full Name', Icons.person),
+                      textCapitalization: TextCapitalization.words,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Name is required' : null,
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Phone field
+                    TextFormField(
+                      controller: phoneCtrl,
+                      decoration: _inputDecoration('Phone Number', Icons.phone),
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Email field
+                    TextFormField(
+                      controller: emailCtrl,
+                      decoration: _inputDecoration('Email Address', Icons.email),
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (v) {
+                        if (v != null && v.trim().isNotEmpty) {
+                          final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                          if (!emailRegex.hasMatch(v.trim())) {
+                            return 'Enter a valid email address';
+                          }
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Notes / Preferences field
+                    TextFormField(
+                      controller: notesCtrl,
+                      decoration: _inputDecoration('Preferences / Notes', Icons.notes),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Save button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: isSaving ? null : save,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFE91E63),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: isSaving
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Save Changes',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+      },
+    );
+  }
+
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, color: const Color(0xFFE91E63), size: 20),
+      filled: true,
+      fillColor: const Color(0xFFFCE4EC).withValues(alpha: 0.35),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.pink.shade100),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFE91E63), width: 1.5),
+      ),
+      labelStyle: const TextStyle(color: Colors.grey),
+      floatingLabelStyle: const TextStyle(color: Color(0xFFE91E63)),
+    );
+  }
+
+  // ─── Build ────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.customer['name']),
+        title: Text(_customerName),
+        actions: [
+          if (!_isLoading)
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: 'Edit Customer',
+              onPressed: _openEditSheet,
+            ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -69,6 +304,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
 
   Widget _buildInfoTab() {
     final metadata = _fullDetails?['metadata'] as Map? ?? {};
+    final notes = metadata['notes']?.toString();
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -76,15 +313,39 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
         children: [
           _buildInfoRow(Icons.phone, 'Phone', _fullDetails?['phone'] ?? '-'),
           _buildInfoRow(Icons.email, 'Email', _fullDetails?['email'] ?? '-'),
-          _buildInfoRow(Icons.star, 'Loyalty Points', _fullDetails?['loyalty_points']?.toString() ?? '0'),
+          _buildInfoRow(Icons.star, 'Loyalty Points',
+              _fullDetails?['loyalty_points']?.toString() ?? '0'),
           const Divider(height: 32),
-          const Text('Preferences / Notes', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Preferences / Notes',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              TextButton.icon(
+                onPressed: _openEditSheet,
+                icon: const Icon(Icons.edit, size: 16),
+                label: const Text('Edit'),
+                style: TextButton.styleFrom(foregroundColor: const Color(0xFFE91E63)),
+              ),
+            ],
+          ),
           const SizedBox(height: 8),
-          ...metadata.entries.map((e) => Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text('${e.key}: ${e.value}'),
-              )),
-          if (metadata.isEmpty) const Text('No preferences recorded.'),
+          if (notes != null && notes.isNotEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFCE4EC).withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.pink.shade100),
+              ),
+              child: Text(notes, style: const TextStyle(fontSize: 14)),
+            )
+          else
+            const Text('No preferences recorded.',
+                style: TextStyle(color: Colors.grey)),
         ],
       ),
     );
@@ -100,8 +361,11 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-              Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+              Text(label,
+                  style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              Text(value,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w500)),
             ],
           ),
         ],
@@ -121,9 +385,11 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
               return Card(
                 color: Colors.pink[50],
                 child: ListTile(
-                  title: Text(m['type'].toString().toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(m['type'].toString().toUpperCase(),
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Text('Balance: Rp ${m['balance']}'),
-                  trailing: Text('Expires: ${m['expires_at']?.split('T')[0] ?? '-'}'),
+                  trailing: Text(
+                      'Expires: ${m['expires_at']?.split('T')[0] ?? '-'}'),
                 ),
               );
             },
@@ -146,9 +412,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
               itemBuilder: (context, index) {
                 final p = portfolios[index];
                 final media = p['media'] as List?;
-                final imageUrl = AppConfig.formatUrl((media != null && media.isNotEmpty)
-                    ? media[0]['original_url'].toString()
-                    : '${AppConfig.apiBaseUrl.replaceAll('/api', '')}/storage/${p['image_path']}');
+                final imageUrl = AppConfig.formatUrl(
+                    (media != null && media.isNotEmpty)
+                        ? media[0]['original_url'].toString()
+                        : '${AppConfig.apiBaseUrl.replaceAll('/api', '')}/storage/${p['image_path']}');
 
                 return GestureDetector(
                   onTap: () {
@@ -161,7 +428,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
                             Image.network(
                               imageUrl,
                               fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.broken_image, size: 100)),
+                              errorBuilder: (context, error, stack) => const Center(
+                                  child: Icon(Icons.broken_image, size: 100)),
                             ),
                             if (p['notes'] != null)
                               Padding(
@@ -181,7 +449,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
                         Image.network(
                           imageUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(color: Colors.grey[200], child: const Icon(Icons.broken_image)),
+                          errorBuilder: (context, error, stack) => Container(
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.broken_image)),
                         ),
                         Positioned(
                           bottom: 0,
@@ -192,7 +462,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
                             color: Colors.black54,
                             child: Text(
                               p['notes'] ?? '',
-                              style: const TextStyle(color: Colors.white, fontSize: 10),
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 10),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -210,7 +481,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AddCustomerPortfolioScreen(customerId: widget.customer['id']),
+              builder: (context) =>
+                  AddCustomerPortfolioScreen(customerId: widget.customer['id']),
             ),
           ).then((_) => _fetchData());
         },
@@ -237,23 +509,33 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ListTile(
-                      title: Text(tx['transaction_number'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                      title: Text(tx['transaction_number'],
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                       subtitle: Text(date),
-                      trailing: Text('Rp ${tx['final_amount']}', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                      trailing: Text('Rp ${tx['final_amount']}',
+                          style: const TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold)),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Items:', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                          const Text('Items:',
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.grey)),
                           ...items.map((it) {
-                            final name = it['item'] != null ? (it['item']['name'] ?? 'Item') : (it['name'] ?? 'Item');
+                            final name = it['item'] != null
+                                ? (it['item']['name'] ?? 'Item')
+                                : (it['name'] ?? 'Item');
                             return Text('• $name x${it['quantity']}');
                           }),
                           const SizedBox(height: 8),
                           if (portfolios.isNotEmpty) ...[
-                            const Text('Photos from this visit:', style: TextStyle(fontSize: 12, color: Colors.pink)),
+                            const Text('Photos from this visit:',
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.pink)),
                             const SizedBox(height: 8),
                             SizedBox(
                               height: 100,
@@ -262,21 +544,28 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Single
                                 itemCount: portfolios.length,
                                 itemBuilder: (context, pIdx) {
                                   final p = portfolios[pIdx];
-                                  final media = p['media'] as List? ?? [];
+                                  final media =
+                                      p['media'] as List? ?? [];
                                   if (media.isEmpty) return const SizedBox();
-                                  
+
                                   return Row(
-                                    children: media.map((m) => Container(
-                                      margin: const EdgeInsets.only(right: 8),
-                                      width: 100,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(8),
-                                        image: DecorationImage(
-                                          image: NetworkImage(AppConfig.formatUrl(m['original_url'])),
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    )).toList(),
+                                    children: media
+                                        .map((m) => Container(
+                                              margin: const EdgeInsets.only(
+                                                  right: 8),
+                                              width: 100,
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                image: DecorationImage(
+                                                  image: NetworkImage(
+                                                      AppConfig.formatUrl(
+                                                          m['original_url'])),
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
+                                            ))
+                                        .toList(),
                                   );
                                 },
                               ),
