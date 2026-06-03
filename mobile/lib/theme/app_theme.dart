@@ -11,8 +11,8 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryColor,
-        primary: primaryColor,
+        seedColor: accentColor,
+        primary: accentColor,
         secondary: secondaryColor,
         surface: backgroundColor,
       ),

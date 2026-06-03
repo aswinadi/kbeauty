@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import '../crm/add_customer_portfolio_screen.dart';
 import '../../utils/receipt_helper.dart';
 import '../../config/app_config.dart';
+import '../../utils/date_helper.dart';
+import '../../theme/app_theme.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
@@ -18,9 +20,16 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   
   List<Map<String, dynamic>> _transactions = [];
   bool _isLoading = true;
+  bool _isFetching = false;
   int _currentPage = 1;
   bool _hasMore = true;
   final ScrollController _scrollController = ScrollController();
+
+  double _safeParse(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString()) ?? 0.0;
+  }
 
   @override
   void initState() {
@@ -36,71 +45,121 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 
   Future<void> _fetchTransactions() async {
-    setState(() => _isLoading = true);
-    final response = await _posService.getAllTransactions(page: _currentPage);
-    
-    final List data = response['data'] ?? [];
-    setState(() {
-      _transactions.addAll(data.cast<Map<String, dynamic>>());
-      _isLoading = false;
-      if (data.length < 20) {
-        _hasMore = false;
-      } else {
-        _currentPage++;
+    if (_isFetching || !_hasMore) return;
+    _isFetching = true;
+
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() => _isLoading = true);
       }
     });
+
+    try {
+      final response = await _posService.getAllTransactions(page: _currentPage);
+      final List data = response['data'] ?? [];
+      
+      if (!mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _transactions.addAll(data.cast<Map<String, dynamic>>());
+            _isLoading = false;
+            _isFetching = false;
+            if (data.length < 20) {
+              _hasMore = false;
+            } else {
+              _currentPage++;
+            }
+          });
+        }
+      });
+    } catch (e) {
+      print('Error fetching transactions: $e');
+      if (!mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _isFetching = false;
+          });
+        }
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Transaction History'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              setState(() {
-                _transactions = [];
-                _currentPage = 1;
-                _hasMore = true;
-              });
-              _fetchTransactions();
-            },
-          ),
-        ],
-      ),
-      body: _transactions.isEmpty && _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _transactions.isEmpty
-              ? const Center(child: Text('No transactions found.'))
-              : ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _transactions.length + (_hasMore ? 1 : 0),
-                  itemBuilder: (context, index) {
+    final listWidget = _transactions.isEmpty && _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : _transactions.isEmpty
+            ? const Center(child: Text('No transactions found.'))
+            : ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.all(16),
+                itemCount: _transactions.length + (_hasMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  try {
                     if (index == _transactions.length) {
                       return const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()));
                     }
                     
                     final tx = _transactions[index];
-                    final date = DateTime.parse(tx['created_at']);
-                    final portfolios = tx['portfolios'] as List? ?? [];
+                    final portfolios = tx['portfolios'] is List ? (tx['portfolios'] as List) : [];
                     
+                    final customer = tx['customer'] is Map ? (tx['customer'] as Map) : null;
+                    final customerName = customer?['name'] ?? (tx['customer'] is String ? tx['customer'] as String : 'Guest');
+                    final customerPhone = customer?['phone'];
+                    final displayCustomer = customerPhone != null && customerPhone.toString().isNotEmpty
+                        ? '$customerName ($customerPhone)'
+                        : customerName;
+
                     return Card(
                       margin: const EdgeInsets.only(bottom: 16),
-                      child: InkWell(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
                         onTap: () => _showTransactionDetail(tx),
-                        borderRadius: BorderRadius.circular(12),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            ListTile(
-                              title: Text(tx['transaction_number'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                              subtitle: Text(DateFormat('dd MMM yyyy, HH:mm').format(date)),
-                              trailing: Text(
-                                _currencyFormat.format(double.parse(tx['final_amount'].toString())),
-                                style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          tx['transaction_number'],
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          DateHelper.formatDateTime(tx['created_at']),
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Text(
+                                    _currencyFormat.format(_safeParse(tx['final_amount'])),
+                                    style: const TextStyle(
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             Padding(
@@ -108,10 +167,23 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Customer: ${tx['customer']?['name'] ?? 'Guest'}', style: const TextStyle(color: Colors.grey)),
+                                  Text(
+                                    'Customer: $displayCustomer',
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                  ),
                                   const SizedBox(height: 8),
                                   if (portfolios.isNotEmpty) ...[
-                                    const Text('Treatment Photos:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                    const Text(
+                                      'Treatment Photos:',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
                                     const SizedBox(height: 8),
                                     SizedBox(
                                       height: 100,
@@ -124,17 +196,26 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                           if (media.isEmpty) return const SizedBox();
                                           
                                           return Row(
-                                            children: media.map((m) => Container(
-                                              margin: const EdgeInsets.only(right: 8),
-                                              width: 100,
-                                              decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(8),
-                                                image: DecorationImage(
-                                                  image: NetworkImage(AppConfig.formatUrl(m['original_url'])),
-                                                  fit: BoxFit.cover,
+                                            children: media.map((m) {
+                                              final url = m is Map ? (m['original_url']?.toString() ?? '') : '';
+                                              return Container(
+                                                margin: const EdgeInsets.only(right: 8),
+                                                width: 100,
+                                                decoration: BoxDecoration(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  color: Colors.grey[200],
+                                                  image: url.isNotEmpty
+                                                      ? DecorationImage(
+                                                          image: NetworkImage(AppConfig.formatUrl(url)),
+                                                          fit: BoxFit.cover,
+                                                        )
+                                                      : null,
                                                 ),
-                                              ),
-                                            )).toList(),
+                                                child: url.isEmpty
+                                                    ? const Icon(Icons.broken_image, color: Colors.grey)
+                                                    : null,
+                                              );
+                                            }).toList(),
                                           );
                                         },
                                       ),
@@ -155,16 +236,23 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                             ),
                                           ),
                                         );
-                                        // Refresh list
-                                        setState(() {
-                                           _transactions = [];
-                                           _currentPage = 1;
-                                           _hasMore = true;
+                                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                                          if (mounted) {
+                                            setState(() {
+                                              _transactions = [];
+                                              _currentPage = 1;
+                                              _hasMore = true;
+                                              _isFetching = false;
+                                            });
+                                            _fetchTransactions();
+                                          }
                                         });
-                                        _fetchTransactions();
                                       },
                                       icon: const Icon(Icons.add_a_photo, size: 16),
                                       label: const Text('Add Result Photo'),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: AppTheme.accentColor,
+                                      ),
                                     ),
                                   ],
                                 ],
@@ -175,12 +263,57 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                         ),
                       ),
                     );
-                  },
-                ),
+                  } catch (e, stackTrace) {
+                    print('Error rendering item at index $index: $e');
+                    print(stackTrace);
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          'Error loading transaction: $e',
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    );
+                  }
+                },
+              );
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Transaction History'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  setState(() {
+                    _transactions = [];
+                    _currentPage = 1;
+                    _hasMore = true;
+                    _isFetching = false;
+                  });
+                  _fetchTransactions();
+                }
+              });
+            },
+          ),
+        ],
+      ),
+      body: listWidget,
     );
   }
 
   void _showTransactionDetail(Map<String, dynamic> tx) {
+    final customer = tx['customer'] is Map ? (tx['customer'] as Map) : null;
+    final customerName = customer?['name'] ?? (tx['customer'] is String ? tx['customer'] as String : 'Guest');
+    final customerPhone = customer?['phone'];
+    final displayCustomer = customerPhone != null && customerPhone.toString().isNotEmpty
+        ? '$customerName ($customerPhone)'
+        : customerName;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -193,14 +326,20 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Number: ${tx['transaction_number']}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text('Date: ${DateFormat('dd MMM yyyy, HH:mm').format(DateTime.parse(tx['created_at']))}'),
-                Text('Customer: ${tx['customer']?['name'] ?? 'Guest'}'),
+                Text('Date: ${DateHelper.formatDateTime(tx['created_at'])}'),
+                Text('Customer: $displayCustomer'),
                 const Divider(height: 24),
                 const Text('Items:', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 ...(tx['items'] as List? ?? []).map((item) {
                    final name = item['item'] != null ? (item['item']['name'] ?? 'Item') : (item['name'] ?? 'Item');
-                   final employees = (item['employees'] as List?)?.map((e) => e['full_name'] ?? e['name']).join(', ') ?? '';
+                   final employeesList = item['employees'] as List? ?? [];
+                   final employees = employeesList.map((e) {
+                      if (e is Map) {
+                        return e['full_name'] ?? e['name'] ?? 'Staff';
+                      }
+                      return e?.toString() ?? 'Staff';
+                   }).join(', ');
                    return Padding(
                      padding: const EdgeInsets.only(bottom: 12),
                      child: Column(
@@ -210,7 +349,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                            children: [
                              Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.w500))),
-                             Text('${item['quantity']} x ${_currencyFormat.format(double.parse(item['price'].toString()))}'),
+                             Text('${item['quantity']} x ${_currencyFormat.format(_safeParse(item['price']))}'),
                            ],
                          ),
                          if (employees.isNotEmpty)
@@ -218,7 +357,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                          Align(
                            alignment: Alignment.centerRight,
                            child: Text(
-                             _currencyFormat.format(double.parse((item['subtotal'] ?? 0).toString())),
+                             _currencyFormat.format(_safeParse(item['subtotal'])),
                              style: const TextStyle(fontWeight: FontWeight.bold),
                            ),
                          ),
@@ -227,9 +366,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                    );
                 }).toList(),
                 const Divider(height: 24),
-                _buildSummaryRow('Total:', _currencyFormat.format(double.parse(tx['total_amount'].toString()))),
-                _buildSummaryRow('Discount:', '- ${_currencyFormat.format(double.parse(tx['discount_amount'].toString()))}'),
-                _buildSummaryRow('Grand Total:', _currencyFormat.format(double.parse(tx['final_amount'].toString())), isBold: true),
+                _buildSummaryRow('Total:', _currencyFormat.format(_safeParse(tx['total_amount']))),
+                _buildSummaryRow('Discount:', '- ${_currencyFormat.format(_safeParse(tx['discount_amount']))}'),
+                _buildSummaryRow('Grand Total:', _currencyFormat.format(_safeParse(tx['final_amount'])), isBold: true),
                 if ((tx['portfolios'] as List? ?? []).isNotEmpty) ...[
                   const Divider(height: 24),
                   const Text('Result Photos:', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -243,13 +382,34 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                         final p = (tx['portfolios'] as List)[pIdx];
                         final media = p['media'] as List? ?? [];
                         return Row(
-                           children: media.map((m) => Padding(
-                             padding: const EdgeInsets.only(right: 8),
-                             child: ClipRRect(
-                               borderRadius: BorderRadius.circular(8),
-                               child: Image.network(AppConfig.formatUrl(m['original_url']), height: 120, width: 120, fit: BoxFit.cover),
-                             ),
-                           )).toList(),
+                           children: media.map((m) {
+                              final url = m is Map ? (m['original_url']?.toString() ?? '') : '';
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: url.isNotEmpty
+                                      ? Image.network(
+                                          AppConfig.formatUrl(url),
+                                          height: 120,
+                                          width: 120,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) => Container(
+                                            height: 120,
+                                            width: 120,
+                                            color: Colors.grey[200],
+                                            child: const Icon(Icons.broken_image, color: Colors.grey),
+                                          ),
+                                        )
+                                      : Container(
+                                          height: 120,
+                                          width: 120,
+                                          color: Colors.grey[200],
+                                          child: const Icon(Icons.broken_image, color: Colors.grey),
+                                        ),
+                                ),
+                              );
+                           }).toList(),
                         );
                       },
                     ),
@@ -262,8 +422,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         actions: [
           ElevatedButton.icon(
             onPressed: () async {
-              final phone = tx['customer']?['phone'];
-              if (phone == null || phone.isEmpty) {
+              final customer = tx['customer'] is Map ? (tx['customer'] as Map) : null;
+              final phoneVal = customer?['phone'];
+              final phone = phoneVal?.toString();
+              if (phone == null || phone.trim().isEmpty) {
                 ScaffoldMessenger.of(this.context).showSnackBar(const SnackBar(content: Text('Customer phone not found.')));
                 return;
               }

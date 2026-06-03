@@ -1,5 +1,14 @@
 # Project Changelog
 
+## [1.11.0] - 2026-06-03
+
+### Changed
+- **Reverted Transaction History Layout**: Reverted the Transaction History screen back to its original 1-page layout. Selecting a transaction card now immediately opens the transaction details popup dialog instead of loading a split-screen detail pane on tablets.
+
+### Fixed
+- **Optimized 2-Pane Selections Lag**: Resolved the gesture selection lag on the remaining 2-pane tablet split layouts (Treatments list, CRM Customer list, Product Catalog, Stock Balance, and Appointment Calendar) by performing state updates synchronously in user gesture handlers (`onTap`, `onSelected`, `onPressed`) instead of wrapping them in post-frame callbacks.
+- **Scroll Duplicate Fetch Guard**: Retained the `_isFetching` scroll lock in Transaction History to prevent duplicate API fetch requests during fast scroll events.
+
 ## [1.10.0] - 2026-05-30
 
 ### Added

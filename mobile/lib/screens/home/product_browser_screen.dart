@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../../models/product.dart';
 import '../../services/product_service.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/product_card.dart';
+import '../../utils/responsive.dart';
+import '../../widgets/adaptive_split_layout.dart';
 import 'product_detail_screen.dart';
 
 class ProductBrowserScreen extends StatefulWidget {
@@ -21,6 +22,9 @@ class _ProductBrowserScreenState extends State<ProductBrowserScreen> {
   int? _selectedCategoryId;
   bool _isLoading = true;
 
+  Product? _selectedProduct;
+  bool _isAddingProduct = false;
+
   @override
   void initState() {
     super.initState();
@@ -28,127 +32,182 @@ class _ProductBrowserScreenState extends State<ProductBrowserScreen> {
   }
 
   Future<void> _loadInitialData() async {
-    setState(() => _isLoading = true);
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() => _isLoading = true);
+      }
+    });
+
     final results = await Future.wait([
       _productService.getProducts(),
       _productService.getCategories(),
     ]);
-    setState(() {
-      _products = results[0] as List<Product>;
-      _categories = results[1] as List<Category>;
-      _isLoading = false;
+
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _products = results[0] as List<Product>;
+          _categories = results[1] as List<Category>;
+          _isLoading = false;
+          
+          if (Responsive.isTablet(context) && _products.isNotEmpty) {
+            if (!_isAddingProduct && _selectedProduct == null) {
+              _selectedProduct = _products.first;
+            } else if (_selectedProduct != null) {
+              final index = _products.indexWhere((p) => p.id == _selectedProduct!.id);
+              if (index != -1) {
+                _selectedProduct = _products[index];
+              } else {
+                _selectedProduct = _products.first;
+              }
+            }
+          }
+        });
+      }
     });
   }
 
   Future<void> _filterProducts() async {
-    setState(() => _isLoading = true);
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() => _isLoading = true);
+      }
+    });
+
     final products = await _productService.getProducts(
       categoryId: _selectedCategoryId,
       search: _searchController.text,
     );
-    setState(() {
-      _products = products;
-      _isLoading = false;
+
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _products = products;
+          _isLoading = false;
+          
+          if (Responsive.isTablet(context) && _products.isNotEmpty) {
+            if (!_isAddingProduct) {
+              if (_selectedProduct == null || !_products.any((p) => p.id == _selectedProduct!.id)) {
+                _selectedProduct = _products.first;
+              } else {
+                final index = _products.indexWhere((p) => p.id == _selectedProduct!.id);
+                if (index != -1) {
+                  _selectedProduct = _products[index];
+                }
+              }
+            }
+          }
+        });
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Catalog', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (_) => _filterProducts(),
-              decoration: InputDecoration(
-                hintText: 'Search products or SKU...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          _filterProducts();
-                        },
-                      )
-                    : null,
-              ),
+    final listWidget = Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: TextField(
+            controller: _searchController,
+            onChanged: (_) => _filterProducts(),
+            decoration: InputDecoration(
+              hintText: 'Search products or SKU...',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted) {
+                            _filterProducts();
+                          }
+                        });
+                      },
+                    )
+                  : null,
             ),
           ),
-          SizedBox(
-            height: 40,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _categories.length + 1,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return _buildCategoryChip(null, 'All');
-                }
-                final category = _categories[index - 1];
-                return _buildCategoryChip(category.id, category.name);
-              },
-            ),
+        ),
+        SizedBox(
+          height: 40,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: _categories.length + 1,
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                return _buildCategoryChip(null, 'All');
+              }
+              final category = _categories[index - 1];
+              return _buildCategoryChip(category.id, category.name);
+            },
           ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _products.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[300]),
-                            const SizedBox(height: 16),
-                            Text('No products found', style: TextStyle(color: Colors.grey[500])),
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _filterProducts,
-                        child: ListView.separated(
-                          padding: const EdgeInsets.all(16),
-                          separatorBuilder: (context, index) => const SizedBox(height: 12),
-                          itemCount: _products.length,
-                          itemBuilder: (context, index) {
-                            final product = _products[index];
-                            return Opacity(
-                              opacity: product.isActive ? 1.0 : 0.5,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                color: Colors.white,
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _products.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[300]),
+                          const SizedBox(height: 16),
+                          Text('No products found', style: TextStyle(color: Colors.grey[500])),
+                        ],
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: _filterProducts,
+                      child: ListView.separated(
+                        padding: const EdgeInsets.all(16),
+                        separatorBuilder: (context, index) => const SizedBox(height: 12),
+                        itemCount: _products.length,
+                        itemBuilder: (context, index) {
+                          final product = _products[index];
+                          final isSelected = _selectedProduct != null && _selectedProduct!.id == product.id && !_isAddingProduct;
+                          return Opacity(
+                            opacity: product.isActive ? 1.0 : 0.5,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: (Responsive.isTablet(context) && isSelected) ? Colors.pink[50] : Colors.white,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.grey[200]!),
+                                border: Border.all(color: (Responsive.isTablet(context) && isSelected) ? Colors.pink[200]! : Colors.grey[200]!),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.02),
+                                    color: Colors.black.withValues(alpha: 0.02),
                                     blurRadius: 4,
                                     offset: const Offset(0, 2),
                                   ),
                                 ],
                               ),
-                              child: InkWell(
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
                                 onTap: () async {
-                                  final result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => ProductDetailScreen(product: product),
-                                    ),
-                                  );
-                                  if (result == true) {
-                                    _loadInitialData();
+                                  if (Responsive.isTablet(context)) {
+                                    setState(() {
+                                      _selectedProduct = product;
+                                      _isAddingProduct = false;
+                                    });
+                                  } else {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ProductDetailScreen(product: product),
+                                      ),
+                                    );
+                                    if (result == true) {
+                                      _loadInitialData();
+                                    }
                                   }
                                 },
-                                borderRadius: BorderRadius.circular(12),
                                 child: Padding(
                                   padding: const EdgeInsets.all(12),
                                   child: Row(
@@ -179,7 +238,7 @@ class _ProductBrowserScreenState extends State<ProductBrowserScreen> {
                                             if (!product.isActive)
                                               Container(
                                                 decoration: BoxDecoration(
-                                                  color: Colors.black.withOpacity(0.2),
+                                                  color: Colors.black.withValues(alpha: 0.2),
                                                   borderRadius: BorderRadius.circular(8),
                                                 ),
                                                 child: const Center(
@@ -208,7 +267,7 @@ class _ProductBrowserScreenState extends State<ProductBrowserScreen> {
                                             Text(
                                               product.categoryName ?? 'Uncategorized',
                                               style: TextStyle(
-                                                color: AppTheme.primaryColor,
+                                                color: AppTheme.accentColor,
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w500,
                                               ),
@@ -227,7 +286,7 @@ class _ProductBrowserScreenState extends State<ProductBrowserScreen> {
                                                 Container(
                                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                   decoration: BoxDecoration(
-                                                    color: AppTheme.accentColor.withOpacity(0.1),
+                                                    color: AppTheme.accentColor.withValues(alpha: 0.1),
                                                     borderRadius: BorderRadius.circular(4),
                                                   ),
                                                   child: Row(
@@ -268,24 +327,68 @@ class _ProductBrowserScreenState extends State<ProductBrowserScreen> {
                                       ),
                                     ],
                                   ),
-                                  ),
                                 ),
                               ),
-                            );
-                          },
-                        ),
+                            ),
+                          );
+                        },
                       ),
-          ),
-        ],
+                    ),
+        ),
+      ],
+    );
+
+    Widget? detailWidget;
+    if (_isAddingProduct) {
+      detailWidget = KeyedSubtree(
+        key: const ValueKey('add_product_form'),
+        child: ProductDetailScreen(
+          onSaved: () {
+            setState(() {
+              _isAddingProduct = false;
+            });
+            _loadInitialData();
+          },
+        ),
+      );
+    } else if (_selectedProduct != null) {
+      detailWidget = KeyedSubtree(
+        key: ValueKey('view_product_${_selectedProduct!.id}'),
+        child: ProductDetailScreen(
+          product: _selectedProduct,
+          onSaved: () {
+            _loadInitialData();
+          },
+        ),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Catalog', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        elevation: 0,
+      ),
+      body: AdaptiveSplitLayout(
+        master: listWidget,
+        detail: detailWidget,
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const ProductDetailScreen()),
-          );
-          if (result == true) {
-            _loadInitialData();
+          if (Responsive.isTablet(context)) {
+            setState(() {
+              _selectedProduct = null;
+              _isAddingProduct = true;
+            });
+          } else {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ProductDetailScreen()),
+            );
+            if (result == true) {
+              _loadInitialData();
+            }
           }
         },
         label: const Text('Add Product'),
@@ -304,8 +407,10 @@ class _ProductBrowserScreenState extends State<ProductBrowserScreen> {
         label: Text(label),
         selected: isSelected,
         onSelected: (selected) {
-          setState(() => _selectedCategoryId = selected ? id : null);
-          _filterProducts();
+          if (mounted) {
+            setState(() => _selectedCategoryId = selected ? id : null);
+            _filterProducts();
+          }
         },
         selectedColor: AppTheme.primaryColor,
         checkmarkColor: AppTheme.accentColor,

@@ -4,7 +4,8 @@ import '../../services/pos_service.dart';
 import 'add_appointment_screen.dart';
 import 'add_customer_portfolio_screen.dart';
 import '../../config/app_config.dart';
-import 'package:intl/intl.dart';
+import '../../utils/responsive.dart';
+
 
 class AppointmentCalendarScreen extends StatefulWidget {
   const AppointmentCalendarScreen({super.key});
@@ -66,47 +67,104 @@ class _AppointmentCalendarScreenState extends State<AppointmentCalendarScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                TableCalendar(
-                  firstDay: DateTime.now().subtract(const Duration(days: 365)),
-                  lastDay: DateTime.now().add(const Duration(days: 365)),
-                  focusedDay: _focusedDay,
-                  calendarFormat: _calendarFormat,
-                  selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-                  onDaySelected: (selectedDay, focusedDay) {
-                    setState(() {
-                      _selectedDay = selectedDay;
-                      _focusedDay = focusedDay;
-                    });
-                  },
-                  onFormatChanged: (format) {
-                    setState(() {
-                      _calendarFormat = format;
-                    });
-                  },
-                  eventLoader: _getEventsForDay,
-                  calendarStyle: CalendarStyle(
-                    todayDecoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.5),
-                      shape: BoxShape.circle,
+          : Responsive.isTablet(context)
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 4,
+                      child: SingleChildScrollView(
+                        child: TableCalendar(
+                          firstDay: DateTime.now().subtract(const Duration(days: 365)),
+                          lastDay: DateTime.now().add(const Duration(days: 365)),
+                          focusedDay: _focusedDay,
+                          calendarFormat: _calendarFormat,
+                          selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                          onDaySelected: (selectedDay, focusedDay) {
+                            if (mounted) {
+                              setState(() {
+                                _selectedDay = selectedDay;
+                                _focusedDay = focusedDay;
+                              });
+                            }
+                          },
+                          onFormatChanged: (format) {
+                            if (mounted) {
+                              setState(() {
+                                _calendarFormat = format;
+                              });
+                            }
+                          },
+                          eventLoader: _getEventsForDay,
+                          calendarStyle: CalendarStyle(
+                            todayDecoration: BoxDecoration(
+                              color: Theme.of(context).primaryColor.withOpacity(0.5),
+                              shape: BoxShape.circle,
+                            ),
+                            selectedDecoration: BoxDecoration(
+                              color: Theme.of(context).primaryColor,
+                              shape: BoxShape.circle,
+                            ),
+                            markerDecoration: BoxDecoration(
+                              color: Colors.pink.shade400,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                    selectedDecoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
-                      shape: BoxShape.circle,
+                    VerticalDivider(width: 1, color: Colors.grey[200]),
+                    Expanded(
+                      flex: 5,
+                      child: _buildEventList(),
                     ),
-                    markerDecoration: BoxDecoration(
-                      color: Colors.pink.shade400,
-                      shape: BoxShape.circle,
+                  ],
+                )
+              : Column(
+                  children: [
+                    TableCalendar(
+                      firstDay: DateTime.now().subtract(const Duration(days: 365)),
+                      lastDay: DateTime.now().add(const Duration(days: 365)),
+                      focusedDay: _focusedDay,
+                      calendarFormat: _calendarFormat,
+                      selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                      onDaySelected: (selectedDay, focusedDay) {
+                        if (mounted) {
+                          setState(() {
+                            _selectedDay = selectedDay;
+                            _focusedDay = focusedDay;
+                          });
+                        }
+                      },
+                      onFormatChanged: (format) {
+                        if (mounted) {
+                          setState(() {
+                            _calendarFormat = format;
+                          });
+                        }
+                      },
+                      eventLoader: _getEventsForDay,
+                      calendarStyle: CalendarStyle(
+                        todayDecoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor.withOpacity(0.5),
+                          shape: BoxShape.circle,
+                        ),
+                        selectedDecoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor,
+                          shape: BoxShape.circle,
+                        ),
+                        markerDecoration: BoxDecoration(
+                          color: Colors.pink.shade400,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 8.0),
+                    Expanded(
+                      child: _buildEventList(),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8.0),
-                Expanded(
-                  child: _buildEventList(),
-                ),
-              ],
-            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final result = await Navigator.push(

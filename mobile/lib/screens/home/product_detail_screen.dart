@@ -6,11 +6,13 @@ import '../../models/user.dart';
 import '../../services/product_service.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/responsive.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product? product;
+  final VoidCallback? onSaved;
 
-  const ProductDetailScreen({super.key, this.product});
+  const ProductDetailScreen({super.key, this.product, this.onSaved});
 
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
@@ -165,7 +167,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Product ${_isEditMode ? 'updated' : 'created'} successfully')),
       );
-      Navigator.pop(context, true);
+      if (Responsive.isTablet(context)) {
+        widget.onSaved?.call();
+      } else {
+        Navigator.pop(context, true);
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to ${_isEditMode ? 'update' : 'create'} product')),
@@ -177,6 +183,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: !Responsive.isTablet(context),
         title: Text(_isEditMode ? 'Edit Product' : 'New Product', style: const TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,

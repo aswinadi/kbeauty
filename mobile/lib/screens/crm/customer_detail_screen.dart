@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../services/pos_service.dart';
 import '../../config/app_config.dart';
 import 'add_customer_portfolio_screen.dart';
+import '../../utils/date_helper.dart';
+import '../../utils/responsive.dart';
+
+
 
 class CustomerDetailScreen extends StatefulWidget {
   final Map<String, dynamic> customer;
@@ -16,6 +21,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _posService = PosService();
+  final _currencyFormat = NumberFormat.currency(locale: 'en_US', symbol: 'Rp ', decimalDigits: 0);
   Map<String, dynamic>? _fullDetails;
   List<Map<String, dynamic>> _history = [];
   bool _isLoading = true;
@@ -267,9 +273,15 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen>
 
   @override
   Widget build(BuildContext context) {
+    final phone = _fullDetails?['phone'] ?? widget.customer['phone'];
+    final displayTitle = phone != null && phone.toString().isNotEmpty
+        ? '$_customerName ($phone)'
+        : _customerName;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(_customerName),
+        automaticallyImplyLeading: !Responsive.isTablet(context),
+        title: Text(displayTitle),
         actions: [
           if (!_isLoading)
             IconButton(
@@ -387,7 +399,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen>
                 child: ListTile(
                   title: Text(m['type'].toString().toUpperCase(),
                       style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('Balance: Rp ${m['balance']}'),
+                  subtitle: Text('Balance: ${_currencyFormat.format(double.tryParse(m['balance'].toString()) ?? 0.0)}'),
                   trailing: Text(
                       'Expires: ${m['expires_at']?.split('T')[0] ?? '-'}'),
                 ),
@@ -499,7 +511,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen>
             itemCount: _history.length,
             itemBuilder: (context, index) {
               final tx = _history[index];
-              final date = tx['created_at'].split('T')[0];
+              final date = DateHelper.formatDate(tx['created_at']);
               final items = tx['items'] as List? ?? [];
               final portfolios = tx['portfolios'] as List? ?? [];
 
@@ -512,7 +524,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen>
                       title: Text(tx['transaction_number'],
                           style: const TextStyle(fontWeight: FontWeight.bold)),
                       subtitle: Text(date),
-                      trailing: Text('Rp ${tx['final_amount']}',
+                      trailing: Text(
+                          _currencyFormat.format(double.tryParse(tx['final_amount'].toString()) ?? 0.0),
                           style: const TextStyle(
                               color: Colors.green,
                               fontWeight: FontWeight.bold)),
@@ -529,7 +542,17 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen>
                             final name = it['item'] != null
                                 ? (it['item']['name'] ?? 'Item')
                                 : (it['name'] ?? 'Item');
-                            return Text('• $name x${it['quantity']}');
+                            final employeesList = it['employees'] as List? ?? [];
+                            final employees = employeesList.map((e) {
+                              if (e is Map) {
+                                return e['full_name'] ?? e['name'] ?? 'Staff';
+                              }
+                              return e?.toString() ?? 'Staff';
+                            }).join(', ');
+                            final qty = double.tryParse(it['quantity'].toString()) ?? 1.0;
+                            final qtyString = qty == qty.toInt() ? qty.toInt().toString() : qty.toString();
+                            final nailistText = employees.isNotEmpty ? ' (Nailist: $employees)' : '';
+                            return Text('• $name x$qtyString$nailistText');
                           }),
                           const SizedBox(height: 8),
                           if (portfolios.isNotEmpty) ...[

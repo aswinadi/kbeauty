@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../services/pos_service.dart';
 import '../../theme/app_theme.dart';
 import 'package:intl/intl.dart';
+import '../../utils/date_helper.dart';
+
 
 class NailistPerformanceScreen extends StatefulWidget {
   const NailistPerformanceScreen({super.key});
@@ -147,11 +149,10 @@ class _NailistPerformanceScreenState extends State<NailistPerformanceScreen> {
       separatorBuilder: (context, index) => const Divider(),
       itemBuilder: (context, index) {
         final item = details[index];
-        final date = DateTime.parse(item['date']);
         return ListTile(
           contentPadding: EdgeInsets.zero,
           title: Text(item['item_name'], style: const TextStyle(fontWeight: FontWeight.bold)),
-          subtitle: Text(DateFormat('dd MMM yyyy, HH:mm').format(date)),
+          subtitle: Text(DateHelper.formatDateTime(item['date'])),
           trailing: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,

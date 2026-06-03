@@ -6,7 +6,11 @@ import '../../theme/app_theme.dart';
 import '../../utils/receipt_helper.dart';
 import '../crm/add_customer_portfolio_screen.dart';
 import '../../widgets/customer_selection_dialog.dart';
+import '../../utils/date_helper.dart';
+import '../../utils/responsive.dart';
 import 'package:intl/intl.dart';
+
+
 
 class PosCheckoutScreen extends StatefulWidget {
   const PosCheckoutScreen({super.key});
@@ -127,29 +131,33 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       return;
     }
 
-    setState(() {
-      final itemId = item['id'];
-      final itemType = item['type'];
-      final variantId = variant?['id'];
-      
-      final existingIndex = _cart.indexWhere((cartItem) => 
-        cartItem['id'] == itemId && 
-        cartItem['type'] == itemType && 
-        cartItem['service_variant_id'] == variantId &&
-        cartItem['price'] == (variant != null ? variant['price'] : item['price'])
-      );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          final itemId = item['id'];
+          final itemType = item['type'];
+          final variantId = variant?['id'];
+          
+          final existingIndex = _cart.indexWhere((cartItem) => 
+            cartItem['id'] == itemId && 
+            cartItem['type'] == itemType && 
+            cartItem['service_variant_id'] == variantId &&
+            cartItem['price'] == (variant != null ? variant['price'] : item['price'])
+          );
 
-      if (existingIndex >= 0 && item['is_variable_price'] != true) {
-        _cart[existingIndex]['quantity']++;
-      } else {
-        _cart.add({
-          ...item,
-          'price': variant != null ? variant['price'] : item['price'],
-          'name': variant != null ? "${item['name']} - ${variant['name']}" : item['name'],
-          'service_variant_id': variantId,
-          'quantity': 1,
-          'employee_ids': _selectedEmployee != null ? [_selectedEmployee!['id']] : [],
-          'employees': _selectedEmployee != null ? [_selectedEmployee!] : [],
+          if (existingIndex >= 0 && item['is_variable_price'] != true) {
+            _cart[existingIndex]['quantity']++;
+          } else {
+            _cart.add({
+              ...item,
+              'price': variant != null ? variant['price'] : item['price'],
+              'name': variant != null ? "${item['name']} - ${variant['name']}" : item['name'],
+              'service_variant_id': variantId,
+              'quantity': 1,
+              'employee_ids': _selectedEmployee != null ? [_selectedEmployee!['id']] : [],
+              'employees': _selectedEmployee != null ? [_selectedEmployee!] : [],
+            });
+          }
         });
       }
     });
@@ -234,11 +242,15 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
   }
 
   void _removeFromCart(int index) {
-    setState(() {
-      if (_cart[index]['quantity'] > 1) {
-        _cart[index]['quantity']--;
-      } else {
-        _cart.removeAt(index);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          if (_cart[index]['quantity'] > 1) {
+            _cart[index]['quantity']--;
+          } else {
+            _cart.removeAt(index);
+          }
+        });
       }
     });
   }
@@ -624,8 +636,10 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
 
       final response = await _posService.submitTransaction(transactionData);
       
-      if (!mounted) return;
       if (response != null) {
+        if (!Responsive.isTablet(context)) {
+          Navigator.of(context).pop(); // Close the mobile bottom sheet if open
+        }
         setState(() {
           _cart.clear();
           _selectedCustomer = null;
@@ -640,6 +654,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       }
     }
   }
+
 
   void _showSuccessDialog(Map<String, dynamic> transaction) {
     showDialog(
@@ -743,7 +758,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
               if (_settings?['store_phone'] != null && _settings?['store_phone'] != '-')
                 Center(child: Text('Phone: ${_settings?['store_phone']}', style: const TextStyle(fontSize: 12))),
               const Divider(),
-              Text('Date: ${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())}'),
+              Text('Date: ${DateHelper.formatDateTimeReceipt(DateTime.now().toUtc().toIso8601String())}'),
               Text('Customer: ${_selectedCustomer?['name'] ?? 'Guest'}'),
               const Divider(),
               Flexible(
@@ -853,8 +868,34 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     );
   }
 
+  void _showMobileCartSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) {
+          return Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              child: _buildCartView(scrollController: scrollController),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isTablet = Responsive.isTablet(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -879,8 +920,12 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
             icon: Icon(_posItemLayout == 'grid' ? Icons.view_list : Icons.grid_view),
             tooltip: 'Toggle Layout',
             onPressed: () {
-              setState(() {
-                _posItemLayout = _posItemLayout == 'grid' ? 'list' : 'grid';
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  setState(() {
+                    _posItemLayout = _posItemLayout == 'grid' ? 'list' : 'grid';
+                  });
+                }
               });
             },
           ),
@@ -912,15 +957,56 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                     child: Row(
                       children: [
                         _buildItemGrid(),
-                        _buildCartView(),
+                        if (isTablet)
+                          Expanded(
+                            flex: 2,
+                            child: _buildCartView(),
+                          ),
                       ],
                     ),
                   ),
                 ],
               ),
             ),
+      bottomNavigationBar: (!isTablet && _cart.isNotEmpty)
+          ? InkWell(
+              onTap: _showMobileCartSheet,
+              child: Container(
+                color: AppTheme.accentColor,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                child: SafeArea(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.shopping_cart, color: Colors.white),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${_cart.fold(0, (sum, item) => sum + (item['quantity'] as int))} Items',
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        _currencyFormat.format(_totalAfterDiscount),
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      Row(
+                        children: const [
+                          Text('Checkout', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                          Icon(Icons.chevron_right, color: Colors.white),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          : null,
     );
   }
+
 
   Widget _paymentButton(BuildContext context, String label, IconData icon, Color color) {
     return ElevatedButton(
@@ -981,9 +1067,13 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
               selected: isSelected,
               onSelected: (selected) {
                 if (selected) {
-                  setState(() {
-                    _selectedCategory = cat;
-                    _filterItems(_searchQuery);
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) {
+                      setState(() {
+                        _selectedCategory = cat;
+                        _filterItems(_searchQuery);
+                      });
+                    }
                   });
                 }
               },
@@ -1009,35 +1099,52 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
           separatorBuilder: (context, index) => const Divider(),
           itemBuilder: (context, index) {
             final item = _filteredItems[index];
-            return ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              title: Text(item['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(item['category'] ?? 'No Category'),
-              trailing: Text(
-                _currencyFormat.format(double.parse(item['price'].toString())),
-                style: const TextStyle(color: AppTheme.accentColor, fontWeight: FontWeight.bold),
-              ),
+            return GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: () => _addToCart(item),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(item['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 4),
+                          Text(item['category'] ?? 'No Category', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      _currencyFormat.format(double.parse(item['price'].toString())),
+                      style: const TextStyle(color: AppTheme.accentColor, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
             );
           },
         ),
       );
     }
 
+    final isTablet = Responsive.isTablet(context);
     return Expanded(
       flex: 3,
       child: GridView.builder(
         padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          childAspectRatio: 0.8,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: isTablet ? 4 : 2,
+          childAspectRatio: isTablet ? 0.8 : 0.85,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),
         itemCount: _filteredItems.length,
         itemBuilder: (context, index) {
           final item = _filteredItems[index];
-          return InkWell(
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: () => _addToCart(item),
             child: Card(
               elevation: 2,
@@ -1079,15 +1186,13 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
     );
   }
 
-  Widget _buildCartView() {
-    return Expanded(
-      flex: 2,
-      child: Container(
-        color: Colors.grey[50],
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
+  Widget _buildCartView({ScrollController? scrollController}) {
+    return Container(
+      color: Colors.grey[50],
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -1102,6 +1207,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
             ),
             Expanded(
               child: ListView.builder(
+                controller: scrollController,
                 itemCount: _cart.length,
                 itemBuilder: (context, index) {
                   final item = _cart[index];
@@ -1153,8 +1259,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
             _buildSummarySection(),
           ],
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildSummarySection() {

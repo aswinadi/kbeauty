@@ -177,7 +177,7 @@ class _ProductSelectionSheetState extends State<_ProductSelectionSheet> {
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryColor,
+                        color: AppTheme.accentColor,
                       ),
                     ),
                   ),

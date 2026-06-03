@@ -2,6 +2,7 @@ import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/pos_service.dart';
+import 'date_helper.dart';
 
 class ReceiptHelper {
   final BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
@@ -30,11 +31,14 @@ class ReceiptHelper {
     }
     
     final dateStr = transaction['created_at'] != null 
-        ? DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(transaction['created_at']))
-        : DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
+        ? DateHelper.formatDateTimeReceipt(transaction['created_at'])
+        : DateHelper.formatDateTimeReceipt(DateTime.now().toUtc().toIso8601String());
     
+    final customer = transaction['customer'] is Map ? (transaction['customer'] as Map) : null;
+    final customerName = customer?['name'] ?? (transaction['customer'] is String ? transaction['customer'] as String : 'Guest');
+
     bluetooth.write("Date: $dateStr\n");
-    bluetooth.write("Customer: ${transaction['customer']?['name'] ?? 'Guest'}\n");
+    bluetooth.write("Customer: $customerName\n");
     if (transaction['employee'] != null) {
       bluetooth.write("Cashier: ${transaction['employee']['name']}\n");
     }
@@ -44,7 +48,13 @@ class ReceiptHelper {
       final name = item['item'] != null ? (item['item']['name'] ?? 'Item') : (item['name'] ?? 'Item');
       bluetooth.write("$name\n");
       
-      final employees = (item['employees'] as List?)?.map((e) => (e['full_name'] ?? e['name'] ?? 'Staff').toString()).join(', ') ?? '';
+      final employeesList = item['employees'] as List? ?? [];
+      final employees = employeesList.map((e) {
+        if (e is Map) {
+          return e['full_name'] ?? e['name'] ?? 'Staff';
+        }
+        return e?.toString() ?? 'Staff';
+      }).join(', ');
       if (employees.isNotEmpty) {
         bluetooth.write(" ($employees)\n");
       }
@@ -83,8 +93,11 @@ class ReceiptHelper {
     final storeAddress = settings?['store_address'] ?? "Nail Salon & Beauty";
     final storePhone = settings?['store_phone'] ?? "";
 
-    final phone = customPhone ?? transaction['customer']?['phone'];
-    if (phone == null || phone.isEmpty) return 'Customer phone number is missing';
+    final customer = transaction['customer'] is Map ? (transaction['customer'] as Map) : null;
+    final customerName = customer?['name'] ?? (transaction['customer'] is String ? transaction['customer'] as String : 'Guest');
+    final rawPhone = customPhone ?? customer?['phone'];
+    final phone = rawPhone?.toString();
+    if (phone == null || phone.trim().isEmpty) return 'Customer phone number is missing';
 
     String message = "*$storeName RECEIPT*\n";
     message += "_${storeAddress}_\n";
@@ -98,11 +111,10 @@ class ReceiptHelper {
     }
     
     final dateStr = transaction['created_at'] != null 
-        ? DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(transaction['created_at']))
-        : DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
+        ? DateHelper.formatDateTimeReceipt(transaction['created_at'])
+        : DateHelper.formatDateTimeReceipt(DateTime.now().toUtc().toIso8601String());
         
     message += "Date: $dateStr\n";
-    final customerName = transaction['customer']?['name'] ?? 'Guest';
     message += "Customer: $customerName\n";
     message += "--------------------------------\n";
     
@@ -110,7 +122,13 @@ class ReceiptHelper {
       final name = item['item'] != null ? (item['item']['name'] ?? 'Item') : (item['name'] ?? 'Item');
       final subtotal = item['subtotal'] ?? (double.parse(item['price'].toString()) * (item['quantity'] ?? 1));
       
-      final employees = (item['employees'] as List?)?.map((e) => (e['full_name'] ?? e['name'] ?? 'Staff').toString()).join(', ') ?? '';
+      final employeesList = item['employees'] as List? ?? [];
+      final employees = employeesList.map((e) {
+        if (e is Map) {
+          return e['full_name'] ?? e['name'] ?? 'Staff';
+        }
+        return e?.toString() ?? 'Staff';
+      }).join(', ');
       String itemLine = "$name x ${item['quantity']}";
       if (employees.isNotEmpty) itemLine += " ($employees)";
       message += "$itemLine\n";

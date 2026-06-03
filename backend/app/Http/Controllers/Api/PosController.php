@@ -385,7 +385,7 @@ class PosController extends Controller
             'total_services' => $items->count(),
             'total_commission' => $totalCommission,
             'details' => $items->map(fn($i) => [
-                'date' => $i->posTransaction->created_at->toDateTimeString(),
+                'date' => $i->posTransaction->created_at->toIso8601String(),
                 'item_name' => $i->item?->name ?? 'Unknown',
                 'subtotal' => $i->subtotal,
                 'commission' => $i->commission,

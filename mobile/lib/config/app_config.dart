@@ -10,7 +10,8 @@ class AppConfig {
   static bool get isProduction => env == 'prod';
   static bool get isDevelopment => env == 'dev';
 
-  static String formatUrl(String url) {
+  static String formatUrl(String? url) {
+    if (url == null || url.isEmpty) return '';
     if (env == 'dev') {
       return url
           .replaceAll('localhost:8000', '10.0.2.2:8000')
