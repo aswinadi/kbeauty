@@ -312,8 +312,8 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
               : GridView.builder(
 // ... rest same
             shrinkWrap: true,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: Responsive.isTablet(context) ? 3 : 2,
               childAspectRatio: 2.5,
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
@@ -381,8 +381,8 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
                   : GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: Responsive.isTablet(context) ? 3 : 2,
                         childAspectRatio: 2.5,
                         crossAxisSpacing: 10,
                         mainAxisSpacing: 10,
@@ -455,8 +455,8 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
             child: GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 4,
-              childAspectRatio: 0.9,
+              crossAxisCount: Responsive.isTablet(context) ? 4 : 2,
+              childAspectRatio: Responsive.isTablet(context) ? 0.9 : 1.3,
               crossAxisSpacing: 8,
               mainAxisSpacing: 8,
               children: [
@@ -748,7 +748,7 @@ class _PosCheckoutScreenState extends State<PosCheckoutScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Bill Preview (Draft)'),
         content: SizedBox(
-          width: 400,
+          width: Responsive.isTablet(context) ? 400 : MediaQuery.of(context).size.width * 0.85,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,

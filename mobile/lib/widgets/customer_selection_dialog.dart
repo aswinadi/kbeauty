@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/pos_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/responsive.dart';
 
 class CustomerSelectionDialog extends StatefulWidget {
   const CustomerSelectionDialog({super.key});
@@ -36,7 +37,7 @@ class _CustomerSelectionDialogState extends State<CustomerSelectionDialog> {
     return AlertDialog(
       title: const Text('Select Customer'),
       content: SizedBox(
-        width: 400,
+        width: Responsive.isTablet(context) ? 400 : MediaQuery.of(context).size.width * 0.85,
         height: 500,
         child: Column(
           children: [

@@ -6,6 +6,8 @@ import '../../models/product.dart';
 import '../../models/stock_opname.dart';
 import '../../services/inventory_service.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/responsive.dart';
+import '../../widgets/adaptive_split_layout.dart';
 
 class StockOpnameScreen extends StatefulWidget {
   const StockOpnameScreen({super.key});
@@ -27,6 +29,7 @@ class _StockOpnameScreenState extends State<StockOpnameScreen> {
   Set<int> _checkedItems = {}; 
   
   int? _selectedLocationId;
+  Product? _selectedProduct;
   bool _isLoading = true;
   Timer? _saveDebounce;
 
@@ -57,6 +60,10 @@ class _StockOpnameScreenState extends State<StockOpnameScreen> {
 
       await _loadSavedState(); 
       
+      if (Responsive.isTablet(context) && _filteredProducts.isNotEmpty && _selectedProduct == null) {
+        _selectedProduct = _filteredProducts.first;
+      }
+      
       setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
@@ -74,6 +81,11 @@ class _StockOpnameScreenState extends State<StockOpnameScreen> {
           p.name.toLowerCase().contains(lowerQuery) || 
           p.sku.toLowerCase().contains(lowerQuery)
         ).toList();
+      }
+      if (Responsive.isTablet(context) && _filteredProducts.isNotEmpty) {
+        if (_selectedProduct == null || !_filteredProducts.any((p) => p.id == _selectedProduct!.id)) {
+          _selectedProduct = _filteredProducts.first;
+        }
       }
     });
   }
@@ -190,6 +202,257 @@ class _StockOpnameScreenState extends State<StockOpnameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isTablet = Responsive.isTablet(context);
+
+    final masterWidget = Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16.0),
+          color: Colors.white,
+          child: Column(
+            children: [
+              DropdownButtonFormField<int>(
+                decoration: const InputDecoration(
+                  labelText: 'Location',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                ),
+                initialValue: _selectedLocationId,
+                items: _locations.map((l) {
+                  return DropdownMenuItem(value: l.id, child: Text(l.name));
+                }).toList(),
+                onChanged: (id) {
+                  setState(() {
+                    _selectedLocationId = id;
+                    _actualQuantities.clear();
+                    _checkedItems.clear();
+                    _selectedProduct = null;
+                  });
+                  _loadSavedState().then((_) {
+                    if (Responsive.isTablet(context) && _filteredProducts.isNotEmpty) {
+                      setState(() {
+                        _selectedProduct = _filteredProducts.first;
+                      });
+                    }
+                  }); 
+                },
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _searchController,
+                onChanged: _filterProducts,
+                decoration: InputDecoration(
+                  hintText: 'Search products by Name or SKU...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchController.text.isNotEmpty 
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, size: 20),
+                        onPressed: () {
+                          _searchController.clear();
+                          _filterProducts('');
+                        },
+                      )
+                    : null,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
+        Expanded(
+          child: _selectedLocationId == null
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.location_on_outlined, size: 64, color: Colors.grey),
+                      SizedBox(height: 16),
+                      Text(
+                        'Please select a location to start',
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.separated(
+                  itemCount: _filteredProducts.length,
+                  separatorBuilder: (context, index) => const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final product = _filteredProducts[index];
+                    final isChecked = _checkedItems.contains(product.id);
+                    final qty = _actualQuantities[product.id];
+                    final isSelected = _selectedProduct != null && _selectedProduct!.id == product.id;
+
+                    if (isTablet) {
+                      return Container(
+                        color: isSelected
+                            ? Colors.pink[50]
+                            : (isChecked ? Colors.green.withOpacity(0.02) : Colors.white),
+                        child: ListTile(
+                          leading: Checkbox(
+                            value: isChecked,
+                            activeColor: AppTheme.primaryColor,
+                            onChanged: (val) {
+                              setState(() {
+                                if (val == true) {
+                                  _checkedItems.add(product.id);
+                                } else {
+                                  _checkedItems.remove(product.id);
+                                }
+                              });
+                              _triggerSave();
+                            },
+                          ),
+                          title: Text(
+                            product.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          subtitle: Text('SKU: ${product.sku}', style: const TextStyle(fontSize: 12)),
+                          trailing: isChecked && qty != null
+                              ? Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    '${qty % 1 == 0 ? qty.toInt() : qty} ${product.unit}',
+                                    style: const TextStyle(
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                )
+                              : const Icon(Icons.chevron_right, size: 16),
+                          onTap: () {
+                            setState(() {
+                              _selectedProduct = product;
+                            });
+                          },
+                        ),
+                      );
+                    }
+
+                    return StockOpnameTile(
+                      key: ValueKey(product.id),
+                      product: product,
+                      isChecked: isChecked,
+                      initialQty: qty,
+                      onCheckChanged: (val) {
+                        setState(() {
+                          if (val == true) {
+                            _checkedItems.add(product.id);
+                          } else {
+                            _checkedItems.remove(product.id);
+                          }
+                        });
+                        _triggerSave();
+                      },
+                      onQtyChanged: (val) {
+                        setState(() {
+                          if (val == null) {
+                            _actualQuantities.remove(product.id);
+                          } else {
+                            _actualQuantities[product.id] = val;
+                            if (val > 0) {
+                              _checkedItems.add(product.id);
+                            }
+                          }
+                        });
+                        _triggerSave();
+                      },
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+
+    final detailWidget = _selectedLocationId == null
+        ? const Center(
+            child: Text('Select location to view details', style: TextStyle(color: Colors.grey)),
+          )
+        : _selectedProduct == null
+            ? const Center(
+                child: Text('Pilih produk untuk melihat/mengisi data opname', style: TextStyle(color: Colors.grey)),
+              )
+            : Container(
+                color: Colors.grey[50],
+                padding: const EdgeInsets.all(24.0),
+                child: SingleChildScrollView(
+                  child: Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.fact_check_outlined, color: AppTheme.accentColor, size: 28),
+                              const SizedBox(width: 12),
+                              const Text(
+                                'Detail Opname Produk',
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF3D0026)),
+                              ),
+                            ],
+                          ),
+                          const Divider(height: 32),
+                          Text(
+                            _selectedProduct!.name,
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'SKU: ${_selectedProduct!.sku}',
+                            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 24),
+                          StockOpnameTile(
+                            key: ValueKey('opname_detail_${_selectedProduct!.id}'),
+                            product: _selectedProduct!,
+                            isChecked: _checkedItems.contains(_selectedProduct!.id),
+                            initialQty: _actualQuantities[_selectedProduct!.id],
+                            onCheckChanged: (val) {
+                              setState(() {
+                                if (val == true) {
+                                  _checkedItems.add(_selectedProduct!.id);
+                                } else {
+                                  _checkedItems.remove(_selectedProduct!.id);
+                                }
+                              });
+                              _triggerSave();
+                            },
+                            onQtyChanged: (val) {
+                              setState(() {
+                                if (val == null) {
+                                  _actualQuantities.remove(_selectedProduct!.id);
+                                } else {
+                                  _actualQuantities[_selectedProduct!.id] = val;
+                                  if (val > 0) {
+                                    _checkedItems.add(_selectedProduct!.id);
+                                  }
+                                }
+                              });
+                              _triggerSave();
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Stock Opname', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -205,117 +468,11 @@ class _StockOpnameScreenState extends State<StockOpnameScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16.0),
-                    color: Colors.white,
-                    child: Column(
-                      children: [
-                        DropdownButtonFormField<int>(
-                          decoration: const InputDecoration(
-                            labelText: 'Location',
-                            border: OutlineInputBorder(),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                          ),
-                          initialValue: _selectedLocationId,
-                          items: _locations.map((l) {
-                            return DropdownMenuItem(value: l.id, child: Text(l.name));
-                          }).toList(),
-                          onChanged: (id) {
-                            setState(() {
-                              _selectedLocationId = id;
-                              _actualQuantities.clear();
-                              _checkedItems.clear();
-                            });
-                            _loadSavedState(); 
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: _searchController,
-                          onChanged: _filterProducts,
-                          decoration: InputDecoration(
-                            hintText: 'Search products by Name or SKU...',
-                            prefixIcon: const Icon(Icons.search),
-                            suffixIcon: _searchController.text.isNotEmpty 
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear, size: 20),
-                                  onPressed: () {
-                                    _searchController.clear();
-                                    _filterProducts('');
-                                  },
-                                )
-                              : null,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.grey[300]!),
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey[50],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  Expanded(
-                    child: _selectedLocationId == null
-                        ? const Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.location_on_outlined, size: 64, color: Colors.grey),
-                                SizedBox(height: 16),
-                                Text(
-                                  'Please select a location to start',
-                                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.separated(
-                            itemCount: _filteredProducts.length,
-                            separatorBuilder: (context, index) => const Divider(height: 1),
-                            itemBuilder: (context, index) {
-                              final product = _filteredProducts[index];
-                              final isChecked = _checkedItems.contains(product.id);
-                              final qty = _actualQuantities[product.id];
-                              
-                              return StockOpnameTile(
-                                key: ValueKey(product.id),
-                                product: product,
-                                isChecked: isChecked,
-                                initialQty: qty,
-                                onCheckChanged: (val) {
-                                  setState(() {
-                                    if (val == true) {
-                                      _checkedItems.add(product.id);
-                                    } else {
-                                      _checkedItems.remove(product.id);
-                                    }
-                                  });
-                                  _triggerSave();
-                                },
-                                onQtyChanged: (val) {
-                                  setState(() {
-                                    if (val == null) {
-                                      _actualQuantities.remove(product.id);
-                                    } else {
-                                      _actualQuantities[product.id] = val;
-                                      if (val > 0) {
-                                        _checkedItems.add(product.id);
-                                      }
-                                    }
-                                  });
-                                  _triggerSave();
-                                },
-                              );
-                            },
-                          ),
-                  ),
-                ],
+              child: AdaptiveSplitLayout(
+                master: masterWidget,
+                detail: detailWidget,
+                masterFlex: 4.5,
+                detailFlex: 5.5,
               ),
             ),
     );

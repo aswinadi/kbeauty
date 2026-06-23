@@ -319,12 +319,51 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: DropdownButtonFormField<int>(
+                    if (Responsive.isTablet(context))
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: DropdownButtonFormField<int>(
+                              value: _selectedSecondaryUnitId,
+                              items: [
+                                const DropdownMenuItem<int>(value: null, child: Text('Tidak ada')),
+                                ..._units.map((u) => DropdownMenuItem(value: u.id, child: Text(u.name))),
+                              ],
+                              onChanged: (val) => setState(() => _selectedSecondaryUnitId = val),
+                              decoration: const InputDecoration(labelText: 'Satuan Sekunder'),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            flex: 2,
+                            child: TextFormField(
+                              controller: _conversionRatioController,
+                              decoration: const InputDecoration(
+                                labelText: 'Rasio', 
+                                hintText: 'misal: 12',
+                                helperText: 'Isi per Satuan Sekunder',
+                              ),
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              enabled: _selectedSecondaryUnitId != null,
+                              onChanged: (val) => setState(() {}),
+                              validator: (value) {
+                                if (_selectedSecondaryUnitId != null) {
+                                  if (value == null || value.isEmpty) return 'Wajib diisi';
+                                  if (double.tryParse(value) == null) return 'Angka tidak valid';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DropdownButtonFormField<int>(
                             value: _selectedSecondaryUnitId,
                             items: [
                               const DropdownMenuItem<int>(value: null, child: Text('Tidak ada')),
@@ -333,11 +372,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             onChanged: (val) => setState(() => _selectedSecondaryUnitId = val),
                             decoration: const InputDecoration(labelText: 'Satuan Sekunder'),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          flex: 2,
-                          child: TextFormField(
+                          const SizedBox(height: 16),
+                          TextFormField(
                             controller: _conversionRatioController,
                             decoration: const InputDecoration(
                               labelText: 'Rasio', 
@@ -355,9 +391,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               return null;
                             },
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
                     if (_selectedSecondaryUnitId != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 12.0),

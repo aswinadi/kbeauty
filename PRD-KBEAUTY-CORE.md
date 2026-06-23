@@ -42,10 +42,8 @@ Sistem ini membagi beban kerja ke dalam dua bagian utama yang terhubung melalui 
   - `url_launcher` (integrasi pengiriman pesan WhatsApp)
   - `flash` (tampilan notifikasi UI)
 
-### 2.3. Estetika Desain (UI/UX)
-- **Theme**: Estetika premium khas "K-Beauty" dengan palet warna bernuansa **Pink-primary**.
-- **Aplikasi Mobile**: Layout berbasis grid responsif menggunakan `GridView.extent` dengan transisi halus menggunakan library `animations`.
-- **Safe Area**: Kepatuhan ketat terhadap `SafeArea` di semua layar mobile untuk memastikan tidak ada tombol atau konten yang tertutup oleh poni (*notch*) perangkat modern.
+### 2.3. Estetika Desain (UI/UX) & Standardisasi Responsif
+Seluruh aturan estetika, tema warna (Pink-primary), panduan Safe Area, dialog popup, standardisasi tata letak responsif (tablet vs mobile), dan alur responsif spesifik fitur diatur secara terpisah di dokumen [DESIGN-KBEAUTY.md](file:///c:/Users/aswin/.gemini/antigravity/scratch/inventory-system/DESIGN-KBEAUTY.md) yang berfungsi sebagai acuan desain sistem.
 
 ---
 
@@ -165,7 +163,6 @@ erDiagram
 - **Mandatory Update Dialog**:
   - Saat aplikasi mobile dibuka, ia akan membandingkan versinya dengan `latest_version` di backend.
   - Jika terjadi ketidakcocokan dan status update adalah wajib (*mandatory*), aplikasi menampilkan dialog pemblokiran layar penuh dengan tautan unduhan APK yang tidak bisa dilewati.
-
 ---
 
 ## 5. DETAIL LOGIKA VERIFIKASI WAJAH BACKEND

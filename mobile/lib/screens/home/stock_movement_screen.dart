@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import '../../models/product.dart';
 import '../../services/inventory_service.dart';
 import '../../services/product_service.dart';
-import '../../widgets/product_thumbnail.dart';
 import '../../widgets/product_selector.dart';
+import '../../utils/responsive.dart';
+import '../../widgets/adaptive_split_layout.dart';
 
 class StockMovementScreen extends StatefulWidget {
   const StockMovementScreen({super.key});
@@ -83,8 +84,149 @@ class _StockMovementScreenState extends State<StockMovementScreen> {
     }
   }
 
+  Widget _buildSummaryRow(String label, String value, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.pink[700], size: 20),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isTablet = Responsive.isTablet(context);
+
+    final formWidget = SingleChildScrollView(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DropdownButtonFormField<int>(
+            decoration: const InputDecoration(labelText: 'From Location'),
+            initialValue: _fromLocationId,
+            items: _locations.map((l) => DropdownMenuItem(value: l.id, child: Text(l.name))).toList(),
+            onChanged: (id) => setState(() => _fromLocationId = id),
+          ),
+          const SizedBox(height: 24),
+          DropdownButtonFormField<int>(
+            decoration: const InputDecoration(labelText: 'To Location'),
+            initialValue: _toLocationId,
+            items: _locations.map((l) => DropdownMenuItem(value: l.id, child: Text(l.name))).toList(),
+            onChanged: (id) => setState(() => _toLocationId = id),
+          ),
+          const SizedBox(height: 16),
+          const Divider(),
+          const SizedBox(height: 16),
+          ProductSelector(
+            products: _products,
+            selectedProduct: _selectedProduct,
+            onChanged: (p) => setState(() => _selectedProduct = p),
+          ),
+          const SizedBox(height: 24),
+          TextField(
+            controller: _qtyController,
+            keyboardType: TextInputType.number,
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              hintText: 'Enter quantity',
+              labelText: 'Quantity',
+              suffixText: _selectedProduct?.unit ?? '',
+            ),
+          ),
+          const SizedBox(height: 48),
+          if (!isTablet)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _submit,
+                child: const Text('CONFIRM TRANSFER'),
+              ),
+            ),
+        ],
+      ),
+    );
+
+    final summaryWidget = Container(
+      color: Colors.grey[50],
+      padding: const EdgeInsets.all(24.0),
+      child: Center(
+        child: Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.swap_horiz, color: Colors.pink[700], size: 28),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Transfer Summary',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF3D0026)),
+                    ),
+                  ],
+                ),
+                const Divider(height: 32),
+                _buildSummaryRow(
+                  'From Location',
+                  _fromLocationId != null
+                      ? _locations.firstWhere((l) => l.id == _fromLocationId).name
+                      : 'Not Selected',
+                  Icons.location_on_outlined,
+                ),
+                const SizedBox(height: 16),
+                const Center(
+                  child: Icon(Icons.arrow_downward, color: Colors.grey, size: 20),
+                ),
+                const SizedBox(height: 16),
+                _buildSummaryRow(
+                  'To Location',
+                  _toLocationId != null
+                      ? _locations.firstWhere((l) => l.id == _toLocationId).name
+                      : 'Not Selected',
+                  Icons.location_on,
+                ),
+                const Divider(height: 32),
+                _buildSummaryRow(
+                  'Product',
+                  _selectedProduct != null ? _selectedProduct!.name : 'Not Selected',
+                  Icons.inventory_2_outlined,
+                ),
+                const SizedBox(height: 16),
+                _buildSummaryRow(
+                  'Quantity',
+                  _qtyController.text.isNotEmpty
+                      ? '${_qtyController.text} ${_selectedProduct?.unit ?? ""}'
+                      : '0',
+                  Icons.tag,
+                ),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: _submit,
+                    child: const Text('CONFIRM TRANSFER'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Move Stock', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -94,51 +236,11 @@ class _StockMovementScreenState extends State<StockMovementScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    DropdownButtonFormField<int>(
-                      decoration: const InputDecoration(labelText: 'From Location'),
-                      initialValue: _fromLocationId,
-                      items: _locations.map((l) => DropdownMenuItem(value: l.id, child: Text(l.name))).toList(),
-                      onChanged: (id) => setState(() => _fromLocationId = id),
-                    ),
-                    const SizedBox(height: 24),
-                    DropdownButtonFormField<int>(
-                      decoration: const InputDecoration(labelText: 'To Location'),
-                      initialValue: _toLocationId,
-                      items: _locations.map((l) => DropdownMenuItem(value: l.id, child: Text(l.name))).toList(),
-                      onChanged: (id) => setState(() => _toLocationId = id),
-                    ),
-                    const SizedBox(height: 32),
-                    const Divider(),
-                    const SizedBox(height: 32),
-                    const SizedBox(height: 32),
-                    const Divider(),
-                    const SizedBox(height: 32),
-                    ProductSelector(
-                      products: _products,
-                      selectedProduct: _selectedProduct,
-                      onChanged: (p) => setState(() => _selectedProduct = p),
-                    ),
-                    const SizedBox(height: 24),
-                    TextField(
-                      controller: _qtyController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Quantity',
-                        suffixText: _selectedProduct?.unit ?? '',
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-                    ElevatedButton(
-                      onPressed: _submit,
-                      child: const Text('CONFIRM TRANSFER'),
-                    ),
-                  ],
-                ),
+              child: AdaptiveSplitLayout(
+                master: formWidget,
+                detail: summaryWidget,
+                masterFlex: 5.0,
+                detailFlex: 5.0,
               ),
             ),
     );

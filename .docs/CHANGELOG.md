@@ -1,5 +1,20 @@
 # Project Changelog
 
+## [1.12.0] - 2026-06-23
+
+### Added
+- **Tablet/PC 2-Pane Split Layouts (Adaptive Split Layout):**
+  - **Inventory Transactions:** Split layout showing the store and item entry form on the left, and the live transaction items list on the right.
+  - **Stock Movement:** Split layout showing the movement configurations on the left, and a visual planned movement summary card on the right.
+  - **Stock Opname:** Split layout showing the locations and product list on the left, and a detail card to input actual stock quantities on the right.
+
+### Changed
+- **Mobile Responsiveness Improvements:**
+  - **Product Details:** The secondary unit dropdown and ratio text field now stack vertically on mobile to prevent clipping, and remain side-by-side on tablet/PC.
+  - **Customer Details Tab Bar:** Made the CRM customer details TabBar scrollable on mobile screen widths to prevent label truncation.
+  - **POS Checkout Grid Columns:** Payment options now layout in 2 columns on mobile (instead of 4 columns) to allow text like "Debit Card" to fit properly. Employee lists layout in 2 columns (instead of 3) on mobile to prevent clipping of names.
+  - **Responsive Dialog Widths:** Replaced hardcoded dialog widths (`width: 400`) in Customer Selection and Bill Preview dialogs with responsive widths relative to the mobile display (`MediaQuery.of(context).size.width * 0.85`), eliminating clipping errors on smaller phones.
+
 ## [1.11.0] - 2026-06-03
 
 ### Changed

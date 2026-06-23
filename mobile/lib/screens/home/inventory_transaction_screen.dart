@@ -4,7 +4,8 @@ import '../../services/inventory_service.dart';
 import '../../services/product_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/product_selector.dart';
-import '../../widgets/product_thumbnail.dart';
+import '../../utils/responsive.dart';
+import '../../widgets/adaptive_split_layout.dart';
 
 class InventoryTransactionScreen extends StatefulWidget {
   final String type; // 'in' or 'out'
@@ -137,6 +138,170 @@ class _InventoryTransactionScreenState extends State<InventoryTransactionScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isTablet = Responsive.isTablet(context);
+
+    final formWidget = SingleChildScrollView(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DropdownButtonFormField<int>(
+            decoration: const InputDecoration(labelText: 'Store / Location'),
+            initialValue: _selectedLocationId,
+            items: _locations.map((l) => DropdownMenuItem(value: l.id, child: Text(l.name))).toList(),
+            onChanged: _transactionItems.isEmpty ? (id) => setState(() => _selectedLocationId = id) : null,
+            hint: const Text('Select Location'),
+            disabledHint: _selectedLocationId != null 
+                ? Text(_locations.firstWhere(
+                    (l) => l.id == _selectedLocationId, 
+                    orElse: () => _locations.isNotEmpty ? _locations.first : Category(id: 0, name: 'Unknown')
+                  ).name)
+                : null,
+          ),
+          if (_transactionItems.isNotEmpty)
+            const Padding(
+              padding: EdgeInsets.only(top: 8.0),
+              child: Text('Location locked after adding items', style: TextStyle(fontSize: 12, color: Colors.grey)),
+            ),
+          const SizedBox(height: 32),
+          const Text('Add Products', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          ProductSelector(
+            products: _products,
+            selectedProduct: _selectedProduct,
+            onChanged: (p) => setState(() {
+              _selectedProduct = p;
+              _useSecondaryUnit = false;
+            }),
+          ),
+          const SizedBox(height: 16),
+          if (_selectedProduct != null && _selectedProduct!.secondaryUnitName != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16.0),
+              child: Row(
+                children: [
+                  const Text('Unit: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    label: Text(_selectedProduct!.unit),
+                    selected: !_useSecondaryUnit,
+                    onSelected: (val) => setState(() => _useSecondaryUnit = !val),
+                  ),
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    label: Text(_selectedProduct!.secondaryUnitName!),
+                    selected: _useSecondaryUnit,
+                    onSelected: (val) => setState(() => _useSecondaryUnit = val),
+                  ),
+                ],
+              ),
+            ),
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: TextField(
+                  controller: _qtyController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                    labelText: 'Quantity',
+                    suffixText: _selectedProduct != null 
+                      ? (_useSecondaryUnit ? _selectedProduct!.secondaryUnitName : _selectedProduct!.unit)
+                      : '',
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _addItem,
+                  style: ElevatedButton.styleFrom(padding: EdgeInsets.zero),
+                  child: const Text('ADD'),
+                ),
+              ),
+            ],
+          ),
+          if (_useSecondaryUnit && _selectedProduct != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Text(
+                'Converts to: ${(double.tryParse(_qtyController.text) ?? 0) * (_selectedProduct!.conversionRatio ?? 1.0)} ${_selectedProduct!.unit}',
+                style: TextStyle(fontSize: 12, color: AppTheme.primaryColor, fontWeight: FontWeight.bold),
+              ),
+            ),
+          const SizedBox(height: 32),
+          if (!isTablet && _transactionItems.isNotEmpty) ...[
+            const Text('Items List', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _transactionItems.length,
+              separatorBuilder: (_, __) => const Divider(),
+              itemBuilder: (context, index) {
+                final item = _transactionItems[index];
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(item['product_name']),
+                  subtitle: Text('${item['qty']} ${item['base_unit']}'), // Show total base quantity
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                    onPressed: () => _removeItem(index),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 32),
+          ],
+          TextField(
+            controller: _notesController,
+            maxLines: 2,
+            decoration: const InputDecoration(
+              labelText: 'Notes (Optional)',
+              hintText: 'e.g. Bulk restock from supplier X',
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+
+    final listWidget = _transactionItems.isEmpty
+        ? const Center(
+            child: Text(
+              'No items added yet.',
+              style: TextStyle(color: Colors.grey),
+            ),
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(24.0),
+                child: Text('Items List', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              Expanded(
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  itemCount: _transactionItems.length,
+                  separatorBuilder: (_, __) => const Divider(),
+                  itemBuilder: (context, index) {
+                    final item = _transactionItems[index];
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(item['product_name']),
+                      subtitle: Text('${item['qty']} ${item['base_unit']}'),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        onPressed: () => _removeItem(index),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Stock ${widget.type == 'in' ? 'In' : 'Out'}', style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -149,130 +314,11 @@ class _InventoryTransactionScreenState extends State<InventoryTransactionScreen>
               child: Column(
                 children: [
                   Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          DropdownButtonFormField<int>(
-                            decoration: const InputDecoration(labelText: 'Store / Location'),
-                            initialValue: _selectedLocationId,
-                            items: _locations.map((l) => DropdownMenuItem(value: l.id, child: Text(l.name))).toList(),
-                            onChanged: _transactionItems.isEmpty ? (id) => setState(() => _selectedLocationId = id) : null,
-                            hint: const Text('Select Location'),
-                            disabledHint: _selectedLocationId != null 
-                                ? Text(_locations.firstWhere(
-                                    (l) => l.id == _selectedLocationId, 
-                                    orElse: () => _locations.isNotEmpty ? _locations.first : Category(id: 0, name: 'Unknown')
-                                  ).name)
-                                : null,
-                          ),
-                          if (_transactionItems.isNotEmpty)
-                            const Padding(
-                              padding: EdgeInsets.only(top: 8.0),
-                              child: Text('Location locked after adding items', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                            ),
-                          const SizedBox(height: 32),
-                          const Text('Add Products', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 16),
-                          ProductSelector(
-                            products: _products,
-                            selectedProduct: _selectedProduct,
-                            onChanged: (p) => setState(() {
-                              _selectedProduct = p;
-                              _useSecondaryUnit = false;
-                            }),
-                          ),
-                          const SizedBox(height: 16),
-                          if (_selectedProduct != null && _selectedProduct!.secondaryUnitName != null)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 16.0),
-                              child: Row(
-                                children: [
-                                  const Text('Unit: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                  const SizedBox(width: 8),
-                                  ChoiceChip(
-                                    label: Text(_selectedProduct!.unit),
-                                    selected: !_useSecondaryUnit,
-                                    onSelected: (val) => setState(() => _useSecondaryUnit = !val),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  ChoiceChip(
-                                    label: Text(_selectedProduct!.secondaryUnitName!),
-                                    selected: _useSecondaryUnit,
-                                    onSelected: (val) => setState(() => _useSecondaryUnit = val),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: TextField(
-                                  controller: _qtyController,
-                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                  decoration: InputDecoration(
-                                    labelText: 'Quantity',
-                                    suffixText: _selectedProduct != null 
-                                      ? (_useSecondaryUnit ? _selectedProduct!.secondaryUnitName : _selectedProduct!.unit)
-                                      : '',
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: ElevatedButton(
-                                  onPressed: _addItem,
-                                  style: ElevatedButton.styleFrom(padding: EdgeInsets.zero),
-                                  child: const Text('ADD'),
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (_useSecondaryUnit && _selectedProduct != null)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: Text(
-                                'Converts to: ${(double.tryParse(_qtyController.text) ?? 0) * (_selectedProduct!.conversionRatio ?? 1.0)} ${_selectedProduct!.unit}',
-                                style: TextStyle(fontSize: 12, color: AppTheme.primaryColor, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          const SizedBox(height: 32),
-                          if (_transactionItems.isNotEmpty) ...[
-                            const Text('Items List', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 16),
-                            ListView.separated(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: _transactionItems.length,
-                              separatorBuilder: (_, __) => const Divider(),
-                              itemBuilder: (context, index) {
-                                final item = _transactionItems[index];
-                                return ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  title: Text(item['product_name']),
-                                  subtitle: Text('${item['qty']} ${item['base_unit']}'), // Show total base quantity
-                                  trailing: IconButton(
-                                    icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                    onPressed: () => _removeItem(index),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                          const SizedBox(height: 32),
-                          TextField(
-                            controller: _notesController,
-                            maxLines: 2,
-                            decoration: const InputDecoration(
-                              labelText: 'Notes (Optional)',
-                              hintText: 'e.g. Bulk restock from supplier X',
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                        ],
-                      ),
+                    child: AdaptiveSplitLayout(
+                      master: formWidget,
+                      detail: listWidget,
+                      masterFlex: 5.0,
+                      detailFlex: 5.0,
                     ),
                   ),
                   Padding(

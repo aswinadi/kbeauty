@@ -292,6 +292,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: !Responsive.isTablet(context),
           tabs: const [
             Tab(icon: Icon(Icons.info), text: 'Info'),
             Tab(icon: Icon(Icons.card_membership), text: 'Members'),
