@@ -125,7 +125,14 @@ class AttendanceRecapResource extends Resource
                     ->relationship('office', 'name'),
                 SelectFilter::make('employee_id')
                     ->label(__('messages.models.employee'))
-                    ->relationship('employee', 'full_name') // Using full_name added earlier
+                    ->relationship('employee', 'full_name', function (Builder $query) {
+                        $query->whereHas('user', function ($q) {
+                            $q->where('is_active', true)
+                              ->whereDoesntHave('roles', function ($q) {
+                                  $q->where('name', 'super_admin');
+                              });
+                        });
+                    })
                     ->searchable()
                     ->preload(),
             ])
@@ -145,5 +152,16 @@ class AttendanceRecapResource extends Resource
         return [
             'index' => ListAttendanceRecaps::route('/'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->whereHas('employee.user', function ($q) {
+                $q->where('is_active', true)
+                  ->whereDoesntHave('roles', function ($q) {
+                      $q->where('name', 'super_admin');
+                  });
+            });
     }
 }

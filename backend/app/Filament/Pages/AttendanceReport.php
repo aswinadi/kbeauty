@@ -77,7 +77,12 @@ class AttendanceReport extends Page implements HasForms, HasTable
                     ->components([
                         Select::make('employee_id')
                             ->label(__('messages.models.employee'))
-                            ->options(Employee::all()->pluck('full_name', 'id'))
+                            ->options(Employee::whereHas('user', function ($q) {
+                                $q->where('is_active', true)
+                                  ->whereDoesntHave('roles', function ($q) {
+                                      $q->where('name', 'super_admin');
+                                  });
+                            })->pluck('full_name', 'id'))
                             ->searchable()
                             ->preload(),
                         DatePicker::make('start_date')
@@ -114,6 +119,12 @@ class AttendanceReport extends Page implements HasForms, HasTable
                 }
 
                 return $query
+                    ->whereHas('employee.user', function ($q) {
+                        $q->where('is_active', true)
+                          ->whereDoesntHave('roles', function ($q) {
+                              $q->where('name', 'super_admin');
+                          });
+                    })
                     ->when($this->employee_id, fn($q) => $q->where('employee_id', $this->employee_id))
                     ->when($this->start_date, fn($q) => $q->whereDate('date', '>=', $this->start_date))
                     ->when($this->end_date, fn($q) => $q->whereDate('date', '<=', $this->end_date));
@@ -262,9 +273,10 @@ class AttendanceReport extends Page implements HasForms, HasTable
         
         // Get all active employees (excluding super admin)
         $employees = Employee::whereHas('user', function ($q) {
-            $q->whereDoesntHave('roles', function ($q) {
-                $q->where('name', 'super_admin');
-            });
+            $q->where('is_active', true)
+              ->whereDoesntHave('roles', function ($q) {
+                  $q->where('name', 'super_admin');
+              });
         })->with(['user', 'office'])->get();
         
         // Fetch actual attendance records for the range

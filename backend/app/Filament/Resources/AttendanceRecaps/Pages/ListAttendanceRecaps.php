@@ -70,9 +70,10 @@ class ListAttendanceRecaps extends ListRecords
         // Get all active employees (excluding super admin if needed, but usually report shows all)
         // Match user's request for mobile to exclude super_admin if requested, but for attendance recap, we usually show everyone.
         $employees = \App\Models\Employee::whereHas('user', function ($q) {
-            $q->whereDoesntHave('roles', function ($q) {
-                $q->where('name', 'super_admin');
-            });
+            $q->where('is_active', true)
+              ->whereDoesntHave('roles', function ($q) {
+                  $q->where('name', 'super_admin');
+              });
         })->with('user')->get();
         
         // Fetch actual attendance records for the range
